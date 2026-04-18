@@ -292,3 +292,33 @@ class AppState extends ChangeNotifier {
     return '${n.hour.toString().padLeft(2,'0')}:${n.minute.toString().padLeft(2,'0')}';
   }
 }
+
+  // ── Invoice history load/delete ───────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> loadInvoices() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw   = prefs.getString('bly_invoices') ?? '[]';
+    return (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deleteInvoice(String invNo) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw   = prefs.getString('bly_invoices') ?? '[]';
+    final list  = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+    list.removeWhere((e) => e['invNo'] == invNo);
+    await prefs.setString('bly_invoices', jsonEncode(list));
+  }
+
+  // ── Payroll history load/delete ───────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> loadPayrolls() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw   = prefs.getString('bly_payrolls') ?? '[]';
+    return (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deletePayroll(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw   = prefs.getString('bly_payrolls') ?? '[]';
+    final list  = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+    list.removeWhere((e) => e['key'] == key);
+    await prefs.setString('bly_payrolls', jsonEncode(list));
+  }
