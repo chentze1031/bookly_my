@@ -5,6 +5,7 @@ import '../state/app_state.dart';
 import '../state/sub_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
+import 'history_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final VoidCallback onAddIncome;
@@ -122,6 +123,31 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
+          // ── History shortcuts ───────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(children: [
+              Expanded(
+                child: _HistoryBtn(
+                  icon: '🧾',
+                  label: lang == 'zh' ? '发票记录' : 'Invoice History',
+                  onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const InvoiceHistoryScreen())),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HistoryBtn(
+                  icon: '💼',
+                  label: lang == 'zh' ? '薪资记录' : 'Payroll History',
+                  onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const PayrollHistoryScreen())),
+                ),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 14),
+
           // ── Top Spending ────────────────────────────────────────────────────
           if (top.isNotEmpty)
             Padding(
@@ -179,19 +205,19 @@ class HomeScreen extends StatelessWidget {
                       final tx = e.value;
                       final cat = findCat(tx.catId);
                       return Container(
-                      decoration: BoxDecoration(
-                      border: e.key > 0 ? const Border(top: BorderSide(color: kBorder)) : null,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                      child: Row(children: [
-                      Container(
-                      width: 38, height: 38,
-                      decoration: BoxDecoration(
-                      color: (cat?.color ?? Colors.grey).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(child: Text(cat?.icon ?? '💰', style: const TextStyle(fontSize: 17))),
-                      ),
+                        decoration: BoxDecoration(
+                          border: e.key > 0 ? const Border(top: BorderSide(color: kBorder)) : null,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                        child: Row(children: [
+                          Container(
+                            width: 38, height: 38,
+                            decoration: BoxDecoration(
+                              color: (cat?.color ?? Colors.grey).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(child: Text(cat?.icon ?? '💰', style: const TextStyle(fontSize: 17))),
+                          ),
                           const SizedBox(width: 11),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(lang == 'zh' ? tx.descZH : tx.descEN,
@@ -339,4 +365,33 @@ class _FreeUsageBar extends StatelessWidget {
       ),
     );
   }
+}
+
+class _HistoryBtn extends StatelessWidget {
+  final String icon, label;
+  final VoidCallback onTap;
+  const _HistoryBtn({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 12),
+      decoration: BoxDecoration(
+        color: kSurface,
+        border: Border.all(color: kBorder),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(children: [
+        Text(icon, style: const TextStyle(fontSize: 18)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kText),
+            maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+        const Icon(Icons.chevron_right, size: 16, color: kMuted),
+      ]),
+    ),
+  );
 }
