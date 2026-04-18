@@ -266,12 +266,12 @@ class _AddTxSheetState extends State<AddTxSheet> {
     await app.addOrUpdateTx(tx);
     if (!mounted) return;
 
-    // ── Step 3: pop after next frame so keyboard dismiss animation settles ────
-    // This ensures the layout is stable before the modal route is removed,
-    // preventing the barrier from being left behind.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) Navigator.pop(context);
-    });
+    // ── Step 3: pop using the Navigator of THIS sheet's route ────────────────
+    // Using Navigator.of(context) scoped to this widget ensures we only pop
+    // the AddTxSheet route — never the parent MainShell.
+    // canPop() guard prevents double-pop if user already dragged the sheet down.
+    final nav = Navigator.of(context);
+    if (nav.canPop()) nav.pop();
   }
 
   @override
@@ -600,9 +600,8 @@ class _AddTxSheetState extends State<AddTxSheet> {
                                 FocusManager.instance.primaryFocus?.unfocus();
                                 await context.read<AppState>().deleteTx(widget.editTx!.id);
                                 if (!mounted) return;
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (mounted) Navigator.pop(context);
-                                });
+                                final nav = Navigator.of(context);
+                                if (nav.canPop()) nav.pop();
                               },
                               style: OutlinedButton.styleFrom(foregroundColor: kRed, side: const BorderSide(color: kRed)),
                               child: Text(t.del),
