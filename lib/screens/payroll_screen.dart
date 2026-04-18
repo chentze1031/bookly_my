@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -297,7 +298,17 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
 
   // ── Generate PDF payslip bytes ────────────────────────────────────────────
   Future<Uint8List> _buildPayslipPdf(AppState app) async {
-    final pdf = pw.Document();
+    // Load CJK font for Chinese character support
+    pw.Font? cjkFont;
+    try {
+      final fontData = await rootBundle.load('assets/fonts/NotoSansSC-Regular.ttf');
+      cjkFont = pw.Font.ttf(fontData);
+    } catch (_) {}
+    final pdf = pw.Document(
+      theme: cjkFont != null
+          ? pw.ThemeData.withFont(base: cjkFont, bold: cjkFont)
+          : pw.ThemeData(),
+    );
     final emp = _emp!;
     final monthLabel = '${_months[_month - 1]} $_year';
     final coName = app.settings.companyName.isNotEmpty ? app.settings.companyName : 'Company';
