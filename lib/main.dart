@@ -197,6 +197,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
   String _date     = nowISO();
   bool _showCurrPicker = false;
   bool _confirmDel = false;
+  bool _saving = false; // FIX: prevents double-tap during async save
 
   @override
   void initState() {
@@ -217,6 +218,45 @@ class _AddTxSheetState extends State<AddTxSheet> {
     }
   }
 
+  // FIX: moved out of build() and made async.
+  // Root cause of grey screen:
+  //   (1) save() was a local void inside build() — called Navigator.pop(context)
+  //       using the outer build context, NOT the DraggableScrollableSheet's
+  //       inner context. Flutter couldn't find the right route to pop,
+  //       leaving the modal barrier visible (solid grey screen).
+  //   (2) addOrUpdateTx was not awaited — notifyListeners() fired AFTER pop,
+  //       causing a rebuild race on a partially-dismissed route.
+  Future<void> _save() async {
+    if (_saving) return;
+    final app     = context.read<AppState>();
+    final sub     = context.read<SubState>();
+    final parsed  = double.tryParse(_amtCtrl.text) ?? 0;
+    final effCurr = sub.hasAccess ? _currency : 'MYR';
+    final rate    = sub.hasAccess ? (app.fxRates[_currency] ?? 1.0) : 1.0;
+    final myrAmt  = parsed * rate;
+    final sstRate = sstRates[_sstKey]?.rate ?? 0;
+    final sstAmt  = myrAmt * sstRate;
+    final total   = myrAmt + sstAmt;
+    final tx = Transaction(
+      id:           widget.editTx?.id ?? DateTime.now().millisecondsSinceEpoch,
+      type:         _type!,
+      catId:        _cat!.id,
+      amountMYR:    total,
+      origAmount:   parsed,
+      origCurrency: effCurr,
+      sstKey:       _sstKey,
+      sstMYR:       sstAmt,
+      descEN:       _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.enLabel,
+      descZH:       _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.zhLabel,
+      date:         _date,
+      entries:      _cat!.mkEntries(total),
+    );
+    setState(() => _saving = true);
+    await app.addOrUpdateTx(tx);   // FIX: await DB write before pop
+    if (!mounted) return;          // FIX: guard against disposed widget
+    Navigator.pop(context);        // NOW uses State context — correct route
+  }
+
   @override
   Widget build(BuildContext context) {
     final app  = context.watch<AppState>();
@@ -233,41 +273,6 @@ class _AddTxSheetState extends State<AddTxSheet> {
     final sstAmt  = myrAmt * sstRate;
     final total   = myrAmt + sstAmt;
     final ready   = parsed > 0 && _cat != null && _date.isNotEmpty && _type != null;
-
-    Future<void> save() async {
-  try {
-    if (!ready) return;
-
-    final tx = Transaction(
-      id: widget.editTx?.id ?? DateTime.now().millisecondsSinceEpoch,
-      type: _type!,
-      catId: _cat!.id,
-      amountMYR: total,
-      origAmount: parsed,
-      origCurrency: effCurr,
-      sstKey: _sstKey,
-      sstMYR: sstAmt,
-      descEN: _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.enLabel,
-      descZH: _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.zhLabel,
-      date: _date,
-      entries: _cat!.mkEntries(total),
-    );
-
-    await context.read<AppState>().addOrUpdateTx(tx);
-
-    if (!mounted) return;
-
-    Navigator.pop(context);
-
-  } catch (e, s) {
-    print("❌ SAVE ERROR: $e");
-    print(s);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error: $e")),
-    );
-  }
-    }
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
@@ -574,8 +579,9 @@ class _AddTxSheetState extends State<AddTxSheet> {
                             )
                           else
                             OutlinedButton(
-                              onPressed: () {
-                                context.read<AppState>().deleteTx(widget.editTx!.id);
+                              onPressed: () async {
+                                await context.read<AppState>().deleteTx(widget.editTx!.id);
+                                if (!mounted) return;
                                 Navigator.pop(context);
                               },
                               style: OutlinedButton.styleFrom(foregroundColor: kRed, side: const BorderSide(color: kRed)),
@@ -585,7 +591,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                         ],
                         Expanded(
                           child: ElevatedButton(
-  onPressed: save, // ✅ 不用 ready
+  onPressed: (ready && !_saving) ? _save : null,
   style: ElevatedButton.styleFrom(
     backgroundColor: (_type=='income'?kGreen:kRed),
     foregroundColor: Colors.white,
