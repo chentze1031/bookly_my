@@ -291,7 +291,6 @@ class AppState extends ChangeNotifier {
     final n = DateTime.now();
     return '${n.hour.toString().padLeft(2,'0')}:${n.minute.toString().padLeft(2,'0')}';
   }
-}
 
   // ── Invoice history load/delete ───────────────────────────────────────────
   Future<List<Map<String, dynamic>>> loadInvoices() async {
@@ -322,3 +321,4 @@ class AppState extends ChangeNotifier {
     list.removeWhere((e) => e['key'] == key);
     await prefs.setString('bly_payrolls', jsonEncode(list));
   }
+}
