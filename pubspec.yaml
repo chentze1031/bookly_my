@@ -61,6 +61,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/fonts/
     
 dependency_overrides:
   app_links: 6.3.2
