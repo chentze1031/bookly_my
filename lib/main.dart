@@ -235,27 +235,39 @@ class _AddTxSheetState extends State<AddTxSheet> {
     final ready   = parsed > 0 && _cat != null && _date.isNotEmpty && _type != null;
 
     Future<void> save() async {
-  if (!ready) return;
+  try {
+    if (!ready) return;
 
-  final tx = Transaction(
-    id:           widget.editTx?.id ?? DateTime.now().millisecondsSinceEpoch,
-    type:         _type!,
-    catId:        _cat!.id,
-    amountMYR:    total,
-    origAmount:   parsed,
-    origCurrency: effCurr,
-    sstKey:       _sstKey,
-    sstMYR:       sstAmt,
-    descEN:       _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.enLabel,
-    descZH:       _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.zhLabel,
-    date:         _date,
-    entries:      _cat!.mkEntries(total),
-  );
+    final tx = Transaction(
+      id: widget.editTx?.id ?? DateTime.now().millisecondsSinceEpoch,
+      type: _type!,
+      catId: _cat!.id,
+      amountMYR: total,
+      origAmount: parsed,
+      origCurrency: effCurr,
+      sstKey: _sstKey,
+      sstMYR: sstAmt,
+      descEN: _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.enLabel,
+      descZH: _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.zhLabel,
+      date: _date,
+      entries: _cat!.mkEntries(total),
+    );
 
-  await context.read<AppState>().addOrUpdateTx(tx);
+    await context.read<AppState>().addOrUpdateTx(tx);
 
-  if (mounted) Navigator.pop(context);
-}
+    if (!mounted) return;
+
+    Navigator.pop(context);
+
+  } catch (e, s) {
+    print("❌ SAVE ERROR: $e");
+    print(s);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e")),
+    );
+  }
+    }
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
