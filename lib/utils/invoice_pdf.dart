@@ -5,6 +5,7 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../models.dart';
@@ -23,7 +24,21 @@ Future<Uint8List> generateInvoicePdf({
   String? bankName,
   String? bankAcct,
 }) async {
+  // ── Chinese font support ──────────────────────────────────────────────────
+  // Load NotoSansSC from assets for proper CJK character rendering.
+  // Falls back to Helvetica if the font asset is not bundled.
+  pw.Font? cjkFont;
+  try {
+    final fontData = await rootBundle.load('assets/fonts/NotoSansSC-Regular.ttf');
+    cjkFont = pw.Font.ttf(fontData);
+  } catch (_) {
+    // Font not bundled — ASCII-only mode
+  }
+
   final pdf = pw.Document();
+  final baseTheme = cjkFont != null
+      ? pw.ThemeData.withFont(base: cjkFont, bold: cjkFont)
+      : pw.ThemeData();
 
   pw.MemoryImage? logo;
   if (logoBase64 != null && logoBase64.isNotEmpty) {
@@ -86,6 +101,7 @@ Future<Uint8List> generateInvoicePdf({
 
   pdf.addPage(
     pw.Page(
+      theme: baseTheme,
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(32),
       build: (context) => pw.Column(
