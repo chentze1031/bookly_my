@@ -250,9 +250,14 @@ class _AddTxSheetState extends State<AddTxSheet> {
         date:         _date,
         entries:      _cat!.mkEntries(total),
       );
-      context.read<AppState>().addOrUpdateTx(tx);
-      Navigator.pop(context);
-    }
+Future<void> save() async {
+  if (!ready) return;
+  final tx = Transaction(
+    id: widget.editTx?.id ?? DateTime.now().millisecondsSinceEpoch,
+  );
+  await context.read<AppState>().addOrUpdateTx(tx);  // ← 加 await
+  if (mounted) Navigator.pop(context);               // ← 加 mounted 检查
+}
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
