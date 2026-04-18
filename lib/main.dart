@@ -256,6 +256,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
     if (!mounted) return;          // FIX: guard against disposed widget
     Navigator.pop(context);        // NOW uses State context — correct route
   }
+  onPressed: (ready && !_saving) ? _save : null,
 
   @override
   Widget build(BuildContext context) {
