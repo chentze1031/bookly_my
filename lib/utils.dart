@@ -4,8 +4,12 @@ import 'models.dart';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 String fmtMYR(double n) {
-  final f = NumberFormat('#,##0.00', 'en_MY');
-  return 'RM ${f.format(n.abs())}';
+  try {
+    final f = NumberFormat('#,##0.00', 'en_MY');
+    return 'RM ${f.format(n.abs())}';
+  } catch (_) {
+    return 'RM ${n.abs().toStringAsFixed(2)}';
+  }
 }
 
 String fmtShort(double n) {
@@ -15,9 +19,13 @@ String fmtShort(double n) {
 }
 
 String fmtDate(String iso, String lang) {
-  final d = DateTime.parse('${iso}T12:00:00');
-  final locale = lang == 'zh' ? 'zh_MY' : 'en_MY';
-  return DateFormat('d MMM', locale).format(d);
+  try {
+    final d = DateTime.parse('${iso}T12:00:00');
+    final locale = lang == 'zh' ? 'zh_MY' : 'en_MY';
+    return DateFormat('d MMM', locale).format(d);
+  } catch (_) {
+    return iso.length >= 10 ? iso.substring(5, 10) : iso;
+  }
 }
 
 String fmtDateFull(String iso, String lang) {
