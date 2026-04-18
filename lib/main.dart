@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'constants.dart';
 import 'models.dart';
@@ -21,6 +23,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
+
+  // FIX: initialize intl locales BEFORE any DateFormat/NumberFormat usage.
+  // Without this, DateFormat('d MMM', 'en_MY') throws a MissingPluginException
+  // or uninitialized locale error in release builds, causing HomeScreen to
+  // render blank/grey after any state change that triggers a rebuild.
+  await initializeDateFormatting('en_MY');
+  await initializeDateFormatting('zh_MY');
 
   // Init Supabase
   try {
