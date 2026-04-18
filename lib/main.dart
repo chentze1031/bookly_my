@@ -228,6 +228,16 @@ class _AddTxSheetState extends State<AddTxSheet> {
   //       causing a rebuild race on a partially-dismissed route.
   Future<void> _save() async {
     if (_saving) return;
+    setState(() => _saving = true);
+
+    // ── Step 1: dismiss keyboard FIRST ───────────────────────────────────────
+    // Root cause of grey screen: autofocus TextField keeps keyboard open.
+    // Calling Navigator.pop() while keyboard is visible triggers a MediaQuery
+    // bottom-inset change mid-pop, which corrupts DraggableScrollableSheet's
+    // internal state and leaves the modal barrier widget in the tree (grey screen).
+    // Unfocusing closes the keyboard and settles the layout before we pop.
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final app     = context.read<AppState>();
     final sub     = context.read<SubState>();
     final parsed  = double.tryParse(_amtCtrl.text) ?? 0;
@@ -251,12 +261,18 @@ class _AddTxSheetState extends State<AddTxSheet> {
       date:         _date,
       entries:      _cat!.mkEntries(total),
     );
-    setState(() => _saving = true);
-    await app.addOrUpdateTx(tx);   // FIX: await DB write before pop
-    if (!mounted) return;          // FIX: guard against disposed widget
-    Navigator.pop(context);        // NOW uses State context — correct route
-  }
 
+    // ── Step 2: await DB write ────────────────────────────────────────────────
+    await app.addOrUpdateTx(tx);
+    if (!mounted) return;
+
+    // ── Step 3: pop after next frame so keyboard dismiss animation settles ────
+    // This ensures the layout is stable before the modal route is removed,
+    // preventing the barrier from being left behind.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.pop(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -581,9 +597,12 @@ class _AddTxSheetState extends State<AddTxSheet> {
                           else
                             OutlinedButton(
                               onPressed: () async {
+                                FocusManager.instance.primaryFocus?.unfocus();
                                 await context.read<AppState>().deleteTx(widget.editTx!.id);
                                 if (!mounted) return;
-                                Navigator.pop(context);
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (mounted) Navigator.pop(context);
+                                });
                               },
                               style: OutlinedButton.styleFrom(foregroundColor: kRed, side: const BorderSide(color: kRed)),
                               child: Text(t.del),
