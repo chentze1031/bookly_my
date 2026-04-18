@@ -179,19 +179,19 @@ class HomeScreen extends StatelessWidget {
                       final tx = e.value;
                       final cat = findCat(tx.catId);
                       return Container(
-                        decoration: BoxDecoration(
-                          border: e.key > 0 ? const Border(top: BorderSide(color: kBorder)) : null,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                        child: Row(children: [
-                          Container(
-                            width: 38, height: 38,
-                            decoration: BoxDecoration(
-                              color: (cat?.color ?? Colors.grey).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Center(child: Text(cat?.icon ?? '💰', style: const TextStyle(fontSize: 17))),
-                          ),
+                      decoration: BoxDecoration(
+                      border: e.key > 0 ? const Border(top: BorderSide(color: kBorder)) : null,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      child: Row(children: [
+                      Container(
+                      width: 38, height: 38,
+                      decoration: BoxDecoration(
+                      color: (cat?.color ?? Colors.grey).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(child: Text(cat?.icon ?? '💰', style: const TextStyle(fontSize: 17))),
+                      ),
                           const SizedBox(width: 11),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(lang == 'zh' ? tx.descZH : tx.descEN,
