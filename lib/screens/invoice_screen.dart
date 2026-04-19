@@ -444,6 +444,12 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
+      // Auto-close sheet after save
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (mounted) {
+          final nav = Navigator.of(context);
+          if (nav.canPop()) nav.pop();
+        }
       }
     } catch (e) {
       if (mounted) {
