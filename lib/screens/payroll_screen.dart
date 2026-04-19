@@ -134,7 +134,8 @@ class _EmpEditFormState extends State<_EmpEditForm> {
     final t = widget.t;
     return Container(
       decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.96),
+      constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.96 - MediaQuery.of(context).viewInsets.bottom),
       child: Column(
         children: [
           SheetHandle(
@@ -142,79 +143,64 @@ class _EmpEditFormState extends State<_EmpEditForm> {
             trailing: TextButton(onPressed: widget.onCancel, child: const Text('← Back')),
           ),
           Expanded(
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 12,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 120,
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 40 + MediaQuery.of(context).viewInsets.bottom),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                // Personal
+                _Subhead(label: 'Personal Info'),
+                FieldInput(label: t.empName, value: _e.name, onChanged: (v) => _u(_e.copyWith(name: v))),
+                Row(children: [
+                  Expanded(child: FieldInput(label: t.empIC, value: _e.icNo, onChanged: (v) => _u(_e.copyWith(icNo: v)))),
+                  const SizedBox(width: 10),
+                  Expanded(child: FieldInput(label: t.coPhone, value: _e.phone, keyboard: TextInputType.phone, onChanged: (v) => _u(_e.copyWith(phone: v)))),
+                ]),
+                FieldInput(label: t.coEmail, value: _e.email, keyboard: TextInputType.emailAddress, onChanged: (v) => _u(_e.copyWith(email: v))),
+
+                // Employment
+                _Subhead(label: 'Employment'),
+                Row(children: [
+                  Expanded(child: FieldInput(label: t.empPos,  value: _e.position,   onChanged: (v) => _u(_e.copyWith(position: v)))),
+                  const SizedBox(width: 10),
+                  Expanded(child: FieldInput(label: t.empDept, value: _e.department, onChanged: (v) => _u(_e.copyWith(department: v)))),
+                ]),
+                FieldInput(label: t.empBasic, value: _e.basicSalary > 0 ? _e.basicSalary.toString() : '',
+                  keyboard: TextInputType.number, onChanged: (v) => _u(_e.copyWith(basicSalary: double.tryParse(v) ?? 0))),
+
+                // Statutory
+                _Subhead(label: 'Statutory Numbers'),
+                Row(children: [
+                  Expanded(child: FieldInput(label: t.empEPF,   value: _e.epfNo,   onChanged: (v) => _u(_e.copyWith(epfNo: v)))),
+                  const SizedBox(width: 10),
+                  Expanded(child: FieldInput(label: t.empSOCSO, value: _e.socsoNo, onChanged: (v) => _u(_e.copyWith(socsoNo: v)))),
+                ]),
+
+                // Bank
+                _Subhead(label: 'Bank Details'),
+                Row(children: [
+                  Expanded(child: FieldInput(label: t.empBank, value: _e.bankName, onChanged: (v) => _u(_e.copyWith(bankName: v)))),
+                  const SizedBox(width: 10),
+                  Expanded(child: FieldInput(label: t.empAcct, value: _e.bankAcct, keyboard: TextInputType.number, onChanged: (v) => _u(_e.copyWith(bankAcct: v)))),
+                ]),
+
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _e.name.isEmpty || _saving ? null : () async {
+                      setState(() => _saving = true);
+                      await widget.onSave(_e);
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)), elevation: 0),
+                    child: Text(_saving ? 'Saving…' : t.save, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Personal
-                    _Subhead(label: 'Personal Info'),
-                    FieldInput(label: widget.t.empName, value: _e.name, onChanged: (v) => _u(_e.copyWith(name: v))),
-                    Row(children: [
-                      Expanded(child: FieldInput(label: widget.t.empIC, value: _e.icNo, onChanged: (v) => _u(_e.copyWith(icNo: v)))),
-                      const SizedBox(width: 10),
-                      Expanded(child: FieldInput(label: widget.t.coPhone, value: _e.phone, keyboard: TextInputType.phone, onChanged: (v) => _u(_e.copyWith(phone: v)))),
-                    ]),
-                    FieldInput(label: widget.t.coEmail, value: _e.email, keyboard: TextInputType.emailAddress, onChanged: (v) => _u(_e.copyWith(email: v))),
-
-                    // Employment
-                    _Subhead(label: 'Employment'),
-                    Row(children: [
-                      Expanded(child: FieldInput(label: widget.t.empPos, value: _e.position, onChanged: (v) => _u(_e.copyWith(position: v)))),
-                      const SizedBox(width: 10),
-                      Expanded(child: FieldInput(label: widget.t.empDept, value: _e.department, onChanged: (v) => _u(_e.copyWith(department: v)))),
-                    ]),
-                    FieldInput(label: widget.t.empBasic, value: _e.basicSalary > 0 ? _e.basicSalary.toString() : '',
-                      keyboard: TextInputType.number, onChanged: (v) => _u(_e.copyWith(basicSalary: double.tryParse(v) ?? 0))),
-
-                    // Statutory
-                    _Subhead(label: 'Statutory Numbers'),
-                    Row(children: [
-                      Expanded(child: FieldInput(label: widget.t.empEPF, value: _e.epfNo, onChanged: (v) => _u(_e.copyWith(epfNo: v)))),
-                      const SizedBox(width: 10),
-                      Expanded(child: FieldInput(label: widget.t.empSOCSO, value: _e.socsoNo, onChanged: (v) => _u(_e.copyWith(socsoNo: v)))),
-                    ]),
-
-                    // Bank
-                    _Subhead(label: 'Bank Details'),
-                    Row(children: [
-                      Expanded(child: FieldInput(label: widget.t.empBank, value: _e.bankName, onChanged: (v) => _u(_e.copyWith(bankName: v)))),
-                      const SizedBox(width: 10),
-                      Expanded(child: FieldInput(label: widget.t.empAcct, value: _e.bankAcct, keyboard: TextInputType.number, onChanged: (v) => _u(_e.copyWith(bankAcct: v)))),
-                    ]),
-
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _e.name.isEmpty || _saving ? null : () async {
-                          setState(() => _saving = true);
-                          await widget.onSave(_e);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kDark,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
-                          elevation: 0,
-                        ),
-                        child: Text(_saving ? 'Saving…' : widget.t.save, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                  ]),
-                ),
-              ),
+              ]),
             ),
-         ],
-      ),   
+          ),
+        ],
+      ),
     );
   }
 }
