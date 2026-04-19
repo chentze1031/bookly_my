@@ -203,6 +203,12 @@ class AppSettings {
   final String coPhone;
   final String coEmail;
   final String displayCurrency;
+  // ── New fields ────────────────────────────────────────────────────────────
+  final String coTin;       // LHDN Tax Identification Number (TIN)
+  final String bankName;    // Default bank name for invoices
+  final String bankAcct;    // Default bank account number
+  final String? logoBase64; // Company logo (data:image/png;base64,...)
+  final String? sigBase64;  // Authorised signature (data:image/png;base64,...)
 
   const AppSettings({
     this.lang = 'en',
@@ -213,12 +219,20 @@ class AppSettings {
     this.coPhone = '',
     this.coEmail = '',
     this.displayCurrency = 'MYR',
+    this.coTin = '',
+    this.bankName = '',
+    this.bankAcct = '',
+    this.logoBase64,
+    this.sigBase64,
   });
 
   AppSettings copyWith({
     String? lang, String? companyName, String? sstRegNo,
     String? coReg, String? coAddr, String? coPhone,
     String? coEmail, String? displayCurrency,
+    String? coTin, String? bankName, String? bankAcct,
+    String? logoBase64, String? sigBase64,
+    bool clearLogo = false, bool clearSig = false,
   }) => AppSettings(
     lang: lang ?? this.lang,
     companyName: companyName ?? this.companyName,
@@ -228,12 +242,19 @@ class AppSettings {
     coPhone: coPhone ?? this.coPhone,
     coEmail: coEmail ?? this.coEmail,
     displayCurrency: displayCurrency ?? this.displayCurrency,
+    coTin: coTin ?? this.coTin,
+    bankName: bankName ?? this.bankName,
+    bankAcct: bankAcct ?? this.bankAcct,
+    logoBase64: clearLogo ? null : (logoBase64 ?? this.logoBase64),
+    sigBase64:  clearSig  ? null : (sigBase64  ?? this.sigBase64),
   );
 
   Map<String, dynamic> toMap() => {
     'lang': lang, 'company_name': companyName, 'sst_reg_no': sstRegNo,
     'co_reg': coReg, 'co_addr': coAddr, 'co_phone': coPhone,
     'co_email': coEmail, 'display_currency': displayCurrency,
+    'co_tin': coTin, 'bank_name': bankName, 'bank_acct': bankAcct,
+    'logo_base64': logoBase64, 'sig_base64': sigBase64,
   };
 
   factory AppSettings.fromMap(Map<String, dynamic> m) => AppSettings(
@@ -245,5 +266,10 @@ class AppSettings {
     coPhone: m['co_phone'] ?? '',
     coEmail: m['co_email'] ?? '',
     displayCurrency: m['display_currency'] ?? 'MYR',
+    coTin: m['co_tin'] ?? '',
+    bankName: m['bank_name'] ?? '',
+    bankAcct: m['bank_acct'] ?? '',
+    logoBase64: m['logo_base64'] as String?,
+    sigBase64:  m['sig_base64']  as String?,
   );
 }
