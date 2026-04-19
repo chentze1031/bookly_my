@@ -477,7 +477,6 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
         terms:         _terms.isNotEmpty   ? _terms   : null,
         bankName:      _bankName.isNotEmpty ? _bankName : null,
         bankAcct:      _bankAcct.isNotEmpty ? _bankAcct : null,
-        bankAcctName:  _bankAcctName.isNotEmpty ? _bankAcctName : null,
         shipToName:    _shipToName.isNotEmpty ? _shipToName : null,
         shipToAddr:    _shipToAddr.isNotEmpty ? _shipToAddr : null,
         paymentMethod: _payMethod.isNotEmpty ? _payMethod : null,
