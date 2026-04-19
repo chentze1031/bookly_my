@@ -152,6 +152,7 @@ class _CustMgrState extends State<CustomerManagerScreen> {
         SheetHandle(title: t.customers),
         Expanded(
           child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             children: [
               DashedBtn(
@@ -215,7 +216,7 @@ class _CustEditFormState extends State<_CustEditForm> {
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.92),
+          maxHeight: MediaQuery.of(context).size.height * 0.92 - MediaQuery.of(context).viewInsets.bottom),
       child: Column(children: [
         SheetHandle(
           title: _c.id == 0 ? t.newCust : t.customers,
@@ -224,7 +225,8 @@ class _CustEditFormState extends State<_CustEditForm> {
         ),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(16, 12, 16, 40 + MediaQuery.of(context).viewInsets.bottom),
             child: Column(children: [
               FieldInput(
                   label: t.custName,
@@ -444,12 +446,6 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
-      // Auto-close sheet after save
-        await Future.delayed(const Duration(milliseconds: 600));
-        if (mounted) {
-          final nav = Navigator.of(context);
-          if (nav.canPop()) nav.pop();
-        }
       }
     } catch (e) {
       if (mounted) {
@@ -483,6 +479,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
         terms:         _terms.isNotEmpty   ? _terms   : null,
         bankName:      _bankName.isNotEmpty ? _bankName : null,
         bankAcct:      _bankAcct.isNotEmpty ? _bankAcct : null,
+        bankAcctName:  _bankAcctName.isNotEmpty ? _bankAcctName : null,
         shipToName:    _shipToName.isNotEmpty ? _shipToName : null,
         shipToAddr:    _shipToAddr.isNotEmpty ? _shipToAddr : null,
         paymentMethod: _payMethod.isNotEmpty ? _payMethod : null,
@@ -614,7 +611,8 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
 
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 40 + MediaQuery.of(context).viewInsets.bottom),
             children: [
               // ── Branding ──────────────────────────────────────────────
               _SectionBox(
