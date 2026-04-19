@@ -451,6 +451,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
         if (mounted) {
           final nav = Navigator.of(context);
           if (nav.canPop()) nav.pop();
+        }
       }
     } catch (e) {
       if (mounted) {
