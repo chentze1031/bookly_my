@@ -215,51 +215,6 @@ class _EmpEditFormState extends State<_EmpEditForm> {
               ),
             ),
           ),
-                // Employment
-                _Subhead(label: 'Employment'),
-                Row(children: [
-                  Expanded(child: FieldInput(label: t.empPos,  value: _e.position,   onChanged: (v) => _u(_e.copyWith(position: v)))),
-                  const SizedBox(width: 10),
-                  Expanded(child: FieldInput(label: t.empDept, value: _e.department, onChanged: (v) => _u(_e.copyWith(department: v)))),
-                ]),
-                FieldInput(label: t.empBasic, value: _e.basicSalary > 0 ? _e.basicSalary.toString() : '',
-                  keyboard: TextInputType.number, onChanged: (v) => _u(_e.copyWith(basicSalary: double.tryParse(v) ?? 0))),
-
-                // Statutory
-                _Subhead(label: 'Statutory Numbers'),
-                Row(children: [
-                  Expanded(child: FieldInput(label: t.empEPF,   value: _e.epfNo,   onChanged: (v) => _u(_e.copyWith(epfNo: v)))),
-                  const SizedBox(width: 10),
-                  Expanded(child: FieldInput(label: t.empSOCSO, value: _e.socsoNo, onChanged: (v) => _u(_e.copyWith(socsoNo: v)))),
-                ]),
-
-                // Bank
-                _Subhead(label: 'Bank Details'),
-                Row(children: [
-                  Expanded(child: FieldInput(label: t.empBank, value: _e.bankName, onChanged: (v) => _u(_e.copyWith(bankName: v)))),
-                  const SizedBox(width: 10),
-                  Expanded(child: FieldInput(label: t.empAcct, value: _e.bankAcct, keyboard: TextInputType.number, onChanged: (v) => _u(_e.copyWith(bankAcct: v)))),
-                ]),
-
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _e.name.isEmpty || _saving ? null : () async {
-                      setState(() => _saving = true);
-                      await widget.onSave(_e);
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)), elevation: 0),
-                    child: Text(_saving ? 'Saving…' : t.save, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
-                  ),
-                ),
-                  const SizedBox(height: 40), 
-              ]),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
