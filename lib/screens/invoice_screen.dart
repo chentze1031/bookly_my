@@ -392,8 +392,24 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
   @override
   void initState() {
     super.initState();
+    // Load sequential invoice number from DB
     DbService.nextInvoiceNo().then((no) {
       if (mounted) setState(() => _invNo = no);
+    });
+    // Auto-import company logo, signature, and bank from Settings
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final settings = context.read<AppState>().settings;
+      setState(() {
+        if (_logoB64 == null && settings.logoBase64 != null)
+          _logoB64 = settings.logoBase64;
+        if (_sigB64 == null && settings.sigBase64 != null)
+          _sigB64 = settings.sigBase64;
+        if (_bankName.isEmpty && settings.bankName.isNotEmpty)
+          _bankName = settings.bankName;
+        if (_bankAcct.isEmpty && settings.bankAcct.isNotEmpty)
+          _bankAcct = settings.bankAcct;
+      });
     });
   }
 
