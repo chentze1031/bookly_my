@@ -142,18 +142,25 @@ class _EmpEditFormState extends State<_EmpEditForm> {
             trailing: TextButton(onPressed: widget.onCancel, child: const Text('← Back')),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                // Personal
-                _Subhead(label: 'Personal Info'),
-                FieldInput(label: t.empName, value: _e.name, onChanged: (v) => _u(_e.copyWith(name: v))),
-                Row(children: [
-                  Expanded(child: FieldInput(label: t.empIC, value: _e.icNo, onChanged: (v) => _u(_e.copyWith(icNo: v)))),
-                  const SizedBox(width: 10),
-                  Expanded(child: FieldInput(label: t.coPhone, value: _e.phone, keyboard: TextInputType.phone, onChanged: (v) => _u(_e.copyWith(phone: v)))),
-                ]),
-                FieldInput(label: t.coEmail, value: _e.email, keyboard: TextInputType.emailAddress, onChanged: (v) => _u(_e.copyWith(email: v))),
+            child: GestureDetector(                     // ← 新增：点击空白处自动收起键盘
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 12,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 120,   // ← 新增：动态键盘高度
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  // Personal
+                  _Subhead(label: 'Personal Info'),
+                  FieldInput(label: widget.t.empName, value: _e.name, onChanged: (v) => _u(_e.copyWith(name: v))),
+                  Row(children: [
+                    Expanded(child: FieldInput(label: widget.t.empIC, value: _e.icNo, onChanged: (v) => _u(_e.copyWith(icNo: v)))),
+                    const SizedBox(width: 10),
+                    Expanded(child: FieldInput(label: widget.t.coPhone, value: _e.phone, keyboard: TextInputType.phone, onChanged: (v) => _u(_e.copyWith(phone: v)))),
+                  ]),
+                  FieldInput(label: widget.t.coEmail, value: _e.email, keyboard: TextInputType.emailAddress, onChanged: (v) => _u(_e.copyWith(email: v))),
 
                 // Employment
                 _Subhead(label: 'Employment'),
@@ -181,7 +188,7 @@ class _EmpEditFormState extends State<_EmpEditForm> {
                   Expanded(child: FieldInput(label: t.empAcct, value: _e.bankAcct, keyboard: TextInputType.number, onChanged: (v) => _u(_e.copyWith(bankAcct: v)))),
                 ]),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -194,6 +201,7 @@ class _EmpEditFormState extends State<_EmpEditForm> {
                     child: Text(_saving ? 'Saving…' : t.save, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
                   ),
                 ),
+                  const SizedBox(height: 40), 
               ]),
             ),
           ),
