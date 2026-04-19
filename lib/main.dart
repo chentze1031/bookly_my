@@ -751,7 +751,7 @@ class _SettingsState extends State<SettingsScreen> {
                     if (img == null) return;
                     final bytes = await img.readAsBytes();
                     // ignore: use_build_context_synchronously
-                    upd(s.copyWith(logoBase64: 'data:image/png;base64,\${base64Encode(bytes)}'));
+                    upd(s.copyWith(logoBase64: 'data:image/png;base64,${base64Encode(bytes)}'));
                   },
                   onClear: () => upd(s.copyWith(clearLogo: true)),
                 ),
@@ -766,7 +766,7 @@ class _SettingsState extends State<SettingsScreen> {
                     if (img == null) return;
                     final bytes = await img.readAsBytes();
                     // ignore: use_build_context_synchronously
-                    upd(s.copyWith(sigBase64: 'data:image/png;base64,\${base64Encode(bytes)}'));
+                    upd(s.copyWith(sigBase64: 'data:image/png;base64,${base64Encode(bytes)}'));
                   },
                   onClear: () => upd(s.copyWith(clearSig: true)),
                 ),
@@ -909,6 +909,24 @@ class _ImagePickerTile extends StatelessWidget {
   const _ImagePickerTile({required this.label, this.imageB64,
       required this.onPick, required this.onClear});
 
+  // Safe image decode — never throws, shows broken icon on any error
+  Widget _buildImage() {
+    if (imageB64 == null || imageB64!.isEmpty) {
+      return const Center(child: Icon(Icons.add_photo_alternate_outlined, color: kMuted, size: 26));
+    }
+    try {
+      final data = base64Decode(imageB64!.split(',').last);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(9),
+        child: Image.memory(data, fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) =>
+                const Center(child: Icon(Icons.broken_image_outlined, color: kMuted, size: 26))),
+      );
+    } catch (_) {
+      return const Center(child: Icon(Icons.broken_image_outlined, color: kMuted, size: 26));
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Expanded(
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -921,13 +939,7 @@ class _ImagePickerTile extends StatelessWidget {
           height: 64,
           decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder, width: 1.5),
               borderRadius: BorderRadius.circular(10)),
-          child: imageB64 != null
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(9),
-                child: Image.memory(base64Decode(imageB64!.split(',').last),
-                    fit: BoxFit.contain))
-            : const Center(child: Icon(Icons.add_photo_alternate_outlined,
-                color: kMuted, size: 26)),
+          child: _buildImage(),
         ),
       ),
       if (imageB64 != null) ...[
