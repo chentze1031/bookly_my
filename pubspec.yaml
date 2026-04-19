@@ -62,6 +62,14 @@ flutter:
   assets:
     - assets/
     - assets/fonts/
+
+  fonts:
+    - family: NotoSansSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansSC-Bold.ttf
+          weight: 700
     
 dependency_overrides:
   app_links: 6.3.2
