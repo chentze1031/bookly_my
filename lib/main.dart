@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -736,13 +738,53 @@ class _SettingsState extends State<SettingsScreen> {
           title: '🏢 ${t.coName}',
           child: Padding(
             padding: const EdgeInsets.all(13),
-            child: Column(children: [
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // ── Logo & Signature ───────────────────────────────────────
+              Row(children: [
+                // Logo
+                _ImagePickerTile(
+                  label: 'Company Logo',
+                  imageB64: s.logoBase64,
+                  onPick: () async {
+                    final img = await ImagePicker().pickImage(
+                        source: ImageSource.gallery, imageQuality: 80, maxWidth: 400);
+                    if (img == null) return;
+                    final bytes = await img.readAsBytes();
+                    // ignore: use_build_context_synchronously
+                    upd(s.copyWith(logoBase64: 'data:image/png;base64,\${base64Encode(bytes)}'));
+                  },
+                  onClear: () => upd(s.copyWith(clearLogo: true)),
+                ),
+                const SizedBox(width: 12),
+                // Signature
+                _ImagePickerTile(
+                  label: 'Signature',
+                  imageB64: s.sigBase64,
+                  onPick: () async {
+                    final img = await ImagePicker().pickImage(
+                        source: ImageSource.gallery, imageQuality: 80, maxWidth: 400);
+                    if (img == null) return;
+                    final bytes = await img.readAsBytes();
+                    // ignore: use_build_context_synchronously
+                    upd(s.copyWith(sigBase64: 'data:image/png;base64,\${base64Encode(bytes)}'));
+                  },
+                  onClear: () => upd(s.copyWith(clearSig: true)),
+                ),
+              ]),
+              const SizedBox(height: 12),
+              // ── Company info ───────────────────────────────────────────
               FieldInput(label: t.coName, placeholder: 'e.g. My Sdn Bhd', value: s.companyName, onChanged: (v) => upd(s.copyWith(companyName: v))),
+              FieldInput(label: 'TIN (MyTax No.)', placeholder: 'e.g. C12345678900', value: s.coTin, onChanged: (v) => upd(s.copyWith(coTin: v))),
               FieldInput(label: t.sstReg, placeholder: 'e.g. W10-1234-56789012', value: s.sstRegNo, onChanged: (v) => upd(s.copyWith(sstRegNo: v))),
-              FieldInput(label: t.coReg, placeholder: 'e.g. 123456-X', value: s.coReg, onChanged: (v) => upd(s.copyWith(coReg: v))),
+              FieldInput(label: t.coReg, placeholder: 'e.g. 123456-X (SSM/BRN)', value: s.coReg, onChanged: (v) => upd(s.copyWith(coReg: v))),
               FieldInput(label: t.coPhone, value: s.coPhone, onChanged: (v) => upd(s.copyWith(coPhone: v))),
               FieldInput(label: t.coEmail, value: s.coEmail, keyboard: TextInputType.emailAddress, onChanged: (v) => upd(s.copyWith(coEmail: v))),
               FieldInput(label: t.coAddr, value: s.coAddr, multiline: true, onChanged: (v) => upd(s.copyWith(coAddr: v))),
+              const SizedBox(height: 4),
+              // ── Default bank for invoices ──────────────────────────────
+              const _SettingsSubhead(label: 'Default Bank (auto-filled in invoices)'),
+              FieldInput(label: 'Bank Name', placeholder: 'e.g. Maybank', value: s.bankName, onChanged: (v) => upd(s.copyWith(bankName: v))),
+              FieldInput(label: 'Account Number', placeholder: 'e.g. 1234567890', value: s.bankAcct, keyboard: TextInputType.number, onChanged: (v) => upd(s.copyWith(bankAcct: v))),
             ]),
           ),
         ),
@@ -857,6 +899,57 @@ class _SettingsState extends State<SettingsScreen> {
       ],
     );
   }
+}
+
+// ── Settings: image picker tile ──────────────────────────────────────────────
+class _ImagePickerTile extends StatelessWidget {
+  final String label;
+  final String? imageB64;
+  final VoidCallback onPick, onClear;
+  const _ImagePickerTile({required this.label, this.imageB64,
+      required this.onPick, required this.onClear});
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+          color: kMuted, letterSpacing: 0.4)),
+      const SizedBox(height: 6),
+      GestureDetector(
+        onTap: onPick,
+        child: Container(
+          height: 64,
+          decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder, width: 1.5),
+              borderRadius: BorderRadius.circular(10)),
+          child: imageB64 != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(9),
+                child: Image.memory(base64Decode(imageB64!.split(',').last),
+                    fit: BoxFit.contain))
+            : const Center(child: Icon(Icons.add_photo_alternate_outlined,
+                color: kMuted, size: 26)),
+        ),
+      ),
+      if (imageB64 != null) ...[
+        const SizedBox(height: 4),
+        GestureDetector(
+          onTap: onClear,
+          child: const Text('Remove', style: TextStyle(fontSize: 11, color: kRed)),
+        ),
+      ],
+    ]),
+  );
+}
+
+class _SettingsSubhead extends StatelessWidget {
+  final String label;
+  const _SettingsSubhead({required this.label});
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8, top: 4),
+    child: Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+        color: kMuted, letterSpacing: 0.4)),
+  );
 }
 
 class _ProBlock extends StatelessWidget {
