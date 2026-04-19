@@ -208,14 +208,13 @@ class _EmpEditFormState extends State<_EmpEditForm> {
                         child: Text(_saving ? 'Saving…' : widget.t.save, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
                       ),
                     ),
-
                     const SizedBox(height: 40),
-                  ],
+                  ]),
                 ),
               ),
             ),
-          ),
-       ),   
+         ],
+      ),   
     );
   }
 }
