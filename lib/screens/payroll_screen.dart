@@ -309,7 +309,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
 
   // ── Generate PDF payslip bytes ────────────────────────────────────────────
   Future<Uint8List> _buildPayslipPdf(AppState app) async {
-    // Load CJK font for Chinese character support
+    // ── CJK font ─────────────────────────────────────────────────────────────
     pw.Font? cjkFont;
     try {
       final fontData = await rootBundle.load('assets/fonts/NotoSansSC-Regular.ttf');
@@ -320,361 +320,240 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
           ? pw.ThemeData.withFont(base: cjkFont, bold: cjkFont)
           : pw.ThemeData(),
     );
-    final emp = _emp!;
+
+    final emp        = _emp!;
     final monthLabel = '${_months[_month - 1]} $_year';
-    final coName = app.settings.companyName.isNotEmpty ? app.settings.companyName : 'Company';
-    final coAddr = app.settings.coAddr;
+    final coName     = app.settings.companyName.isNotEmpty ? app.settings.companyName : 'Company';
+    final coAddr     = app.settings.coAddr;
 
-    // Colour palette
-    const darkColor   = PdfColor.fromInt(0xFF1A1A1A);
-    const accentColor = PdfColor.fromInt(0xFF2563EB);
-    const greenColor  = PdfColor.fromInt(0xFF16A34A);
-    const redColor    = PdfColor.fromInt(0xFFDC2626);
-    const bgColor     = PdfColor.fromInt(0xFFF8F8F6);
-    const mutedColor  = PdfColor.fromInt(0xFF6B7280);
-    const borderColor = PdfColor.fromInt(0xFFE5E5E0);
+    // ── Palette: black / grey only ────────────────────────────────────────────
+    const _black  = PdfColors.black;
+    const _grey   = PdfColor.fromInt(0xFF555555);
+    const _light  = PdfColor.fromInt(0xFF888888);
+    const _rule   = PdfColor.fromInt(0xFFBBBBBB);
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(36),
-        build: (ctx) {
-          // Earnings rows (non-zero)
-          final earnRows = _earn.where((e) {
-            final amt = double.tryParse(e['amount'] ?? '0') ?? 0;
-            return amt > 0 && (e['desc'] ?? '').isNotEmpty;
-          }).toList();
+    // ── Style helper ──────────────────────────────────────────────────────────
+    pw.TextStyle ts(double sz, {PdfColor? c, bool bold = false}) => pw.TextStyle(
+        fontSize: sz,
+        color: c ?? _black,
+        fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal);
 
-          // Deduction rows
-          final dedRows = _ded.where((d) {
-            final amt = double.tryParse(d['amount'] ?? '0') ?? 0;
-            return amt > 0 && (d['desc'] ?? '').isNotEmpty;
-          }).toList();
+    pw.Widget div({double thick = 0.5}) =>
+        pw.Divider(thickness: thick, color: _rule, height: 1);
 
-          pw.Widget _tableRow(String label, String value,
-              {bool bold = false, PdfColor? valueColor, bool isLast = false}) =>
-              pw.Container(
-                decoration: pw.BoxDecoration(
-                  border: pw.Border(
-                    bottom: isLast ? pw.BorderSide.none : const pw.BorderSide(color: borderColor, width: 0.5),
-                  ),
-                ),
-                padding: const pw.EdgeInsets.symmetric(vertical: 6),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text(label,
-                        style: pw.TextStyle(
-                            fontSize: 10,
-                            fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
-                            color: bold ? darkColor : mutedColor)),
-                    pw.Text(value,
-                        style: pw.TextStyle(
-                            fontSize: 10,
-                            fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
-                            color: valueColor ?? darkColor)),
-                  ],
-                ),
-              );
+    // ── Data helpers ──────────────────────────────────────────────────────────
+    final earnRows = _earn.where((e) =>
+        (double.tryParse(e['amount'] ?? '0') ?? 0) > 0 &&
+        (e['desc'] ?? '').isNotEmpty).toList();
+    final dedRows = _ded.where((d) =>
+        (double.tryParse(d['amount'] ?? '0') ?? 0) > 0 &&
+        (d['desc'] ?? '').isNotEmpty).toList();
 
-          return pw.Column(
+    // One table row: label left, value right, hairline below
+    pw.Widget row(String label, String value,
+        {bool bold = false, bool last = false}) =>
+        pw.Container(
+          decoration: pw.BoxDecoration(
+              border: pw.Border(
+                  bottom: last
+                      ? pw.BorderSide.none
+                      : pw.BorderSide(color: _rule, width: 0.5))),
+          padding: const pw.EdgeInsets.symmetric(vertical: 5),
+          child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(label, style: ts(9, c: bold ? _black : _grey, bold: bold)),
+                pw.Text(value, style: ts(9, bold: bold)),
+              ]),
+        );
+
+    pdf.addPage(pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.fromLTRB(52, 48, 52, 40),
+      build: (ctx) => pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+
+          // ══ HEADER: Company left | PAYSLIP + month right ══════════════════
+          pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // ── Header ────────────────────────────────────────────────
-              pw.Container(
-                padding: const pw.EdgeInsets.all(20),
-                decoration: pw.BoxDecoration(
-                  color: darkColor,
-                  borderRadius: pw.BorderRadius.circular(12),
-                ),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              pw.Expanded(
+                child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                      pw.Text('PAYSLIP',
-                          style: pw.TextStyle(
-                              fontSize: 22,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.white,
-                              letterSpacing: 2)),
-                      pw.SizedBox(height: 4),
-                      pw.Text(monthLabel,
-                          style: pw.TextStyle(fontSize: 12, color: PdfColor.fromInt(0xFF9CA3AF))),
-                    ]),
-                    pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-                      pw.Text(coName,
-                          style: pw.TextStyle(
-                              fontSize: 13,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.white)),
-                      if (coAddr.isNotEmpty)
-                        pw.Text(coAddr,
-                            style: pw.TextStyle(
-                                fontSize: 9,
-                                color: PdfColor.fromInt(0xFF9CA3AF))),
-                    ]),
+                    pw.Text(coName, style: ts(12, bold: true)),
+                    if (coAddr.isNotEmpty) pw.Text(coAddr, style: ts(8, c: _grey)),
+                    if (app.settings.coPhone.isNotEmpty)
+                      pw.Text(app.settings.coPhone, style: ts(8, c: _grey)),
+                    if (app.settings.coEmail.isNotEmpty)
+                      pw.Text(app.settings.coEmail, style: ts(8, c: _grey)),
                   ],
                 ),
               ),
-              pw.SizedBox(height: 20),
-
-              // ── Employee info ─────────────────────────────────────────
-              pw.Container(
-                padding: const pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  color: bgColor,
-                  borderRadius: pw.BorderRadius.circular(8),
-                  border: pw.Border.all(color: borderColor),
-                ),
-                child: pw.Row(
-                  children: [
-                    // Avatar circle
-                    pw.Container(
-                      width: 44, height: 44,
-                      decoration: pw.BoxDecoration(
-                        color: accentColor,
-                        shape: pw.BoxShape.circle,
-                      ),
-                      alignment: pw.Alignment.center,
-                      child: pw.Text(
-                        emp.name.isNotEmpty ? emp.name[0].toUpperCase() : '?',
-                        style: pw.TextStyle(
-                            fontSize: 20,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.white),
-                      ),
-                    ),
-                    pw.SizedBox(width: 14),
-                    pw.Expanded(
-                      child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                        pw.Text(emp.name,
-                            style: pw.TextStyle(
-                                fontSize: 14,
-                                fontWeight: pw.FontWeight.bold,
-                                color: darkColor)),
-                        if (emp.position.isNotEmpty)
-                          pw.Text(emp.position,
-                              style: pw.TextStyle(fontSize: 10, color: mutedColor)),
-                        if (emp.department.isNotEmpty)
-                          pw.Text(emp.department,
-                              style: pw.TextStyle(fontSize: 10, color: mutedColor)),
-                      ]),
-                    ),
-                    pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-                      if (emp.icNo.isNotEmpty)
-                        pw.Text('IC: ${emp.icNo}',
-                            style: pw.TextStyle(fontSize: 9, color: mutedColor)),
-                      if (emp.epfNo.isNotEmpty)
-                        pw.Text('EPF: ${emp.epfNo}',
-                            style: pw.TextStyle(fontSize: 9, color: mutedColor)),
-                      if (emp.socsoNo.isNotEmpty)
-                        pw.Text('SOCSO: ${emp.socsoNo}',
-                            style: pw.TextStyle(fontSize: 9, color: mutedColor)),
-                    ]),
-                  ],
-                ),
-              ),
-              pw.SizedBox(height: 16),
-
-              // ── Earnings & Deductions side by side ────────────────────
-              pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
                 children: [
-                  // Earnings
-                  pw.Expanded(
-                    child: pw.Container(
-                      padding: const pw.EdgeInsets.all(14),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(color: PdfColor.fromInt(0xFFBBF7D0)),
-                        color: PdfColor.fromInt(0xFFF0FDF4),
-                        borderRadius: pw.BorderRadius.circular(8),
-                      ),
-                      child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                        pw.Text('EARNINGS',
-                            style: pw.TextStyle(
-                                fontSize: 10,
-                                fontWeight: pw.FontWeight.bold,
-                                color: greenColor,
-                                letterSpacing: 1)),
-                        pw.SizedBox(height: 8),
-                        ...earnRows.map((e) {
-                          final amt = double.tryParse(e['amount'] ?? '0') ?? 0;
-                          return _tableRow(e['desc'] ?? '', fmtMYR(amt));
-                        }),
-                        pw.Container(
-                          margin: const pw.EdgeInsets.only(top: 8),
-                          padding: const pw.EdgeInsets.only(top: 8),
-                          decoration: const pw.BoxDecoration(
-                            border: pw.Border(top: pw.BorderSide(color: PdfColor.fromInt(0xFF86EFAC), width: 1)),
-                          ),
-                          child: pw.Row(
-                            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                            children: [
-                              pw.Text('GROSS PAY',
-                                  style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: darkColor)),
-                              pw.Text(fmtMYR(_gross),
-                                  style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: greenColor)),
-                            ],
-                          ),
-                        ),
-                      ]),
-                    ),
-                  ),
-                  pw.SizedBox(width: 12),
-                  // Deductions
-                  pw.Expanded(
-                    child: pw.Container(
-                      padding: const pw.EdgeInsets.all(14),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(color: PdfColor.fromInt(0xFFFECACA)),
-                        color: PdfColor.fromInt(0xFFFFF5F5),
-                        borderRadius: pw.BorderRadius.circular(8),
-                      ),
-                      child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                        pw.Text('DEDUCTIONS',
-                            style: pw.TextStyle(
-                                fontSize: 10,
-                                fontWeight: pw.FontWeight.bold,
-                                color: redColor,
-                                letterSpacing: 1)),
-                        pw.SizedBox(height: 8),
-                        if (_useEPF) _tableRow('EPF (Employee)', fmtMYR(_eeEPF)),
-                        if (_useSOCSO) _tableRow('SOCSO (Employee)', fmtMYR(_eeSSO)),
-                        if (_useEIS) _tableRow('EIS (Employee)', fmtMYR(_eeEIS)),
-                        ...dedRows.map((d) {
-                          final amt = double.tryParse(d['amount'] ?? '0') ?? 0;
-                          return _tableRow(d['desc'] ?? '', fmtMYR(amt));
-                        }),
-                        pw.Container(
-                          margin: const pw.EdgeInsets.only(top: 8),
-                          padding: const pw.EdgeInsets.only(top: 8),
-                          decoration: const pw.BoxDecoration(
-                            border: pw.Border(top: pw.BorderSide(color: PdfColor.fromInt(0xFFFCA5A5), width: 1)),
-                          ),
-                          child: pw.Row(
-                            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                            children: [
-                              pw.Text('TOTAL DED.',
-                                  style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: darkColor)),
-                              pw.Text('(${fmtMYR(_totDed)})',
-                                  style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: redColor)),
-                            ],
-                          ),
-                        ),
-                      ]),
-                    ),
-                  ),
+                  pw.Text('PAYSLIP', style: ts(20, bold: true)),
+                  pw.SizedBox(height: 4),
+                  pw.Text(monthLabel, style: ts(10, c: _grey)),
                 ],
-              ),
-              pw.SizedBox(height: 16),
-
-              // ── Net Pay banner ────────────────────────────────────────
-              pw.Container(
-                padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: pw.BoxDecoration(
-                  color: darkColor,
-                  borderRadius: pw.BorderRadius.circular(10),
-                ),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Text('NET PAY',
-                        style: pw.TextStyle(
-                            fontSize: 14,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.white,
-                            letterSpacing: 1)),
-                    pw.Text(fmtMYR(_netPay),
-                        style: pw.TextStyle(
-                            fontSize: 24,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColor.fromInt(0xFF4ADE80))),
-                  ],
-                ),
-              ),
-              pw.SizedBox(height: 10),
-
-              // ── Employer cost note ─────────────────────────────────────
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Text('Total employer cost: ${fmtMYR(_erCost)}',
-                      style: pw.TextStyle(fontSize: 9, color: mutedColor)),
-                ],
-              ),
-
-              // ── Statutory contributions breakdown ──────────────────────
-              if (_useEPF || _useSOCSO || _useEIS) ...[
-                pw.SizedBox(height: 14),
-                pw.Container(
-                  padding: const pw.EdgeInsets.all(12),
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: PdfColor.fromInt(0xFFBFDBFE)),
-                    color: PdfColor.fromInt(0xFFEFF6FF),
-                    borderRadius: pw.BorderRadius.circular(8),
-                  ),
-                  child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                    pw.Text('STATUTORY CONTRIBUTIONS',
-                        style: pw.TextStyle(
-                            fontSize: 9,
-                            fontWeight: pw.FontWeight.bold,
-                            color: accentColor,
-                            letterSpacing: 1)),
-                    pw.SizedBox(height: 8),
-                    pw.Row(children: [
-                      pw.Expanded(child: pw.Text('', style: pw.TextStyle(fontSize: 9, color: mutedColor))),
-                      pw.SizedBox(width: 60, child: pw.Text('Employee', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: mutedColor))),
-                      pw.SizedBox(width: 60, child: pw.Text('Employer', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: mutedColor))),
-                    ]),
-                    if (_useEPF) pw.Row(children: [
-                      pw.Expanded(child: pw.Text('EPF', style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                      pw.SizedBox(width: 60, child: pw.Text(fmtMYR(_eeEPF), style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                      pw.SizedBox(width: 60, child: pw.Text(fmtMYR(_erEPF), style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                    ]),
-                    if (_useSOCSO) pw.Row(children: [
-                      pw.Expanded(child: pw.Text('SOCSO', style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                      pw.SizedBox(width: 60, child: pw.Text(fmtMYR(_eeSSO), style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                      pw.SizedBox(width: 60, child: pw.Text(fmtMYR(_erSSO), style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                    ]),
-                    if (_useEIS) pw.Row(children: [
-                      pw.Expanded(child: pw.Text('EIS', style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                      pw.SizedBox(width: 60, child: pw.Text(fmtMYR(_eeEIS), style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                      pw.SizedBox(width: 60, child: pw.Text(fmtMYR(_erEIS), style: pw.TextStyle(fontSize: 9, color: darkColor))),
-                    ]),
-                  ]),
-                ),
-              ],
-
-              // ── Bank & Footer ─────────────────────────────────────────
-              if (emp.bankName.isNotEmpty || emp.bankAcct.isNotEmpty) ...[
-                pw.SizedBox(height: 14),
-                pw.Container(
-                  padding: const pw.EdgeInsets.all(12),
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: borderColor),
-                    color: bgColor,
-                    borderRadius: pw.BorderRadius.circular(8),
-                  ),
-                  child: pw.Row(children: [
-                    pw.Text('Bank Payment: ', style: pw.TextStyle(fontSize: 9, color: mutedColor)),
-                    pw.Text('${emp.bankName}  ${emp.bankAcct}',
-                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: darkColor)),
-                  ]),
-                ),
-              ],
-
-              pw.Spacer(),
-              pw.Divider(color: borderColor),
-              pw.Text(
-                'This is a computer-generated payslip. Generated on ${DateTime.now().toIso8601String().substring(0, 10)}.',
-                style: pw.TextStyle(fontSize: 8, color: mutedColor),
               ),
             ],
-          );
-        },
+          ),
+
+          pw.SizedBox(height: 18),
+          div(thick: 1.0),
+          pw.SizedBox(height: 12),
+
+          // ══ EMPLOYEE ══════════════════════════════════════════════════════
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('EMPLOYEE', style: ts(7, c: _light, bold: true)),
+                    pw.SizedBox(height: 4),
+                    pw.Text(emp.name, style: ts(11, bold: true)),
+                    if (emp.position.isNotEmpty)
+                      pw.Text(emp.position, style: ts(9, c: _grey)),
+                    if (emp.department.isNotEmpty)
+                      pw.Text(emp.department, style: ts(9, c: _grey)),
+                  ],
+                ),
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  if (emp.icNo.isNotEmpty)
+                    pw.Text('IC: ${emp.icNo}', style: ts(8, c: _grey)),
+                  if (emp.epfNo.isNotEmpty)
+                    pw.Text('EPF: ${emp.epfNo}', style: ts(8, c: _grey)),
+                  if (emp.socsoNo.isNotEmpty)
+                    pw.Text('SOCSO: ${emp.socsoNo}', style: ts(8, c: _grey)),
+                ],
+              ),
+            ],
+          ),
+
+          pw.SizedBox(height: 14),
+          div(),
+          pw.SizedBox(height: 6),
+
+          // ══ EARNINGS ══════════════════════════════════════════════════════
+          pw.Text('EARNINGS', style: ts(7, c: _light, bold: true)),
+          pw.SizedBox(height: 4),
+          ...earnRows.map((e) {
+            final amt = double.tryParse(e['amount'] ?? '0') ?? 0;
+            return row(e['desc'] ?? '', fmtMYR(amt));
+          }),
+          row('Gross Pay', fmtMYR(_gross), bold: true, last: true),
+
+          pw.SizedBox(height: 10),
+          div(),
+          pw.SizedBox(height: 6),
+
+          // ══ DEDUCTIONS ════════════════════════════════════════════════════
+          pw.Text('DEDUCTIONS', style: ts(7, c: _light, bold: true)),
+          pw.SizedBox(height: 4),
+          if (_useEPF)   row('EPF (Employee)',   fmtMYR(_eeEPF)),
+          if (_useSOCSO) row('SOCSO (Employee)', fmtMYR(_eeSSO)),
+          if (_useEIS)   row('EIS (Employee)',   fmtMYR(_eeEIS)),
+          ...dedRows.map((d) {
+            final amt = double.tryParse(d['amount'] ?? '0') ?? 0;
+            return row(d['desc'] ?? '', fmtMYR(amt));
+          }),
+          row('Total Deductions', fmtMYR(_totDed), bold: true, last: true),
+
+          // ── Statutory contributions (employee vs employer) ────────────────
+          if (_useEPF || _useSOCSO || _useEIS) ...[
+            pw.SizedBox(height: 10),
+            div(),
+            pw.SizedBox(height: 6),
+            pw.Text('STATUTORY CONTRIBUTIONS', style: ts(7, c: _light, bold: true)),
+            pw.SizedBox(height: 4),
+            pw.Row(children: [
+              pw.Expanded(child: pw.SizedBox()),
+              pw.SizedBox(width: 70, child: pw.Text('Employee', style: ts(8, c: _grey, bold: true), textAlign: pw.TextAlign.right)),
+              pw.SizedBox(width: 70, child: pw.Text('Employer', style: ts(8, c: _grey, bold: true), textAlign: pw.TextAlign.right)),
+            ]),
+            pw.SizedBox(height: 3),
+            if (_useEPF) pw.Container(
+              decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFFBBBBBB), width: 0.5))),
+              padding: const pw.EdgeInsets.symmetric(vertical: 4),
+              child: pw.Row(children: [
+                pw.Expanded(child: pw.Text('EPF', style: ts(9))),
+                pw.SizedBox(width: 70, child: pw.Text(fmtMYR(_eeEPF), style: ts(9), textAlign: pw.TextAlign.right)),
+                pw.SizedBox(width: 70, child: pw.Text(fmtMYR(_erEPF), style: ts(9), textAlign: pw.TextAlign.right)),
+              ]),
+            ),
+            if (_useSOCSO) pw.Container(
+              decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFFBBBBBB), width: 0.5))),
+              padding: const pw.EdgeInsets.symmetric(vertical: 4),
+              child: pw.Row(children: [
+                pw.Expanded(child: pw.Text('SOCSO', style: ts(9))),
+                pw.SizedBox(width: 70, child: pw.Text(fmtMYR(_eeSSO), style: ts(9), textAlign: pw.TextAlign.right)),
+                pw.SizedBox(width: 70, child: pw.Text(fmtMYR(_erSSO), style: ts(9), textAlign: pw.TextAlign.right)),
+              ]),
+            ),
+            if (_useEIS) pw.Container(
+              decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFFBBBBBB), width: 0.5))),
+              padding: const pw.EdgeInsets.symmetric(vertical: 4),
+              child: pw.Row(children: [
+                pw.Expanded(child: pw.Text('EIS', style: ts(9))),
+                pw.SizedBox(width: 70, child: pw.Text(fmtMYR(_eeEIS), style: ts(9), textAlign: pw.TextAlign.right)),
+                pw.SizedBox(width: 70, child: pw.Text(fmtMYR(_erEIS), style: ts(9), textAlign: pw.TextAlign.right)),
+              ]),
+            ),
+          ],
+
+          pw.SizedBox(height: 14),
+          div(thick: 1.0),
+          pw.SizedBox(height: 8),
+
+          // ══ NET PAY ═══════════════════════════════════════════════════════
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('NET PAY', style: ts(13, bold: true)),
+              pw.Text(fmtMYR(_netPay), style: ts(16, bold: true)),
+            ],
+          ),
+          pw.SizedBox(height: 4),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.end,
+            children: [
+              pw.Text('Total employer cost: ${fmtMYR(_erCost)}',
+                  style: ts(8, c: _light)),
+            ],
+          ),
+
+          // ── Bank ─────────────────────────────────────────────────────────
+          if (emp.bankName.isNotEmpty || emp.bankAcct.isNotEmpty) ...[
+            pw.SizedBox(height: 12),
+            div(),
+            pw.SizedBox(height: 6),
+            pw.Row(children: [
+              pw.Text('Bank Payment:  ', style: ts(8, c: _grey)),
+              pw.Text('${emp.bankName}  ${emp.bankAcct}', style: ts(8, bold: true)),
+            ]),
+          ],
+
+          pw.Spacer(),
+
+          // ══ FOOTER ════════════════════════════════════════════════════════
+          div(),
+          pw.SizedBox(height: 6),
+          pw.Text(
+            'This is a computer-generated payslip.  '
+            'Generated on ${DateTime.now().toIso8601String().substring(0, 10)}.',
+            style: ts(7.5, c: _light),
+          ),
+        ],
       ),
-    );
+    ));
 
     return pdf.save();
   }
