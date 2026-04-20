@@ -23,11 +23,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Create icon
-        run: |
-          mkdir -p assets
-          wget -O assets/icon.png https://picsum.photos/512
-
       - name: Generate launcher icons
         run: flutter pub run flutter_launcher_icons
         
