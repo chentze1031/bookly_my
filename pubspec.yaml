@@ -60,16 +60,19 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/
     - assets/fonts/
   fonts:
     - family: NotoSansSC
       fonts:
         - asset: assets/fonts/NotoSansSC-Regular.ttf
-    
+
 dependency_overrides:
   app_links: 6.3.2
-  
-  
+
 flutter_icons:
   android: true
+  ios: false                                     
   image_path: "assets/icon.png"
+  adaptive_icon_background: "#FFFFFF"        
+  adaptive_icon_foreground: "assets/icon.png"
