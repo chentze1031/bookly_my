@@ -1,8 +1,9 @@
-name: Build Flutter APK
+name: Build & Deploy Bookly MY
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,21 +20,34 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.24.5"
+          channel: stable
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Generate launcher icons
-        run: flutter pub run flutter_launcher_icons
-        
-      - name: Clean project
-        run: flutter clean
+        run: dart run flutter_launcher_icons
 
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode \
+            > android/app/bookly_my.jks
 
-      - name: Upload APK
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties << EOF
+          storeFile=bookly_my.jks
+          storePassword=${{ secrets.STORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          EOF
+
+      - name: Build AAB
+        run: flutter build appbundle --release
+
+      - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-         name: app-release
-         path: build/app/outputs/flutter-apk/app-release.apk 
+          name: app-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
