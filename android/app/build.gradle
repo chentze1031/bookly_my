@@ -42,8 +42,7 @@ android {
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
-            // ← 修复：加 "app/" 前缀，指向 android/app/bookly_my.jks
-            storeFile keystoreProperties['storeFile'] ? file("app/" + keystoreProperties['storeFile']) : null
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
             storePassword keystoreProperties['storePassword']
         }
     }
@@ -54,14 +53,12 @@ android {
         targetSdk 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        // ← 加：防止方法数超限
         multiDexEnabled true
     }
 
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            // ← 加：压缩资源减少包体积
             shrinkResources false
             minifyEnabled false
         }
