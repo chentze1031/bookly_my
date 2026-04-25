@@ -13,9 +13,9 @@ const _prodYearly       = 'bookly_pro_yearly';
 
 // ── Ad trigger settings ───────────────────────────────────────────────────────
 // 每隔多少分钟可以触发一次广告（保存/分享动作）
-const _adCooldownMinutes = 3;
+const _adCooldownMinutes = 4;
 // 每隔多少分钟计时器自动触发广告（用户持续使用中）
-const _adTimerMinutes    = 5;
+const _adTimerMinutes    = 6;
 
 const freeTxLimit = 30;
 
