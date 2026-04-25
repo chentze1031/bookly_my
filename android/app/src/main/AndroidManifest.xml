@@ -7,7 +7,7 @@
 
     <application
         android:label="Bookly MY"
-        android:name="${applicationName}"
+        android:name="androidx.multidex.MultiDexApplication"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">
 
