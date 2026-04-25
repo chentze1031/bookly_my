@@ -6,11 +6,11 @@
         android:maxSdkVersion="28"/>
 
     <application
-        android:label="Bookly MY"
-        android:name="androidx.multidex.MultiDexApplication"
-        android:icon="@mipmap/ic_launcher"
-        android:requestLegacyExternalStorage="true">
-
+    android:label="Bookly MY"
+    android:name="${applicationName}"
+    android:icon="@mipmap/ic_launcher"
+    android:requestLegacyExternalStorage="true">
+        
         <!-- AdMob App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
