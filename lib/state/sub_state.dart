@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-static const _rcKey         = '';
+static const _rcKey         = 'goog_fmJwLiMicCjgynOjRxGdlItPFUb';
 const _admobRewarded = 'ca-app-pub-1544282175684415/1380164927'; 
 const _rcEntitlement = 'pro';
 const _prodMonthly   = 'bookly_pro_monthly';
