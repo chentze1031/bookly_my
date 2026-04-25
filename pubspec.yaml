@@ -1,7 +1,7 @@
 name: bookly_my
 description: Bookly MY - Malaysia Business Accounting App
 publish_to: none
-version: 1.0.0+5
+version: 1.0.0+6
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
