@@ -7,9 +7,9 @@ buildscript {
     }
 
     dependencies {
-        // ✅ 升级到 8.4.2（解决你现在的报错）
         classpath 'com.android.tools.build:gradle:8.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.4.1'  // ← 加这行
     }
 }
 
@@ -20,7 +20,6 @@ allprojects {
     }
 }
 
-// 可选（但推荐，避免路径问题）
 rootProject.buildDir = '../build'
 
 subprojects {
@@ -31,7 +30,11 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// 清理任务
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+flutter {
+    source '../..'
+}
+
+apply plugin: 'com.google.gms.google-services'  
