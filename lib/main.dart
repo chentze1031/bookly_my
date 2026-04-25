@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthState;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
@@ -13,9 +14,12 @@ import 'state/sub_state.dart';
 import 'utils.dart';
 import 'widgets/common.dart';
 import 'screens/home_screen.dart';
+import 'screens/auth_screen.dart';
+import 'services/supabase_service.dart';
 import 'screens/reports_transactions_screen.dart';
 import 'screens/invoice_screen.dart';
 import 'screens/payroll_screen.dart';
+import 'screens/sub_screen.dart';
 
 // ─── Screens (inline compact versions) ───────────────────────────────────────
 export 'screens/home_screen.dart';
@@ -34,9 +38,7 @@ void main() async {
   await initializeDateFormatting('zh_MY');
 
   // Init Supabase
-  try {
-    // Supabase init handled lazily in service
-  } catch (_) {}
+  await SupabaseService.initialize();
 
   final appState = AppState();
   final subState = SubState();
@@ -84,7 +86,26 @@ class BooklyApp extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
         ),
       ),
-      home: const MainShell(),
+      home: const AuthGate(),
+    );
+  }
+}
+
+
+// ════════════════════════════════════════════════════════════════════════════
+// AUTH GATE — routes to login or main shell based on session
+// ════════════════════════════════════════════════════════════════════════════
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<AuthState>(
+      stream: SupabaseService.authStateChanges,
+      builder: (context, snapshot) {
+        final session = SupabaseService.currentSession;
+        if (session != null) return const MainShell();
+        return const AuthScreen();
+      },
     );
   }
 }
@@ -103,14 +124,10 @@ class _MainShellState extends State<MainShell> {
   void _showPaywall() => showModalBottomSheet(
     context: context, isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => const PaywallSheet(),
+    builder: (_) => const SubScreen(),
   );
 
   void _showAddTx({String? type, Transaction? edit}) {
-    final sub = context.read<SubState>();
-    final app = context.read<AppState>();
-    if (!sub.hasAccess && edit != null) { _showPaywall(); return; }
-    if (!sub.hasAccess && app.thisMonthTxs.length >= 30) { _showPaywall(); return; }
     showModalBottomSheet(
       context: context, isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -707,8 +724,6 @@ class _SettingsState extends State<SettingsScreen> {
         // Subscription block
         if (sub.isPro)
           _ProBlock(sub: sub, t: t)
-        else if (sub.dayPassActive)
-          _DayPassBlock(exp: sub.dayPassExp!, t: t)
         else
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
@@ -996,25 +1011,6 @@ class _ProBlock extends StatelessWidget {
   );
 }
 
-class _DayPassBlock extends StatelessWidget {
-  final int exp; final L10n t;
-  const _DayPassBlock({required this.exp, required this.t});
-  @override
-  Widget build(BuildContext context) {
-    final expTime = DateTime.fromMillisecondsSinceEpoch(exp);
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: kGoldBg, border: Border.all(color: kGoldBd, width: 1.5), borderRadius: BorderRadius.circular(16)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(t.dayActive, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kGold)),
-        Text('${expTime.hour.toString().padLeft(2,'0')}:${expTime.minute.toString().padLeft(2,'0')} ${expTime.day}/${expTime.month}/${expTime.year}',
-          style: const TextStyle(fontSize: 12, color: Color(0xFF78350F))),
-      ]),
-    );
-  }
-}
-
 class _FxStatusBar extends StatelessWidget {
   final AppState app;
   const _FxStatusBar({required this.app});
@@ -1086,288 +1082,6 @@ class _ExportBtn extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11)),
       ),
     ),
-  );
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// PAYWALL SHEET
-// ════════════════════════════════════════════════════════════════════════════
-class PaywallSheet extends StatefulWidget {
-  const PaywallSheet({super.key});
-  @override State<PaywallSheet> createState() => _PaywallState();
-}
-
-class _PaywallState extends State<PaywallSheet> {
-  int _tab = 0; // 0=plans, 1=daypass
-  bool _yearly = true;
-  bool _buying  = false;
-  bool _restoring = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final sub  = context.watch<SubState>();
-    final app  = context.watch<AppState>();
-    final t    = L10n(app.settings.lang);
-    final adsLeft = (3 - sub.adsToday).clamp(0, 3);
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: kSurface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.96),
-      child: Column(
-        children: [
-          // Dark header
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Color(0xFF1E0A3C), Color(0xFF3B0764)]),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
-            child: Column(children: [
-              Row(children: [
-                const Text('📒', style: TextStyle(fontSize: 30)),
-                const SizedBox(width: 10),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(t.proTitle, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
-                  Text(t.proSub, style: const TextStyle(fontSize: 13, color: Color(0xA6FFFFFF))),
-                ])),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 32, height: 32, decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
-                    child: const Center(child: Text('✕', style: TextStyle(color: Colors.white, fontSize: 16))),
-                  ),
-                ),
-              ]),
-              const SizedBox(height: 12),
-              // Tabs
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(99)),
-                child: Row(
-                  children: [
-                    for (final tab in [('💎 Plans', 0), ('📺 Free Day Pass', 1)])
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _tab = tab.$2),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: _tab == tab.$2 ? Colors.white : Colors.transparent,
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                            child: Text(tab.$1, textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13,
-                                color: _tab==tab.$2 ? const Color(0xFF3B0764) : Colors.white.withOpacity(0.7))),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ]),
-          ),
-          // Content
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
-              child: _tab == 0
-                ? _PlansTab(t: t, yearly: _yearly, buying: _buying, restoring: _restoring,
-                    onSelectPlan: (y) => setState(() => _yearly = y),
-                    onBuy: () async {
-                      setState(() => _buying = true);
-                      final ok = await sub.purchasePlan(_yearly);
-                      setState(() => _buying = false);
-                      if (ok && mounted) Navigator.pop(context);
-                    },
-                    onRestore: () async {
-                      setState(() => _restoring = true);
-                      final ok = await sub.restorePurchases();
-                      setState(() => _restoring = false);
-                      if (ok && mounted) Navigator.pop(context);
-                    })
-                : _AdPassTab(t: t, sub: sub),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlansTab extends StatelessWidget {
-  final L10n t; final bool yearly, buying, restoring;
-  final ValueChanged<bool> onSelectPlan;
-  final VoidCallback onBuy, onRestore;
-  const _PlansTab({required this.t, required this.yearly, required this.buying,
-    required this.restoring, required this.onSelectPlan, required this.onBuy, required this.onRestore});
-
-  @override
-  Widget build(BuildContext context) => Column(children: [
-    // Plan cards
-    Row(children: [
-      for (final plan in [
-        (true, t.yearly,  t.yPrice, t.ySave),
-        (false, t.monthly, t.mPrice, null),
-      ])
-        Expanded(
-          child: GestureDetector(
-            onTap: () => onSelectPlan(plan.$1),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  margin: EdgeInsets.only(right: plan.$1 ? 5 : 0, left: plan.$1 ? 0 : 5),
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: yearly == plan.$1 ? kProBg : kSurface,
-                    border: Border.all(color: yearly==plan.$1?kPro:kBorder, width: 2),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(children: [
-                    Text(plan.$2, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted, letterSpacing: 0.4)),
-                    const SizedBox(height: 3),
-                    Text(plan.$3, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: yearly==plan.$1?kPro:kText, fontFamily: 'Georgia')),
-                    if (yearly == plan.$1) ...[const SizedBox(height: 6), const ProBadge(small: true)],
-                  ]),
-                ),
-                if (plan.$4 != null)
-                  Positioned(
-                    top: -10, left: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(color: kGreen, borderRadius: BorderRadius.circular(99)),
-                      child: Text(plan.$4!, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-    ]),
-    const SizedBox(height: 16),
-    // Feature list
-    Container(
-      decoration: BoxDecoration(color: kSurface, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(14)),
-      child: Column(
-        children: L10n.features.asMap().entries.map((e) {
-          final i = e.key; final f = e.value;
-          final isZh = t.isZh;
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              border: i < L10n.features.length - 1 ? const Border(bottom: BorderSide(color: kBorder)) : null,
-            ),
-            child: Row(children: [
-              SizedBox(width: 26, child: Text(f.$1, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18))),
-              const SizedBox(width: 12),
-              Expanded(child: Text(isZh ? f.$3 : f.$2, style: const TextStyle(fontSize: 13, color: kText))),
-              const Text('✓', style: TextStyle(color: kGreen, fontSize: 16, fontWeight: FontWeight.w700)),
-            ]),
-          );
-        }).toList(),
-      ),
-    ),
-    const SizedBox(height: 16),
-    // Buy button
-    SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: buying ? null : onBuy,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: kPro, foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          elevation: 0,
-        ),
-        child: buying
-          ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-          : Text(yearly ? t.subY : t.subM, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
-      ),
-    ),
-    const SizedBox(height: 10),
-    SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: restoring ? null : onRestore,
-        style: OutlinedButton.styleFrom(foregroundColor: kMuted, side: const BorderSide(color: kBorder),
-          padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-        child: Text(restoring ? t.syncing : t.restore),
-      ),
-    ),
-    const SizedBox(height: 12),
-    const Text('Subscriptions auto-renew. Cancel anytime in Google Play.',
-      textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: kMuted)),
-  ]);
-}
-
-class _AdPassTab extends StatelessWidget {
-  final L10n t; final SubState sub;
-  const _AdPassTab({required this.t, required this.sub});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(color: kGoldBg, border: Border.all(color: kGoldBd, width: 1.5), borderRadius: BorderRadius.circular(16)),
-    child: Column(children: [
-      Row(children: [
-        const Text('📺', style: TextStyle(fontSize: 28)),
-        const SizedBox(width: 10),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t.adPass, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kGold)),
-          Text(t.adDesc, style: const TextStyle(fontSize: 12, color: Color(0xFF78350F))),
-        ])),
-      ]),
-      const SizedBox(height: 14),
-      // Progress dots
-      Row(children: List.generate(3, (i) => Expanded(
-        child: Container(
-          margin: EdgeInsets.only(right: i < 2 ? 8 : 0),
-          height: 8,
-          decoration: BoxDecoration(
-            color: i < sub.adsToday ? const Color(0xFFD97706) : kBorder,
-            borderRadius: BorderRadius.circular(99),
-          ),
-        ),
-      ))),
-      const SizedBox(height: 10),
-      Text('${t.adPass}: ${sub.adsToday}/3${sub.adsToday < 3 ? " · ${3-sub.adsToday} left" : ""}',
-        style: const TextStyle(fontSize: 12, color: Color(0xFF78350F))),
-      const SizedBox(height: 12),
-      if (sub.dayPassActive)
-        Container(
-          width: double.infinity, padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFFD97706), borderRadius: BorderRadius.circular(10)),
-          child: const Text('🎉 Day Pass Active!', textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
-        )
-      else if (sub.adsToday >= 3)
-        Container(
-          width: double.infinity, padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: kGreen, borderRadius: BorderRadius.circular(10)),
-          child: const Text('🎉 Day Pass Unlocked!', textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
-        )
-      else
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: sub.adLoading ? null : () => sub.watchRewardedAd(),
-            icon: sub.adLoading
-              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : const Text('📺', style: TextStyle(fontSize: 18)),
-            label: Text(sub.adLoading ? 'Loading…' : t.watchAd),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD97706), foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-            ),
-          ),
-        ),
-    ]),
   );
 }
 
