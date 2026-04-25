@@ -5,7 +5,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 const _rcKey         = 'YOUR_REVENUECAT_ANDROID_API_KEY'; // ← Replace
-const _admobRewarded = 'ca-app-pub-3940256099942544/5224354917'; // TEST → replace
+const _admobRewarded = 'ca-app-pub-1544282175684415/1380164927'; 
 const _rcEntitlement = 'pro';
 const _prodMonthly   = 'bookly_pro_monthly';
 const _prodYearly    = 'bookly_pro_yearly';
