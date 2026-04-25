@@ -23,17 +23,8 @@ export 'screens/reports_transactions_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await MobileAds.instance.initialize(); 
-
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(statusBarColor: Colors.transparent)
-  );
-
-  // 4. 运行 App
-  runApp(const MyApp());
-}
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
 
   // FIX: initialize intl locales BEFORE any DateFormat/NumberFormat usage.
   // Without this, DateFormat('d MMM', 'en_MY') throws a MissingPluginException
