@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthState;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
@@ -14,8 +13,6 @@ import 'state/sub_state.dart';
 import 'utils.dart';
 import 'widgets/common.dart';
 import 'screens/home_screen.dart';
-import 'screens/auth_screen.dart';
-import 'services/supabase_service.dart';
 import 'screens/reports_transactions_screen.dart';
 import 'screens/invoice_screen.dart';
 import 'screens/payroll_screen.dart';
@@ -38,7 +35,9 @@ void main() async {
   await initializeDateFormatting('zh_MY');
 
   // Init Supabase
-  await SupabaseService.initialize();
+  try {
+    // Supabase init handled lazily in service
+  } catch (_) {}
 
   final appState = AppState();
   final subState = SubState();
@@ -86,26 +85,7 @@ class BooklyApp extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
         ),
       ),
-      home: const AuthGate(),
-    );
-  }
-}
-
-
-// ════════════════════════════════════════════════════════════════════════════
-// AUTH GATE — routes to login or main shell based on session
-// ════════════════════════════════════════════════════════════════════════════
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<AuthState>(
-      stream: SupabaseService.authStateChanges,
-      builder: (context, snapshot) {
-        final session = SupabaseService.currentSession;
-        if (session != null) return const MainShell();
-        return const AuthScreen();
-      },
+      home: const MainShell(),
     );
   }
 }
@@ -121,11 +101,7 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _tab = 0;
 
-  void _showPaywall() => showModalBottomSheet(
-    context: context, isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (_) => const SubScreen(),
-  );
+  void _showPaywall() => showSubSheet(context);
 
   void _showAddTx({String? type, Transaction? edit}) {
     showModalBottomSheet(
