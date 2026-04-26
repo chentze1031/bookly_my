@@ -3,8 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models.dart';
 
 class SupabaseService {
-  static const _url = 'https://vzaqoyitschniefmlazi.supabase.co';
-  static const _key = 'sb_publishable_UODpeWUIWsQqN5BZHWiH2Q_wjDfTrk-';
+  static const _url = 'https://acwmakqeslysuznptuil.supabase.co';
+  static const _key = 'sb_publishable_7ESNyAChtk1UIitDADKU9A_9nRJBckI-';
 
   static SupabaseClient get _client => Supabase.instance.client;
 
