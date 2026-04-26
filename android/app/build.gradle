@@ -42,19 +42,20 @@ android {
         release {
             keyAlias      keystoreProperties['keyAlias']
             keyPassword   keystoreProperties['keyPassword']
-            storeFile     file(keystoreProperties['storeFile'])  // ← 只改这一行
+            storeFile     file(keystoreProperties['storeFile']) 
             storePassword keystoreProperties['storePassword']
         }
     }
 
     defaultConfig {
-        applicationId "com.bookly.my"
-        minSdk 21
-        targetSdk 35
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-        multiDexEnabled true
-    }
+    applicationId "com.bookly.my"
+    minSdk 21
+    targetSdk 35
+    versionCode flutterVersionCode.toInteger()
+    versionName flutterVersionName
+    multiDexEnabled true
+    manifestPlaceholders += [supabaseRedirectScheme: "io.supabase.booklymy"]  
+}
 
     buildTypes {
         release {
