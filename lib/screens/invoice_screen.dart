@@ -11,6 +11,7 @@ import '../services/db_service.dart';
 import '../constants.dart';
 import '../models.dart';
 import '../state/app_state.dart';
+import '../state/sub_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 
@@ -439,8 +440,6 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
         sigB64:   _sigB64,
       );
       if (mounted) {
-        context.read<SubState>().onSaveAction();
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(children: [
@@ -510,8 +509,6 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
       );
     } catch (e) {
       if (mounted) {
-        context.read<SubState>().onShareAction();
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
         );

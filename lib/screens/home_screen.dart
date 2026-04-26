@@ -75,9 +75,7 @@ class HomeScreen extends StatelessWidget {
                     ]),
                     sub.isPro
                       ? const ProBadge()
-                      : sub.dayPassActive
-                        ? _DayPassChip()
-                        : _GetProBtn(onUpgrade),
+                      : _GetProBtn(onUpgrade),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -255,15 +253,6 @@ class _HeroCard extends StatelessWidget {
       Text('$sign${fmtShort(value)}',
         style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Georgia')),
     ]),
-  );
-}
-
-class _DayPassChip extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(color: const Color(0xFFD97706), borderRadius: BorderRadius.circular(99)),
-    child: const Text('📺 DAY PASS', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800)),
   );
 }
 

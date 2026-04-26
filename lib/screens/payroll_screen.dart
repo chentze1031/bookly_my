@@ -11,6 +11,7 @@ import 'package:pdf/widgets.dart' as pw;
 import '../constants.dart';
 import '../models.dart';
 import '../state/app_state.dart';
+import '../state/sub_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import 'invoice_screen.dart';
@@ -278,8 +279,6 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
         useEIS:   _useEIS,
       );
       if (mounted) {
-        context.read<SubState>().onSaveAction();
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(children: [
@@ -855,8 +854,6 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
       );
     } catch (e) {
       if (mounted) {
-        context.read<SubState>().onShareAction();
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
         );
