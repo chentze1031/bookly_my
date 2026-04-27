@@ -64,9 +64,10 @@ class SubState extends ChangeNotifier {
   }
 
   void _applyInfo(CustomerInfo info) {
-    final ent = info.entitlements.active[_rcEntitlement];
-    isPro      = ent != null;
-    proExpires = ent?.expirationDate;
+   if (_debugProMode) return; 
+   final ent = info.entitlements.active[_rcEntitlement];
+   isPro      = ent != null;
+   proExpires = ent?.expirationDate;
   }
 
   // ── Load interstitial ad ──────────────────────────────────────────────────
