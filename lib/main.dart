@@ -18,7 +18,11 @@ import 'screens/invoice_screen.dart';
 import 'screens/payroll_screen.dart';
 import 'screens/sub_screen.dart';
 import 'screens/auth_screen.dart';
+import 'screens/bank_import_screen.dart';
+import 'screens/inventory_screen.dart';
+import 'screens/ai_screen.dart';
 import 'services/supabase_service.dart';
+import 'services/inventory_service.dart';
 
 // ─── Screens (inline compact versions) ───────────────────────────────────────
 export 'screens/home_screen.dart';
@@ -47,6 +51,7 @@ void main() async {
     providers: [
       ChangeNotifierProvider.value(value: appState),
       ChangeNotifierProvider.value(value: subState),
+      ChangeNotifierProvider(create: (_) => InventoryState()),
     ],
     child: const BooklyApp(),
   ));
@@ -836,6 +841,36 @@ class _SettingsState extends State<SettingsScreen> {
 
         // Export
 
+
+        // Tools & AI
+        SectionCard(
+          title: '🛠️  Tools',
+          child: Column(children: [
+            ListTile(
+              leading: const Text('✨', style: TextStyle(fontSize: 22)),
+              title: const Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              subtitle: const Text('Auto-categorise & cash flow forecast', style: TextStyle(fontSize: 12)),
+              trailing: const Icon(Icons.chevron_right, color: kMuted),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiScreen())),
+            ),
+            const Divider(height: 1, color: kBorder, indent: 16),
+            ListTile(
+              leading: const Text('🏦', style: TextStyle(fontSize: 22)),
+              title: const Text('Bank Statement Import', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              subtitle: const Text('Import PDF bank statement via AI', style: TextStyle(fontSize: 12)),
+              trailing: const Icon(Icons.chevron_right, color: kMuted),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BankImportScreen())),
+            ),
+            const Divider(height: 1, color: kBorder, indent: 16),
+            ListTile(
+              leading: const Text('📦', style: TextStyle(fontSize: 22)),
+              title: const Text('Inventory', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              subtitle: const Text('Manage stock, prices & alerts', style: TextStyle(fontSize: 12)),
+              trailing: const Icon(Icons.chevron_right, color: kMuted),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryScreen())),
+            ),
+          ]),
+        ),
 
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 10),
