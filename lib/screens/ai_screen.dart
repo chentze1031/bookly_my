@@ -353,7 +353,7 @@ class _CashflowTabState extends State<_CashflowTab> {
 
   Future<void> _load() async {
     final app = context.read<AppState>();
-    final txs = app.transactions;
+    final txs = app.txs;
     if (txs.isEmpty) {
       setState(() { _error = 'No transactions yet. Add some records first.'; _hasLoaded = true; });
       return;
