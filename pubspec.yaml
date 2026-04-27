@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^1.2.0 
 
   # State
   provider: ^6.1.2
@@ -37,7 +36,7 @@ dependencies:
   # PDF & Print
   pdf: ^3.11.1
   printing: ^5.13.2
-  file_picker: ^8.0.0   
+  file_picker: ^8.0.0
 
   # Share
   share_plus: ^10.0.2
@@ -74,5 +73,5 @@ dependency_overrides:
 
 flutter_icons:
   android: true
-  ios: false                                     
+  ios: false
   image_path: "assets/icon.png"
