@@ -11,6 +11,8 @@ const _rcEntitlement    = 'pro';
 const _prodMonthly      = 'bookly_pro_monthly';
 const _prodYearly       = 'bookly_pro_yearly';
 
+const _debugProMode = true;
+
 // ── Ad trigger settings ───────────────────────────────────────────────────────
 // 每隔多少分钟可以触发一次广告（保存/分享动作）
 const _adCooldownMinutes = 3;
