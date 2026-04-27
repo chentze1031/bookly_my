@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 // ════════════════════════════════════════════════════════════════════════════
 // AI SERVICE — Gemini API for Bookly MY features
-// Set key via: flutter run --dart-define=GEMINI_KEY=AIza...
+// Set key via: flutter run --dart-define=GEMINI_KEY=AIzaSyDl76uz1e5aoGb9gZXu6EvL6iZLmh_rt-k
 // ════════════════════════════════════════════════════════════════════════════
 class AiService {
   static const _apiKey = String.fromEnvironment('GEMINI_KEY');
