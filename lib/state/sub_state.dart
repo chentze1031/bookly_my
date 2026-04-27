@@ -55,9 +55,9 @@ class SubState extends ChangeNotifier {
     try { await MobileAds.instance.initialize(); } catch (_) {}
 
     // Load first interstitial ad + show on launch
-    if (!isPro) {
-      _loadInterstitialAd(showAfterLoad: true); // ← 加载完立即显示
-      _startAdTimer();
+    if (!isPro && !_debugProMode) {
+  _loadInterstitialAd(showAfterLoad: true);
+  _startAdTimer();
     }
 
     notifyListeners();
