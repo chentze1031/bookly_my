@@ -11,6 +11,10 @@ const _rcEntitlement    = 'pro';
 const _prodMonthly      = 'bookly_pro_monthly';
 const _prodYearly       = 'bookly_pro_yearly';
 
+// ══════════════════════════════
+// 🔧 DEBUG: 设为 true 关闭所有付费限制
+const _debugProMode = true;
+// ══════════════════════════════
 // ── Ad trigger settings ───────────────────────────────────────────────────────
 // 每隔多少分钟可以触发一次广告（保存/分享动作）
 const _adCooldownMinutes = 4;
@@ -18,9 +22,9 @@ const _adCooldownMinutes = 4;
 const _adTimerMinutes    = 6;
 
 class SubState extends ChangeNotifier {
-  bool    isPro      = true;
+  bool    isPro      = _debugProMode;
   String? proExpires;
-  bool    adLoading  = true;
+  bool    adLoading  = _debugProMode;
   Offerings? _offerings;
 
   // ── Interstitial ad ───────────────────────────────────────────────────────
