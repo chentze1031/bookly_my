@@ -20,7 +20,7 @@ const _adTimerMinutes    = 6;
 class SubState extends ChangeNotifier {
   bool    isPro      = true;
   String? proExpires;
-  bool    adLoading  = false;
+  bool    adLoading  = true;
   Offerings? _offerings;
 
   // ── Interstitial ad ───────────────────────────────────────────────────────
