@@ -18,7 +18,7 @@ const _adCooldownMinutes = 4;
 const _adTimerMinutes    = 6;
 
 class SubState extends ChangeNotifier {
-  bool    isPro      = false;
+  bool    isPro      = true;
   String? proExpires;
   bool    adLoading  = false;
   Offerings? _offerings;
