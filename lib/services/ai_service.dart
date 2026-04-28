@@ -10,7 +10,7 @@ class AiService {
   static const _liteModel = 'gemini-2.0-flash-lite-preview-02-05';
   
   static String get _endpoint =>
-      'https://generativelanguage.googleapis.com/v1beta/models/$_liteModel:generateContent?key=$_apiKey';
+      'https://generativelanguage.googleapis.com/v1beta/$_liteModel:generateContent?key=$_apiKey';
 
   // ── 1. Auto-categorise ───────────────────────────────────────────────────
   static Future<AutoCatResult> categorise({
