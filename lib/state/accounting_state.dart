@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/accounting_models.dart';
+import '../accounting_models.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // ACCOUNTING STATE
