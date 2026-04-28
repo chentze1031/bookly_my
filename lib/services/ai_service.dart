@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 // ════════════════════════════════════════════════════════════════════════════
 class AiService {
   static const _apiKey = 'AIzaSyDl76uz1e5aoGb9gZXu6EvL6iZLmh_rt-k';
-  static const _liteModel = 'gemini-2.0-flash-lite-preview-02-05';
+  static const _model = 'gemini-2.5-flash-preview-05-20';
   
   static String get _endpoint =>
       'https://generativelanguage.googleapis.com/v1beta/$_liteModel:generateContent?key=$_apiKey';
