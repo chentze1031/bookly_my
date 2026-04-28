@@ -23,6 +23,8 @@ import 'screens/inventory_screen.dart';
 import 'screens/ai_screen.dart';
 import 'services/supabase_service.dart';
 import 'services/inventory_service.dart';
+import 'state/accounting_state.dart';
+import 'screens/accounting_screen.dart';
 
 // ─── Screens (inline compact versions) ───────────────────────────────────────
 export 'screens/home_screen.dart';
@@ -52,6 +54,7 @@ void main() async {
       ChangeNotifierProvider.value(value: appState),
       ChangeNotifierProvider.value(value: subState),
       ChangeNotifierProvider(create: (_) => InventoryState()),
+      ChangeNotifierProvider(create: (_) => AccountingState()),
     ],
     child: const BooklyApp(),
   ));
@@ -134,10 +137,10 @@ class _MainShellState extends State<MainShell> {
     final sub  = context.watch<SubState>();
     final t    = L10n(app.settings.lang);
 
-    final titles = [t.home, t.records, t.reports, t.settTitle];
+    final titles = [t.home, t.records, t.reports, '帐务', t.settTitle];
 
     return Scaffold(
-      appBar: _tab == 0 ? null : AppBar(
+      appBar: (_tab == 0) ? null : AppBar(
         title: Text(titles[_tab]),
         actions: [if (sub.isPro) const Padding(padding: EdgeInsets.only(right: 14), child: ProBadge())],
       ),
@@ -155,10 +158,11 @@ class _MainShellState extends State<MainShell> {
             
           ),
           const ReportsScreen(),
+          const AccountingScreen(),
           const SettingsScreen(),
         ],
       ),
-      floatingActionButton: _tab != 3 ? FloatingActionButton(
+      floatingActionButton: (_tab != 3 && _tab != 4) ? FloatingActionButton(
         onPressed: () => _showAddTx(),
         backgroundColor: kDark,
         foregroundColor: Colors.white,
@@ -175,6 +179,7 @@ class _MainShellState extends State<MainShell> {
               BottomNavigationBarItem(icon: const Text('🏠', style: TextStyle(fontSize: 22)), label: t.home),
               BottomNavigationBarItem(icon: const Text('📋', style: TextStyle(fontSize: 22)), label: t.records),
               BottomNavigationBarItem(icon: const Text('📊', style: TextStyle(fontSize: 22)), label: t.reports),
+              BottomNavigationBarItem(icon: const Text('📒', style: TextStyle(fontSize: 22)), label: '帐务'),
               BottomNavigationBarItem(icon: const Text('⚙️', style: TextStyle(fontSize: 22)), label: t.settings),
             ],
           ),
