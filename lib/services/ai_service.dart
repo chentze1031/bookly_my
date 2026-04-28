@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 class AiService {
   // 1. 修复模型名称：增加 "models/" 前缀，这是最稳妥写法
   static const _apiKey = 'AIzaSyDl76uz1e5aoGb9gZXu6EvL6iZLmh_rt-k';
-  static const _flashModel = 'models/gemini-1.5-flash';
   static const _embedModel = 'models/text-embedding-004'; // 推荐用这个，比 001 更精准
 
   static String get _baseUrl => 'https://generativelanguage.googleapis.com/v1beta';
