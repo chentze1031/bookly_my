@@ -1,4 +1,5 @@
-import 'dart:convert'; [span_4](start_span)// 修正：必须小写[span_4](end_span)
+```dart
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -6,8 +7,8 @@ import 'package:http/http.dart' as http;
 // ════════════════════════════════════════════════════════════════════════════
 class AiService {
   static const _apiKey = 'AIzaSyDl76uz1e5aoGb9gZXu6EvL6iZLmh_rt-k';
+  static const _liteModel = 'gemini-2.0-flash-lite-preview-02-05';
   
-  static const _liteModel = 'gemini-2.0-flash-lite-preview-02-05'; 
   static String get _endpoint =>
       'https://generativelanguage.googleapis.com/v1beta/models/$_liteModel:generateContent?key=$_apiKey';
 
@@ -99,7 +100,17 @@ Respond ONLY with valid JSON, no markdown:
   }) async {
     final prompt = '''
 You are a Malaysia bank statement parser. Extract ALL transactions from this PDF.
-... (保持原样)
+
+Categories to use:
+$catList
+
+Rules:
+- Credits/deposits = income, Debits/withdrawals = expense
+- Date format: YYYY-MM-DD, Amount: MYR positive numbers only
+- If unsure use "other_income" or "other_expense"
+
+Respond ONLY with a valid JSON array, no markdown:
+[{ "date":"YYYY-MM-DD","description":"...","amount":0.00,"type":"income|expense","catId":"...","confidence":0.0 }]
 ''';
     final res = await http.post(
       Uri.parse(_endpoint),
@@ -117,7 +128,7 @@ You are a Malaysia bank statement parser. Extract ALL transactions from this PDF
     if (res.statusCode != 200) throw Exception('Gemini error ${res.statusCode}: ${res.body}');
     final text  = _extractText(res.body);
     final clean = text.replaceAll('```json', '').replaceAll('```', '').trim();
-    return (jsonDecode(clean) as List).cast<Map<String, dynamic>>(); [span_6](start_span)//[span_6](end_span)
+    return (jsonDecode(clean) as List).cast<Map<String, dynamic>>();
   }
 
   // ── Internal: text-only prompt ───────────────────────────────────────────
@@ -125,7 +136,7 @@ You are a Malaysia bank statement parser. Extract ALL transactions from this PDF
     final res = await http.post(
       Uri.parse(_endpoint),
       headers: {'Content-Type': 'application/json'},
-      [span_7](start_span)body: jsonEncode({ //[span_7](end_span)
+      body: jsonEncode({
         'contents': [{ 'parts': [{ 'text': prompt }] }],
         'generationConfig': { 'temperature': 0.1, 'maxOutputTokens': 1024 },
       }),
@@ -135,7 +146,7 @@ You are a Malaysia bank statement parser. Extract ALL transactions from this PDF
   }
 
   static String _extractText(String body) {
-    final data  = jsonDecode(body) as Map<String, dynamic>; [span_8](start_span)//[span_8](end_span)
+    final data  = jsonDecode(body) as Map<String, dynamic>;
     final cands = data['candidates'] as List;
     if (cands.isEmpty) throw Exception('Gemini returned no candidates');
     final parts = (cands.first['content'] as Map<String, dynamic>)['parts'] as List;
@@ -143,5 +154,31 @@ You are a Malaysia bank statement parser. Extract ALL transactions from this PDF
   }
 
   static Map<String, dynamic> _parseJson(String raw) =>
-      jsonDecode(raw.replaceAll('
-http://googleusercontent.com/immersive_entry_chip/0
+      jsonDecode(raw.replaceAll('```json', '').replaceAll('```', '').trim()) as Map<String, dynamic>;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// DATA MODELS
+// ════════════════════════════════════════════════════════════════════════════
+class AutoCatResult {
+  final String catId, reason;
+  final double confidence;
+  const AutoCatResult({required this.catId, required this.confidence, required this.reason});
+}
+
+class MonthSummary {
+  final String label;
+  final double income, expense;
+  double get net => income - expense;
+  const MonthSummary({required this.label, required this.income, required this.expense});
+}
+
+class CashflowForecast {
+  final List<MonthSummary> forecast;
+  final String trend;
+  final List<String> insights;
+  final String? alert;
+  const CashflowForecast({required this.forecast, required this.trend, required this.insights, this.alert});
+}
+
+```
