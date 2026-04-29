@@ -137,7 +137,7 @@ class _MainShellState extends State<MainShell> {
     final sub  = context.watch<SubState>();
     final t    = L10n(app.settings.lang);
 
-    final titles = [t.home, t.records, t.reports, '帐务', t.settTitle];
+    final titles = [t.home, t.records, t.reports, t.accounting, t.settTitle];
 
     return Scaffold(
       appBar: (_tab == 0) ? null : AppBar(
@@ -179,7 +179,7 @@ class _MainShellState extends State<MainShell> {
               BottomNavigationBarItem(icon: const Text('🏠', style: TextStyle(fontSize: 22)), label: t.home),
               BottomNavigationBarItem(icon: const Text('📋', style: TextStyle(fontSize: 22)), label: t.records),
               BottomNavigationBarItem(icon: const Text('📊', style: TextStyle(fontSize: 22)), label: t.reports),
-              BottomNavigationBarItem(icon: const Text('📒', style: TextStyle(fontSize: 22)), label: '帐务'),
+              BottomNavigationBarItem(icon: const Text('📒', style: TextStyle(fontSize: 22)), label: t.accounting),
               BottomNavigationBarItem(icon: const Text('⚙️', style: TextStyle(fontSize: 22)), label: t.settings),
             ],
           ),
