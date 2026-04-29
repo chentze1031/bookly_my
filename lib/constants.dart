@@ -120,7 +120,7 @@ class TxCategory {
 final incomeCategories = <TxCategory>[
   TxCategory(id:'product_sale', icon:'📦', color:kGreen,           enLabel:'Product Sale',      zhLabel:'产品销售',   type:'income', mkEntries:(a)=>[JournalEntry(acc:'1020',dc:'Dr',val:a),JournalEntry(acc:'4010',dc:'Cr',val:a)]),
   TxCategory(id:'service_sale', icon:'🛠', color:Color(0xFF059669), enLabel:'Service',           zhLabel:'服务/咨询',  type:'income', mkEntries:(a)=>[JournalEntry(acc:'1020',dc:'Dr',val:a),JournalEntry(acc:'4020',dc:'Cr',val:a)]),
-  TxCategory(id:'invoice_paid', icon:'🧾', color:Color(0xFF0D9488), enLabel:'Invoice Collected', zhLabel:'收款',       type:'income', mkEntries:(a)=>[JournalEntry(acc:'1020',dc:'Dr',val:a),JournalEntry(acc:'1100',dc:'Cr',val:a)]),
+  TxCategory(id:'invoice_paid', icon:'🧾', color:Color(0xFF0D9488), enLabel:'Invoice Collected', zhLabel:'收款',      type:'income', mkEntries:(a)=>[JournalEntry(acc:'1020',dc:'Dr',val:a),JournalEntry(acc:'4010',dc:'Cr',val:a)]),
   TxCategory(id:'other_income', icon:'💰', color:Color(0xFF0891B2), enLabel:'Other Income',      zhLabel:'其他收入',   type:'income', mkEntries:(a)=>[JournalEntry(acc:'1020',dc:'Dr',val:a),JournalEntry(acc:'4030',dc:'Cr',val:a)]),
 ];
 
