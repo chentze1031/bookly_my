@@ -157,7 +157,9 @@ class L10n {
   String get home       => isZh ? '首页' : 'Home';
   String get records    => isZh ? '记录' : 'Records';
   String get reports    => isZh ? '报表' : 'Reports';
+  String get accounting => isZh ? '账务' : 'Accounting';
   String get settings   => isZh ? '设置' : 'Settings';
+
 
   // Home
   String get netProfit  => isZh ? '净利润' : 'Net Profit';
