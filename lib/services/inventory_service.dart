@@ -158,7 +158,7 @@ class InventoryState extends ChangeNotifier {
     final idx = _items.indexWhere((i) => i.id == id);
     if (idx == -1) return;
     final newQty = (_items[idx].qty + delta).clamp(0, double.infinity);
-    final updated = _items[idx].copyWith(qty: newQty);
+    final updated = _items[idx].copyWith(qty: newQty.toDouble());
     await updateItem(updated);
   }
 
