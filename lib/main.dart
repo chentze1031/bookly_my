@@ -887,9 +887,25 @@ class _SettingsState extends State<SettingsScreen> {
       ],
     );
   }
+
+  void _showComingSoon(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('🚧 Coming Soon'),
+        content: const Text('This feature is under development.\nStay tuned for updates!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// ── Settings: image picker tile ──────────────────────────────────────────────
+// ── Settings: image picker tile ────────
 class _ImagePickerTile extends StatelessWidget {
   final String label;
   final String? imageB64;
