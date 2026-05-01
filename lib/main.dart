@@ -1037,21 +1037,5 @@ class _ExportBtn extends StatelessWidget {
 // needed by settings
 extension on L10n {
   String get proExpires => isZh ? '到期时间' : 'Expires';
-  
-  void _showComingSoon(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('🚧 Coming Soon'),
-      content: const Text('This feature is under development.\nStay tuned for updates!'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('OK'),
-        ),
-      ],
-    ),
-  );
-  }
 }
   
