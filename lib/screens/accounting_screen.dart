@@ -6,6 +6,7 @@ import '../constants.dart';
 import '../state/app_state.dart';
 import '../state/accounting_state.dart';
 import '../accounting_models.dart';
+import '../models.dart';
 
 // ── Account type from code prefix ────────────────────────────────────────────
 String _accType(String code) {
@@ -1238,8 +1239,8 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
 }
 
 class _GlEntry {
-  final dynamic tx;
-  final dynamic entry;
+  final Transaction tx;
+  final JournalEntry entry;
   const _GlEntry({required this.tx, required this.entry});
 }
 
