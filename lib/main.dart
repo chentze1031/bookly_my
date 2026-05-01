@@ -856,7 +856,7 @@ class _SettingsState extends State<SettingsScreen> {
               title: const Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
               subtitle: const Text('Auto-categorise & cash flow forecast', style: TextStyle(fontSize: 12)),
               trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiScreen())),
+              onTap: () => _showComingSoon(context),
             ),
             const Divider(height: 1, color: kBorder, indent: 16),
             ListTile(
@@ -864,7 +864,7 @@ class _SettingsState extends State<SettingsScreen> {
               title: const Text('Bank Statement Import', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
               subtitle: const Text('Import PDF bank statement via AI', style: TextStyle(fontSize: 12)),
               trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BankImportScreen())),
+              onTap: () => _showComingSoon(context),
             ),
             const Divider(height: 1, color: kBorder, indent: 16),
             ListTile(
@@ -872,7 +872,7 @@ class _SettingsState extends State<SettingsScreen> {
               title: const Text('Inventory', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
               subtitle: const Text('Manage stock, prices & alerts', style: TextStyle(fontSize: 12)),
               trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryScreen())),
+              onTap: () => _showComingSoon(context),
             ),
           ]),
         ),
@@ -1037,5 +1037,21 @@ class _ExportBtn extends StatelessWidget {
 // needed by settings
 extension on L10n {
   String get proExpires => isZh ? '到期时间' : 'Expires';
+  
+  void _showComingSoon(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('🚧 Coming Soon'),
+      content: const Text('This feature is under development.\nStay tuned for updates!'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('OK'),
+        ),
+      ],
+    ),
+  );
+  }
 }
   
