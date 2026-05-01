@@ -873,14 +873,13 @@ class _ApDetailSheetState extends State<_ApDetailSheet> {
       ),
     );
   }
-}
+
 
 // ── AP Bill Form ──────────────────────────────────────────────────────────────
 class _ApBillForm extends StatefulWidget {
   final ApBill? bill;
   const _ApBillForm({this.bill});
   @override State<_ApBillForm> createState() => _ApBillFormState();
-}
 
 class _ApBillFormState extends State<_ApBillForm> {
   final _billNoCtrl = TextEditingController();
@@ -996,8 +995,9 @@ class _ApBillFormState extends State<_ApBillForm> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
       ),
     );
+  }
+ }
 }
-
 // ════════════════════════════════════════════════════════════════════════════
 // TAB 3 — TRIAL BALANCE
 // ════════════════════════════════════════════════════════════════════════════
@@ -1501,4 +1501,5 @@ class _EmptyState extends StatelessWidget {
       style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white),
       child: Text(t.save)),
   ]));
+ }
 }
