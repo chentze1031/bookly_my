@@ -65,7 +65,7 @@ class _AccountingScreenState extends State<AccountingScreen>
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          tabs: const [
+          tabs:[
             Tab(text: t.receivable),
             Tab(text: t.payable),
             Tab(text: t.trialBalance),
