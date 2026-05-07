@@ -55,7 +55,8 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'io.supabase.booklymy://login-callback/',
+        redirectTo: 'io.supabase.booklymy://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
       // Auth state stream in AuthGate handles navigation automatically
     } on AuthException catch (e) {
