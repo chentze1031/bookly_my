@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/supabase_service.dart';
-import 'sync_service.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // AUTH GATE — listens to Supabase auth state, routes to AuthScreen or app
@@ -88,8 +87,6 @@ class _AuthScreenState extends State<AuthScreen> {
         idToken: googleAuth.idToken!,
         accessToken: googleAuth.accessToken,
       );
-
-      await SyncService.syncAll();
 
       // AuthGate 的 stream 自动检测登录成功并跳转 ✅
 
