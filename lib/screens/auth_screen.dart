@@ -88,6 +88,8 @@ class _AuthScreenState extends State<AuthScreen> {
         accessToken: googleAuth.accessToken,
       );
 
+      await SyncService.syncAll();
+
       // AuthGate 的 stream 自动检测登录成功并跳转 ✅
 
     } on AuthException catch (e) {
