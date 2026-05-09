@@ -228,7 +228,7 @@ class _AuthScreenState extends State<AuthScreen> {
               TextButton(
                 onPressed: () => guestMode.value = true,
                 child: const Text(
-                  '暂时跳过，以访客身份使用',
+                  'Skip and Continue as Guest',
                   style: TextStyle(
                     fontSize: 13,
                     color: Color(0xFF888888),
