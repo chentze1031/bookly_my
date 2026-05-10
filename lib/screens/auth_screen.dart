@@ -227,9 +227,9 @@ class _AuthScreenState extends State<AuthScreen> {
               // ── Skip / Guest mode ───────────────────────────────────────
               TextButton(
                 onPressed: () => guestMode.value = true,
-                child: const Text(
-                  'Skip and Continue as Guest',
-                  style: TextStyle(
+                child: Text(
+                  Lang == 'zh' ? '跳过并以访客身份继续' : 'Skip and Continue as Guest',
+                  style: const TextStyle(
                     fontSize: 13,
                     color: Color(0xFF888888),
                     decoration: TextDecoration.underline,
