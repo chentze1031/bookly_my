@@ -239,10 +239,10 @@ class _AuthScreenState extends State<AuthScreen> {
       style: TextStyle(fontSize: 11, color: Color(0xFFAAAAAA),
         decoration: TextDecoration.underline,
         decorationColor: Color(0xFFAAAAAA)),
-    ),
-  ],
+      ),
+    ],
+  ),
 ),
-
               const SizedBox(height: 24),
             ],
           ),
