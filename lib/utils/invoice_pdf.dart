@@ -179,7 +179,7 @@ Future<Uint8List> generateInvoicePdf({
                 ],
                 pw.Text(co.companyName, style: ts(11, bold: true)),
                 if (co.coReg.isNotEmpty)
-                  pw.Text('SSM Reg No: ${co.coReg}',    style: ts(8, c: _grey)),
+                  pw.Text('SSM/Reg No: ${co.coReg}',    style: ts(8, c: _grey)),
                 if (co.sstRegNo.isNotEmpty)
                   pw.Text('SST Reg No: ${co.sstRegNo}', style: ts(8, c: _grey)),
                 if (co.coAddr.isNotEmpty)
@@ -223,7 +223,7 @@ Future<Uint8List> generateInvoicePdf({
                 gap(4),
                 pw.Text(customer.name, style: ts(10, bold: true)),
                 if (customer.regNo.isNotEmpty)
-                  pw.Text('SSM: ${customer.regNo}',    style: ts(8, c: _grey)),
+                  pw.Text('SSM /Reg No: ${customer.regNo}',    style: ts(8, c: _grey)),
                 if (customer.sstRegNo.isNotEmpty)
                   pw.Text('SST: ${customer.sstRegNo}', style: ts(8, c: _grey)),
                 if (customer.address.isNotEmpty)
