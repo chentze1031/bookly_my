@@ -6,14 +6,14 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 const _rcKey            = 'goog_fmJwLiMicCjgynOjRxGdlItPFUb';
-const _admobInterstitial = 'ca-app-pub-1544282175684415/1380164927'; // ← 替换为你的 Interstitial Ad Unit ID
+const _admobInterstitial = 'ca-app-pub-1544282175684415/1380164927'; 
 const _rcEntitlement    = 'pro';
 const _prodMonthly      = 'bookly_pro_monthly';
 const _prodYearly       = 'bookly_pro_yearly';
 
 // ══════════════════════════════
 // 🔧 DEBUG: 设为 true 关闭所有付费限制
-const _debugProMode = true;
+const _debugProMode = false;
 // ══════════════════════════════
 // ── Ad trigger settings ───────────────────────────────────────────────────────
 // 每隔多少分钟可以触发一次广告（保存/分享动作）
