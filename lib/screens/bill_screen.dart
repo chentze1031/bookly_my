@@ -20,7 +20,7 @@ class _BillType {
 }
 
 const _billTypes = [
-  _BillType('rent',         '🏢', 'Rental / Utilities',   '租金/水电'),
+  _BillType('rent',         '🏢', 'Rental',                '租金'),
   _BillType('mkt',          '📣', 'Marketing / Ads',       '广告/营销'),
   _BillType('inv',          '📦', 'Inventory / Purchases', '进货/采购'),
   _BillType('util',         '⚡', 'Utilities',             '水电费'),
