@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';hide AppState;
 import '../constants.dart';
 import '../state/app_state.dart';
 import '../state/sub_state.dart';
@@ -49,7 +49,7 @@ class HomeScreen extends StatelessWidget {
     final top = expCats.take(4).toList();
     final maxTop = top.isNotEmpty ? top.first.total : 1.0;
 
-    final recent = [...app.txs]..sort((a,b) => b.date.compareTo(a.date));
+    final recent = [...(app.txs ?? [])]..sort((a,b) => b.date.compareTo(a.date));
     final recentFew = recent.take(4).toList();
 
     final co = app.settings.companyName.isNotEmpty
