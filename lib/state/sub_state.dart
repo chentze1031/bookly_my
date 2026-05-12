@@ -17,12 +17,12 @@ const _debugProMode = false;
 // ══════════════════════════════
 // ── Ad trigger settings ───────────────────────────────────────────────────────
 // 每隔多少分钟可以触发一次广告（保存/分享动作）
-const _adCooldownMinutes = 4;
+const _adCooldownMinutes = 3;
 
 class SubState extends ChangeNotifier {
   bool       isPro      = _debugProMode;
   String?    proExpires;
-  bool       adLoading  = false; // ✅ 修正：改为false
+  bool       adLoading  = false;
   Offerings? _offerings;
 
   // ── Interstitial ad ───────────────────────────────────────────────────────
@@ -48,7 +48,6 @@ class SubState extends ChangeNotifier {
     // AdMob
     try { await MobileAds.instance.initialize(); } catch (_) {}
 
-    // ✅ 修正：只预加载广告，不自动展示，不启动计时器
     if (!isPro && !_debugProMode) {
       _loadInterstitialAd();
     }
