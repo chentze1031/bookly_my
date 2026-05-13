@@ -324,8 +324,7 @@ class _QuickBtn extends StatelessWidget {
   const _QuickBtn({required this.icon, required this.label, required this.color,
     required this.bg, required this.bd, required this.onTap, this.pro = false});
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: GestureDetector(
+  Widget build(BuildContext context) => GestureDetector(
       onTap: onTap,
       child: Stack(
         clipBehavior: Clip.none,
