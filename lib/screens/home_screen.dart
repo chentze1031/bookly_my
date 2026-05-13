@@ -353,9 +353,8 @@ class _QuickBtn extends StatelessWidget {
             ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
 class _HistoryBtn extends StatelessWidget {
   final String icon, label;
