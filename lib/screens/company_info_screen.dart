@@ -178,7 +178,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
           _field(lang == 'zh' ? 'COMPANY NAME 公司名称' : 'COMPANY NAME',
             TextField(controller: _nameCtrl,
               style: const TextStyle(fontSize: 14, color: kText),
-              decoration: _dec(lang == 'zh' ? '公司名称' : 'e.g. Artflower Florist Sdn Bhd'))),
+              decoration: _dec(lang == 'zh' ? '公司名称' : 'e.g. ABC Sdn Bhd'))),
 
           _field('TIN (MyTax No.)',
             TextField(controller: _tinCtrl,
