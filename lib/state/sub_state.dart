@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/services.dart';
 
 // ── RevenueCat keys ──────────────────────────────────────────────────────────
 // FIX #1: 生产环境必须使用正式 RevenueCat API Key（前缀 goog_ 或 appl_）
