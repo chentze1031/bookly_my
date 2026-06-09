@@ -1,0 +1,502 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models.dart';
+import '../constants.dart';
+import '../services/db_service.dart';
+import '../services/fx_service.dart';
+import '../services/supabase_service.dart';
+
+enum SyncStatus { idle, pulling, pushing, done, error }
+enum FxStatus   { idle, loading, ok, error }
+
+class _QueuedOp {
+  final String table;
+  final String op;
+  final Map<String, dynamic>? data;
+  final int? id;
+  final DateTime queuedAt;
+  _QueuedOp({required this.table, required this.op, this.data, this.id})
+    : queuedAt = DateTime.now();
+
+  Map<String, dynamic> toMap() => {
+    'table': table, 'op': op, 'data': data, 'id': id,
+    'queuedAt': queuedAt.toIso8601String(),
+  };
+
+  factory _QueuedOp.fromMap(Map<String, dynamic> m) => _QueuedOp(
+    table: m['table'], op: m['op'],
+    data: m['data'] != null ? Map<String, dynamic>.from(m['data']) : null,
+    id: m['id'],
+  );
+}
+
+class AppState extends ChangeNotifier {
+  List<Transaction> txs       = [];
+  List<Customer>    customers = [];
+  List<Employee>    employees = [];
+  AppSettings       settings  = const AppSettings();
+  Map<String, double> fxRates = Map.from(defaultRates);
+
+  FxStatus   fxStatus   = FxStatus.idle;
+  String?    fxUpdatedAt;
+  SyncStatus syncStatus = SyncStatus.idle;
+  String?    syncError;
+  bool       loading    = true;
+  bool       isOnline   = true;
+  int        pendingOps = 0;
+
+  final List<_QueuedOp> _queue = [];
+
+  static final _sb  = Supabase.instance.client;
+  static String? get _uid => _sb.auth.currentUser?.id;
+  bool get _loggedIn => _uid != null;
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+  Future<void> init() async {
+    fxRates   = await FxService.loadCached();
+    txs       = await DbService.loadTxs();
+    customers = await DbService.loadCustomers();
+    employees = await DbService.loadEmployees();
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('bly_settings');
+    if (raw != null) settings = AppSettings.fromMap(jsonDecode(raw));
+    final q = prefs.getString('bly_offline_queue');
+    if (q != null) {
+      final list = (jsonDecode(q) as List);
+      _queue.addAll(list.map((e) => _QueuedOp.fromMap(Map<String, dynamic>.from(e))));
+      pendingOps = _queue.length;
+    }
+    loading = false;
+    notifyListeners();
+    fetchFxRates();
+    if (_loggedIn) {
+      await _flushQueue();
+      pullCloud();
+    }
+  }
+
+  // ── Sign Out ──────────────────────────────────────────────────────────────────
+  Future<void> signOut() async {
+    await _sb.auth.signOut();
+    await DbService.clearTxs();
+    txs = []; customers = []; employees = [];
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('bly_invoices');
+    await prefs.remove('bly_payrolls');
+    await prefs.remove('bly_offline_queue');
+    _queue.clear();
+    pendingOps = 0;
+    notifyListeners();
+  }
+
+  // ── Guest → Account Migration ─────────────────────────────────────────────────
+  Future<void> migrateGuestData() async {
+    if (!_loggedIn) return;
+    syncStatus = SyncStatus.pushing;
+    notifyListeners();
+    try {
+      await pushCloud();
+      final prefs = await SharedPreferences.getInstance();
+      final invList = jsonDecode(prefs.getString('bly_invoices') ?? '[]') as List;
+      final payList = jsonDecode(prefs.getString('bly_payrolls') ?? '[]') as List;
+      if (invList.isNotEmpty) await _pushInvoicesCloud(invList);
+      if (payList.isNotEmpty) await _pushPayrollsCloud(payList);
+      syncStatus = SyncStatus.done;
+    } catch (e) {
+      syncStatus = SyncStatus.error;
+      syncError  = e.toString().substring(0, 60.clamp(0, e.toString().length));
+    }
+    notifyListeners();
+  }
+
+  // ── Settings ─────────────────────────────────────────────────────────────────
+  Future<void> updateSettings(AppSettings s) async {
+    settings = s;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('bly_settings', jsonEncode(s.toMap()));
+    notifyListeners();
+    if (_loggedIn) _pushSettingsCloud();
+  }
+
+  // ── FX ────────────────────────────────────────────────────────────────────────
+  Future<void> fetchFxRates() async {
+    fxStatus = FxStatus.loading;
+    notifyListeners();
+    final result = await FxService.fetchLive();
+    if (result != null) {
+      fxRates = result; fxStatus = FxStatus.ok;
+      fxUpdatedAt = _timeStr(); isOnline = true;
+    } else {
+      fxStatus = FxStatus.error; isOnline = false;
+    }
+    notifyListeners();
+  }
+
+  void setFxRate(String code, double val) { fxRates = {...fxRates, code: val}; notifyListeners(); }
+  void resetFxRates() { fxRates = Map.from(defaultRates); notifyListeners(); }
+  double toMYR(double amount, String currency) => amount * (fxRates[currency] ?? 1.0);
+
+  // ── Transactions ─────────────────────────────────────────────────────────────
+  Future<void> addOrUpdateTx(Transaction tx) async {
+    await DbService.upsertTx(tx);
+    final idx = txs.indexWhere((t) => t.id == tx.id);
+    if (idx >= 0) {
+      txs = [...txs.sublist(0, idx), tx, ...txs.sublist(idx + 1)];
+    } else {
+      txs = [tx, ...txs];
+    }
+    txs.sort((a, b) => b.date.compareTo(a.date));
+    notifyListeners();
+    if (_loggedIn) {
+      final ok = await _tryPushTxCloud(tx);
+      if (!ok) _enqueue(_QueuedOp(table: 'transactions', op: 'upsert', data: tx.toMap()));
+    }
+  }
+
+  Future<void> deleteTx(int id) async {
+    await DbService.deleteTx(id);
+    txs = txs.where((t) => t.id != id).toList();
+    notifyListeners();
+    if (_loggedIn) {
+      final ok = await _tryDeleteTxCloud(id);
+      if (!ok) _enqueue(_QueuedOp(table: 'transactions', op: 'delete', id: id));
+    }
+  }
+
+  // ── Customers ────────────────────────────────────────────────────────────────
+  Future<Customer> saveCustomer(Customer c) async {
+    final saved = await DbService.upsertCustomer(c);
+    final idx = customers.indexWhere((x) => x.id == saved.id);
+    if (idx >= 0) {
+      customers = [...customers.sublist(0, idx), saved, ...customers.sublist(idx + 1)];
+    } else {
+      customers = [...customers, saved];
+    }
+    customers.sort((a, b) => a.name.compareTo(b.name));
+    notifyListeners();
+    if (_loggedIn) {
+      final ok = await _tryPushCustomerCloud(saved);
+      if (!ok) _enqueue(_QueuedOp(table: 'customers', op: 'upsert', data: saved.toMap()));
+    }
+    return saved;
+  }
+
+  Future<void> deleteCustomer(int id) async {
+    await DbService.deleteCustomer(id);
+    customers = customers.where((c) => c.id != id).toList();
+    notifyListeners();
+    if (_loggedIn) {
+      final ok = await _tryDeleteCustomerCloud(id);
+      if (!ok) _enqueue(_QueuedOp(table: 'customers', op: 'delete', id: id));
+    }
+  }
+
+  // ── Employees ────────────────────────────────────────────────────────────────
+  Future<Employee> saveEmployee(Employee e) async {
+    final saved = await DbService.upsertEmployee(e);
+    final idx = employees.indexWhere((x) => x.id == saved.id);
+    if (idx >= 0) {
+      employees = [...employees.sublist(0, idx), saved, ...employees.sublist(idx + 1)];
+    } else {
+      employees = [...employees, saved];
+    }
+    employees.sort((a, b) => a.name.compareTo(b.name));
+    notifyListeners();
+    if (_loggedIn) {
+      final ok = await _tryPushEmployeeCloud(saved);
+      if (!ok) _enqueue(_QueuedOp(table: 'employees', op: 'upsert', data: saved.toMap()));
+    }
+    return saved;
+  }
+
+  Future<void> deleteEmployee(int id) async {
+    await DbService.deleteEmployee(id);
+    employees = employees.where((e) => e.id != id).toList();
+    notifyListeners();
+    if (_loggedIn) {
+      final ok = await _tryDeleteEmployeeCloud(id);
+      if (!ok) _enqueue(_QueuedOp(table: 'employees', op: 'delete', id: id));
+    }
+  }
+
+  // ── Invoice save ─────────────────────────────────────────────────────────────
+  Future<void> saveInvoice({
+    required String invNo, required String invDate, required String dueDate,
+    required Customer customer, required List<Map<String, String>> items,
+    required String notes, required String terms,
+    required String bankName, required String bankAcct,
+    String? logoB64, String? sigB64,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list  = (jsonDecode(prefs.getString('bly_invoices') ?? '[]') as List)
+        .cast<Map<String, dynamic>>();
+    final record = {
+      'invNo': invNo, 'invDate': invDate, 'dueDate': dueDate,
+      'customer': customer.toMap(), 'items': items,
+      'notes': notes, 'terms': terms, 'bankName': bankName, 'bankAcct': bankAcct,
+      'savedAt': DateTime.now().toIso8601String(),
+    };
+    final idx = list.indexWhere((e) => e['invNo'] == invNo);
+    if (idx >= 0) list[idx] = record; else list.insert(0, record);
+    await prefs.setString('bly_invoices', jsonEncode(list));
+    if (_loggedIn) _pushInvoicesCloud(list);
+  }
+
+  // ── Payroll save ─────────────────────────────────────────────────────────────
+  Future<void> savePayroll({
+    required Employee emp, required int month, required int year,
+    required List<Map<String, String>> earnings,
+    required List<Map<String, String>> deductions,
+    required bool useEPF, required bool useSOCSO, required bool useEIS,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list  = (jsonDecode(prefs.getString('bly_payrolls') ?? '[]') as List)
+        .cast<Map<String, dynamic>>();
+    final key = '${emp.id}_${year}_$month';
+    final record = {
+      'key': key, 'empId': emp.id, 'empName': emp.name,
+      'month': month, 'year': year,
+      'earnings': earnings, 'deductions': deductions,
+      'useEPF': useEPF, 'useSOCSO': useSOCSO, 'useEIS': useEIS,
+      'savedAt': DateTime.now().toIso8601String(),
+    };
+    final idx = list.indexWhere((e) => e['key'] == key);
+    if (idx >= 0) list[idx] = record; else list.insert(0, record);
+    await prefs.setString('bly_payrolls', jsonEncode(list));
+    if (_loggedIn) _pushPayrollsCloud(list);
+  }
+
+  // ── Cloud pull ───────────────────────────────────────────────────────────────
+  Future<bool> pullCloud() async {
+    syncStatus = SyncStatus.pulling; syncError = null;
+    notifyListeners();
+    try {
+      final uid = _uid!;
+      final remoteTxs = await SupabaseService.loadTxs();
+      final remoteMap = {for (final tx in remoteTxs) tx.id: tx};
+      final localMap  = {for (final tx in txs) tx.id: tx};
+      final merged = <Transaction>[];
+      final allIds = {...remoteMap.keys, ...localMap.keys};
+      for (final id in allIds) {
+        final r = remoteMap[id];
+        final l = localMap[id];
+        if (r == null) {
+          merged.add(l!);
+          _pushTxCloud(l);
+        } else {
+          merged.add(r);
+          await DbService.upsertTx(r);
+        }
+      }
+      merged.sort((a, b) => b.date.compareTo(a.date));
+      txs = merged;
+
+      final remoteCusts = await _sb.from('customers').select().eq('user_id', uid);
+      if ((remoteCusts as List).isNotEmpty) {
+        for (final row in remoteCusts) await DbService.upsertCustomer(Customer.fromMap(row));
+        customers = await DbService.loadCustomers();
+      }
+
+      final remoteEmps = await _sb.from('employees').select().eq('user_id', uid);
+      if ((remoteEmps as List).isNotEmpty) {
+        for (final row in remoteEmps) await DbService.upsertEmployee(Employee.fromMap(row));
+        employees = await DbService.loadEmployees();
+      }
+
+      final invRow = await _sb.from('user_data').select('invoices').eq('user_id', uid).maybeSingle();
+      if (invRow != null && invRow['invoices'] != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('bly_invoices', jsonEncode(invRow['invoices']));
+      }
+
+      final payRow = await _sb.from('user_data').select('payrolls').eq('user_id', uid).maybeSingle();
+      if (payRow != null && payRow['payrolls'] != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('bly_payrolls', jsonEncode(payRow['payrolls']));
+      }
+
+      final remoteS = await SupabaseService.loadSettings();
+      if (remoteS != null) settings = AppSettings.fromMap(remoteS);
+
+      syncStatus = SyncStatus.done;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      syncStatus = SyncStatus.error;
+      syncError  = e.toString().substring(0, 60.clamp(0, e.toString().length));
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> pushCloud() async {
+    syncStatus = SyncStatus.pushing; syncError = null;
+    notifyListeners();
+    try {
+      await SupabaseService.upsertTxs(txs);
+      await SupabaseService.saveSettings(settings.toMap());
+      if (_uid != null) {
+        for (final c in customers) await _pushCustomerCloud(c);
+        for (final e in employees) await _pushEmployeeCloud(e);
+      }
+      syncStatus = SyncStatus.done;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      syncStatus = SyncStatus.error;
+      syncError  = e.toString().substring(0, 60.clamp(0, e.toString().length));
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // ── Offline queue ─────────────────────────────────────────────────────────────
+  void _enqueue(_QueuedOp op) async {
+    _queue.add(op);
+    pendingOps = _queue.length;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('bly_offline_queue',
+        jsonEncode(_queue.map((e) => e.toMap()).toList()));
+  }
+
+  Future<void> _flushQueue() async {
+    if (_queue.isEmpty) return;
+    final failed = <_QueuedOp>[];
+    for (final op in List.from(_queue)) {
+      bool ok = false;
+      try {
+        if (op.op == 'upsert' && op.data != null) {
+          await _sb.from(op.table).upsert({
+            ...op.data!, 'user_id': _uid,
+            'updated_at': DateTime.now().toIso8601String(),
+          }, onConflict: 'id,user_id');
+          ok = true;
+        } else if (op.op == 'delete' && op.id != null) {
+          await _sb.from(op.table).delete().eq('id', op.id!).eq('user_id', _uid!);
+          ok = true;
+        }
+      } catch (_) {}
+      if (!ok) failed.add(op);
+    }
+    _queue..clear()..addAll(failed);
+    pendingOps = _queue.length;
+    final prefs = await SharedPreferences.getInstance();
+    if (_queue.isEmpty) {
+      await prefs.remove('bly_offline_queue');
+    } else {
+      await prefs.setString('bly_offline_queue',
+          jsonEncode(_queue.map((e) => e.toMap()).toList()));
+    }
+    notifyListeners();
+  }
+
+  Future<void> onReconnect() async {
+    isOnline = true;
+    notifyListeners();
+    if (_loggedIn) { await _flushQueue(); await pullCloud(); }
+  }
+
+  // ── Try-push helpers ──────────────────────────────────────────────────────────
+  Future<bool> _tryPushTxCloud(Transaction tx) async {
+    try {
+      await _sb.from('transactions').upsert({...tx.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id');
+      return true;
+    } catch (_) { return false; }
+  }
+  Future<bool> _tryDeleteTxCloud(int id) async {
+    try { await _sb.from('transactions').delete().eq('id', id).eq('user_id', _uid!); return true; } catch (_) { return false; }
+  }
+  Future<bool> _tryPushCustomerCloud(Customer c) async {
+    try {
+      await _sb.from('customers').upsert({...c.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id');
+      return true;
+    } catch (_) { return false; }
+  }
+  Future<bool> _tryDeleteCustomerCloud(int id) async {
+    try { await _sb.from('customers').delete().eq('id', id).eq('user_id', _uid!); return true; } catch (_) { return false; }
+  }
+  Future<bool> _tryPushEmployeeCloud(Employee e) async {
+    try {
+      await _sb.from('employees').upsert({...e.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id');
+      return true;
+    } catch (_) { return false; }
+  }
+  Future<bool> _tryDeleteEmployeeCloud(int id) async {
+    try { await _sb.from('employees').delete().eq('id', id).eq('user_id', _uid!); return true; } catch (_) { return false; }
+  }
+
+  // ── Fire-and-forget helpers ───────────────────────────────────────────────────
+  Future<void> _pushTxCloud(Transaction tx) async {
+    try { await _sb.from('transactions').upsert({...tx.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id'); } catch (_) {}
+  }
+  Future<void> _pushCustomerCloud(Customer c) async {
+    try { await _sb.from('customers').upsert({...c.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id'); } catch (_) {}
+  }
+  Future<void> _pushEmployeeCloud(Employee e) async {
+    try { await _sb.from('employees').upsert({...e.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id'); } catch (_) {}
+  }
+  Future<void> _pushInvoicesCloud(List list) async {
+    try { await _sb.from('user_data').upsert({'user_id': _uid, 'invoices': list, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'user_id'); } catch (_) {}
+  }
+  Future<void> _pushPayrollsCloud(List list) async {
+    try { await _sb.from('user_data').upsert({'user_id': _uid, 'payrolls': list, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'user_id'); } catch (_) {}
+  }
+  Future<void> _pushSettingsCloud() async {
+    try { await SupabaseService.saveSettings(settings.toMap()); } catch (_) {}
+  }
+
+  // ── Ledger ────────────────────────────────────────────────────────────────────
+  Map<String, double> computeBalances([List<Transaction>? source]) {
+    final list = source ?? txs;
+    final b = <String, double>{for (final k in accounts.keys) k: 0.0};
+    for (final tx in list) {
+      for (final e in tx.entries) {
+        final acc = accounts[e.acc]; if (acc == null) continue;
+        final dr = acc.normal == 'Dr';
+        b[e.acc] = (b[e.acc] ?? 0) + (dr ? (e.dc=='Dr'?e.val:-e.val) : (e.dc=='Cr'?e.val:-e.val));
+      }
+    }
+    return b;
+  }
+
+  String get currentMonth => DateTime.now().toIso8601String().substring(0, 7);
+  List<Transaction> get thisMonthTxs => txs.where((t) => t.date.startsWith(currentMonth)).toList();
+  List<String> get availableMonths => txs.map((t) => t.date.substring(0, 7)).toSet().toList()..sort((a,b)=>b.compareTo(a));
+
+  String? get currentUid => _uid;
+  User?   get currentUser => _sb.auth.currentUser;
+  
+  String _timeStr() {
+    final n = DateTime.now();
+    return '${n.hour.toString().padLeft(2,'0')}:${n.minute.toString().padLeft(2,'0')}';
+  }
+
+  Future<List<Map<String, dynamic>>> loadInvoices() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (jsonDecode(prefs.getString('bly_invoices') ?? '[]') as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deleteInvoice(String invNo) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString('bly_invoices') ?? '[]') as List).cast<Map<String, dynamic>>();
+    list.removeWhere((e) => e['invNo'] == invNo);
+    await prefs.setString('bly_invoices', jsonEncode(list));
+    if (_loggedIn) _pushInvoicesCloud(list);
+  }
+
+  Future<List<Map<String, dynamic>>> loadPayrolls() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (jsonDecode(prefs.getString('bly_payrolls') ?? '[]') as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deletePayroll(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString('bly_payrolls') ?? '[]') as List).cast<Map<String, dynamic>>();
+    list.removeWhere((e) => e['key'] == key);
+    await prefs.setString('bly_payrolls', jsonEncode(list));
+    if (_loggedIn) _pushPayrollsCloud(list);
+  }
+}
