@@ -333,7 +333,13 @@ class _QuickBtn extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
             decoration: BoxDecoration(color: bg, border: Border.all(color: bd, width: 2), borderRadius: BorderRadius.circular(14)),
             child: Column(children: [
-              Text(icon, style: const TextStyle(fontSize: 22)),
+              SizedBox(
+                width: 28, height: 28,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: Text(icon),
+                ),
+              ),
               const SizedBox(height: 4),
               Text(label, textAlign: TextAlign.center, maxLines: 1,
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 10, color: color)),

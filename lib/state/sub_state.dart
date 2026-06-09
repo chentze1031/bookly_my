@@ -10,8 +10,7 @@ import 'package:flutter/services.dart';
 // FIX #1: 生产环境必须使用正式 RevenueCat API Key（前缀 goog_ 或 appl_）
 //         测试 key（test_*）只能在沙盒环境使用，App Store / Play Store 真实购买无效。
 const _rcKeyTest = 'test_NMbMWcFIGpMikMYQWgomGnqLwRq';
-// TODO: 将下面替换为 RevenueCat 生产环境 API Key
-const _rcKeyProd = 'REPLACE_WITH_PRODUCTION_RC_KEY';
+const _rcKeyProd = 'goog_hHQPxmGzZqNetGealNfJQGiTfgW';
 String get _rcKey => kReleaseMode ? _rcKeyProd : _rcKeyTest;
 
 // ── AdMob Ad Unit IDs ───────────────────────────────────────────────────────
