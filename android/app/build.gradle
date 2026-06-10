@@ -47,7 +47,7 @@ android {
     // ===================================
     defaultConfig {
         applicationId "com.bookly.my"
-        minSdkVersion flutter.minSdkVersion
+        minSdkVersion 23
         targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

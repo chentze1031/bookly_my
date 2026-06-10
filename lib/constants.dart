@@ -142,7 +142,7 @@ const billExpenseTypes = <Map<String, String>>[
   {'id': 'rent',         'icon': '🏢', 'en': 'Rental / Utilities',    'zh': '租金/水电',   'acc': '5110'},
   {'id': 'salary',       'icon': '👤', 'en': 'Salaries',              'zh': '薪资',        'acc': '5100'},
   {'id': 'marketing',    'icon': '📣', 'en': 'Marketing / Ads',       'zh': '广告/营销',   'acc': '5140'},
-  {'id': 'transport',    'icon': '🚗', 'en': 'Transport / Fuel',      'zh': '交通/油费',   'acc': '5195'},
+  {'id': 'transport',    'icon': '🚗', 'en': 'Transport / Fuel',      'zh': '交通/油费',   'acc': '5210'},
   {'id': 'inventory',    'icon': '📦', 'en': 'Inventory / Purchases', 'zh': '进货',        'acc': '1200'},
   {'id': 'professional', 'icon': '💼', 'en': 'Professional Fees',     'zh': '专业费用',    'acc': '5180'},
   {'id': 'supplies',     'icon': '📎', 'en': 'Office Supplies',       'zh': '办公用品',    'acc': '5130'},
@@ -156,6 +156,7 @@ final incomeCategories = <TxCategory>[
   TxCategory(id:'service_sale', icon:'🛠', color:Color(0xFF059669), enLabel:'Service',         zhLabel:'服务/咨询', type:'income', mkEntries:(a)=>[JournalEntry(acc:'1020',dc:'Dr',val:a),JournalEntry(acc:'4020',dc:'Cr',val:a)]),
   TxCategory(id:'other_income', icon:'💰', color:Color(0xFF0891B2), enLabel:'Other Income',    zhLabel:'其他收入',  type:'income', mkEntries:(a)=>[JournalEntry(acc:'1020',dc:'Dr',val:a),JournalEntry(acc:'4030',dc:'Cr',val:a)]),
   TxCategory(id:'ar_collect',   icon:'🧾', color:Color(0xFF0D9488), enLabel:'Payment In (AR)', zhLabel:'收款入账',  type:'income', mkEntries:(a)=>[JournalEntry(acc:'1020',dc:'Dr',val:a),JournalEntry(acc:'1100',dc:'Cr',val:a)]),
+  TxCategory(id:'ar_invoice', icon:'🧾', color:kBlue, enLabel:'Invoice (AR)', zhLabel:'发票(应收)', type:'income', mkEntries:(a)=>[JournalEntry(acc:'1100',dc:'Dr',val:a),JournalEntry(acc:'4010',dc:'Cr',val:a)]),
 ];
 
 final expenseCategories = <TxCategory>[
@@ -471,8 +472,4 @@ class L10n {
     ('🧾', 'Malaysia Tax Invoice + signature', '马来西亚税务发票 + 签名'),
     ('💼', 'Payroll + payslip generator',      '薪资单生成器'),
     ('👥', 'Customer & employee database',     '客户和员工数据库'),
-    ('🇲🇾', 'EPF / SOCSO / EIS calculator',   'EPF/SOCSO/EIS 计算'),
-    ('☁️', 'Cloud backup (Supabase)',          '云端备份'),
-    ('📥', 'Excel & JSON export',              'Excel / JSON 导出'),
-  ];
-}
+    ('�
