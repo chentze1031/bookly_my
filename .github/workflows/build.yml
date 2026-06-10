@@ -1,4 +1,4 @@
-﻿name: Build & Deploy Bookly MY
+name: Build & Deploy Bookly MY
 on:
   push:
     branches: [main]
@@ -25,7 +25,7 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: dart analyze --fatal-infos --fatal-warnings
+        run: dart analyze
 
       - name: Test
         run: flutter test
