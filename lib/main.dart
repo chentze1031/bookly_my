@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'constants.dart';
+import 'app_theme.dart';
 import 'models.dart';
 import 'state/app_state.dart';
 import 'state/sub_state.dart';
@@ -109,28 +110,7 @@ class BooklyApp extends StatelessWidget {
       routerConfig: _buildRouter(),
       title: 'Bookly MY',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Helvetica Neue',
-        colorScheme: ColorScheme.fromSeed(seedColor: kDark, brightness: Brightness.light),
-        scaffoldBackgroundColor: kBg,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: kSurface,
-          foregroundColor: kText,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-          titleTextStyle: TextStyle(color: kText, fontWeight: FontWeight.w900, fontSize: 20, letterSpacing: -0.5),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: kSurface,
-          selectedItemColor: kText,
-          unselectedItemColor: kMuted,
-          selectedLabelStyle: TextStyle(fontWeight: FontWeight.w800, fontSize: 10),
-          unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 10),
-          elevation: 0,
-          type: BottomNavigationBarType.fixed,
-        ),
-      ),
+      theme: AppTheme.light,
     );
   }
 }

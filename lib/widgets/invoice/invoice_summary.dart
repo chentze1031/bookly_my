@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../services/invoice_service.dart';
 
@@ -10,7 +10,7 @@ class InvoiceSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sub = InvoiceService.subtotal(items);
-    final tax = InvoiceService.tax(sub);
+    final tax = InvoiceService.sstAmount(items);
     final total = InvoiceService.total(items);
 
     return Column(

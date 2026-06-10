@@ -1,5 +1,18 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
+
+// ─── Invoice Item (lightweight line-item interface) ──────────────────────────
+class InvoiceItem {
+  final String desc;
+  final double qty;
+  final double price;
+
+  const InvoiceItem({
+    required this.desc,
+    required this.qty,
+    required this.price,
+  });
+}
 // ─── Transaction ──────────────────────────────────────────────────────────────
 class Transaction {
   final int id;
@@ -97,7 +110,7 @@ class Customer {
   final String phone;
   final String email;
 
-  Customer({
+  const Customer({
     required this.id,
     required this.name,
     this.regNo = '',
@@ -144,7 +157,7 @@ class Employee {
   final String phone;
   final String email;
 
-  Employee({
+  const Employee({
     required this.id,
     required this.name,
     this.icNo = '',

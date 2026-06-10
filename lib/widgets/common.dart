@@ -152,8 +152,8 @@ class ToggleRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: value ? activeColor.withOpacity(0.08) : kBg,
-        border: Border.all(color: value ? activeColor.withOpacity(0.4) : kBorder),
+        color: value ? activeColor.withValues(alpha: 0.08) : kBg,
+        border: Border.all(color: value ? activeColor.withValues(alpha: 0.4) : kBorder),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(children: [
@@ -162,7 +162,7 @@ class ToggleRow extends StatelessWidget {
           if (sublabel != null)
             Text(sublabel!, style: const TextStyle(fontSize: 11, color: kMuted)),
         ])),
-        Switch(value: value, onChanged: onChanged, activeColor: activeColor),
+        Switch(value: value, onChanged: onChanged, activeThumbColor: activeColor),
       ]),
     ),
   );

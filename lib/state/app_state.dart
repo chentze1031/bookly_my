@@ -238,7 +238,7 @@ class AppState extends ChangeNotifier {
       'savedAt': DateTime.now().toIso8601String(),
     };
     final idx = list.indexWhere((e) => e['invNo'] == invNo);
-    if (idx >= 0) list[idx] = record; else list.insert(0, record);
+    if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
     await prefs.setString(StorageKeys.invoices, jsonEncode(list));
     if (_loggedIn) _pushInvoicesCloud(list);
   }
@@ -262,7 +262,7 @@ class AppState extends ChangeNotifier {
       'savedAt': DateTime.now().toIso8601String(),
     };
     final idx = list.indexWhere((e) => e['key'] == key);
-    if (idx >= 0) list[idx] = record; else list.insert(0, record);
+    if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
     await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
     if (_loggedIn) _pushPayrollsCloud(list);
   }
@@ -294,13 +294,13 @@ class AppState extends ChangeNotifier {
 
       final remoteCusts = await _sb.from('customers').select().eq('user_id', uid);
       if ((remoteCusts as List).isNotEmpty) {
-        for (final row in remoteCusts) await DbService.upsertCustomer(Customer.fromMap(row));
+        for (final row in remoteCusts) { await DbService.upsertCustomer(Customer.fromMap(row)); }
         customers = await DbService.loadCustomers();
       }
 
       final remoteEmps = await _sb.from('employees').select().eq('user_id', uid);
       if ((remoteEmps as List).isNotEmpty) {
-        for (final row in remoteEmps) await DbService.upsertEmployee(Employee.fromMap(row));
+        for (final row in remoteEmps) { await DbService.upsertEmployee(Employee.fromMap(row)); }
         employees = await DbService.loadEmployees();
       }
 
@@ -337,8 +337,8 @@ class AppState extends ChangeNotifier {
       await SupabaseService.upsertTxs(txs);
       await SupabaseService.saveSettings(settings.toMap());
       if (_uid != null) {
-        for (final c in customers) await _pushCustomerCloud(c);
-        for (final e in employees) await _pushEmployeeCloud(e);
+        for (final c in customers) { await _pushCustomerCloud(c); }
+        for (final e in employees) { await _pushEmployeeCloud(e); }
       }
       syncStatus = SyncStatus.done;
       notifyListeners();

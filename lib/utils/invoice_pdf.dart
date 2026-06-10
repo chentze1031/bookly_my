@@ -1,4 +1,4 @@
-// ─── invoice_pdf.dart ─────────────────────────────────────────────────────────
+﻿// ─── invoice_pdf.dart ─────────────────────────────────────────────────────────
 // Malaysia Tax Invoice — clean black/white layout
 // v2: adds bankAcctName, shipToName, shipToAddr, paymentMethod,
 //     paymentTerms, latePenalty, amount-in-words, SST breakdown

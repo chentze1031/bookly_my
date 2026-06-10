@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +12,7 @@ import '../state/sub_state.dart';
 import 'sub_screen.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
-// BANK IMPORT SCREEN — PDF bank statement → transactions via Claude AI
+// BANK IMPORT SCREEN — PDF bank statement → transactions via Gemini AI
 // ════════════════════════════════════════════════════════════════════════════
 class BankImportScreen extends StatefulWidget {
   const BankImportScreen({super.key});
@@ -224,7 +224,7 @@ class _PickView extends StatelessWidget {
           const Text('Import Bank Statement', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: kText)),
           const SizedBox(height: 8),
           const Text(
-            'Upload your bank statement PDF.\nClaude AI will extract and categorise all transactions automatically.',
+            'Upload your bank statement PDF.\nGemini AI will extract and categorise all transactions automatically.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: kMuted, height: 1.5),
           ),
@@ -290,7 +290,7 @@ class _PreviewView extends StatelessWidget {
         if (parsing) ...[
           const CircularProgressIndicator(color: kDark, strokeWidth: 2),
           const SizedBox(height: 16),
-          const Text('Claude AI is reading your statement...', style: TextStyle(color: kMuted)),
+          const Text('Gemini AI is reading your statement...', style: TextStyle(color: kMuted)),
           const SizedBox(height: 6),
           const Text('This may take 15–30 seconds', style: TextStyle(fontSize: 12, color: kMuted)),
         ] else ...[
@@ -300,7 +300,7 @@ class _PreviewView extends StatelessWidget {
             child: Row(children: [
               const Text('🤖', style: TextStyle(fontSize: 20)),
               const SizedBox(width: 10),
-              const Expanded(child: Text('Claude AI will read the PDF and extract all transactions, dates, and amounts automatically.', style: TextStyle(fontSize: 13, color: Color(0xFF3344AA)))),
+              const Expanded(child: Text('Gemini AI will read the PDF and extract all transactions, dates, and amounts automatically.', style: TextStyle(fontSize: 13, color: Color(0xFF3344AA)))),
             ]),
           ),
           if (error != null) ...[

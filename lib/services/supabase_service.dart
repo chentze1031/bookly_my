@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models.dart';
 
@@ -9,7 +9,7 @@ class SupabaseService {
   static SupabaseClient get _client => Supabase.instance.client;
 
   static Future<void> initialize() async {
-    await Supabase.initialize(url: _url, anonKey: _key);
+    await Supabase.initialize(url: _url, publishableKey: _key);
   }
 
   // ── Transactions ────────────────────────────────────────────────────────────

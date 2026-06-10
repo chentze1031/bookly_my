@@ -1,8 +1,8 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 // ════════════════════════════════════════════════════════════════════════════
-// AI SERVICE — Gemini API for Bookly MY features
+// AI SERVICE — Gemini API for Bookly MY features (⚠️ API key should be moved to backend in production)
 // ════════════════════════════════════════════════════════════════════════════
 class AiService {
   static const _apiKey = 'AIzaSyDl76uz1e5aoGb9gZXu6EvL6iZLmh_rt-k';

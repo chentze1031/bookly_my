@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -155,7 +155,7 @@ class _AutoCatTabState extends State<_AutoCatTab> {
               const Text('🤖', style: TextStyle(fontSize: 22)),
               const SizedBox(width: 10),
               const Expanded(child: Text(
-                'Describe your transaction and Claude AI will suggest the best category for you.',
+                'Describe your transaction and Gemini AI will suggest the best category for you.',
                 style: TextStyle(fontSize: 13, color: Color(0xFF3344AA)),
               )),
             ]),
@@ -397,7 +397,7 @@ class _CashflowTabState extends State<_CashflowTab> {
         children: [
           CircularProgressIndicator(color: kDark, strokeWidth: 2),
           SizedBox(height: 16),
-          Text('Claude AI is analysing your finances...', style: TextStyle(color: kMuted, fontSize: 13)),
+          Text('Gemini AI is analysing your finances...', style: TextStyle(color: kMuted, fontSize: 13)),
         ],
       ));
     }

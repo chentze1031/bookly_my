@@ -1,20 +1,14 @@
 ﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:bookly_my/models.dart';
 import 'package:bookly_my/services/invoice_service.dart';
 
-class _Item implements InvoiceItem {
-  @override
-  final String desc;
-  @override
-  final double qty;
-  @override
-  final double price;
-  _Item(this.desc, this.qty, this.price);
-}
+InvoiceItem _item(String desc, double qty, double price) =>
+    InvoiceItem(desc: desc, qty: qty, price: price);
 
 void main() {
   group('InvoiceService subtotal/tax/total', () {
     test('subtotal sums qty*price', () {
-      final items = [_Item('A', 2, 100), _Item('B', 1, 50)];
+      final items = [_item('A', 2, 100), _item('B', 1, 50)];
       expect(InvoiceService.subtotal(items), closeTo(250, 0.001));
     });
 
@@ -23,7 +17,7 @@ void main() {
     });
 
     test('total includes SST 6%', () {
-      final items = [_Item('A', 2, 100)];
+      final items = [_item('A', 2, 100)];
       expect(InvoiceService.total(items), closeTo(212, 0.001));
     });
   });
