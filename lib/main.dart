@@ -32,8 +32,6 @@ import 'screens/company_info_screen.dart';
 import 'screens/settings_screen.dart';
 
 // ─── Screens (inline compact versions) ───────────────────────────────────────
-export 'screens/home_screen.dart';
-export 'screens/reports_transactions_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,7 +85,7 @@ GoRouter _buildRouter() => GoRouter(
   routes: [
     ShellRoute(
       builder: (context, state, child) =>
-          AuthGate(child: _AppShell(key: state.pageKey, child: child)),
+          AuthGate(child: _AppShell(child: child)),
       routes: [
         GoRoute(path: '/home', pageBuilder: (_, __) => const NoTransitionPage(child: _HomeTab())),
         GoRoute(path: '/records', pageBuilder: (_, __) => const NoTransitionPage(child: _RecordsTab())),
