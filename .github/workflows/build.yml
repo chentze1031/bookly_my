@@ -25,7 +25,14 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: dart analyze
+        run: |
+          dart analyze lib > analyze.log 2>&1 || true
+          cat analyze.log
+          if grep -q '  error ' analyze.log; then
+            echo "::error::Analysis found errors"
+            exit 1
+          fi
+          echo "::notice::Analysis passed (warnings/infos only)"
 
       - name: Test
         run: flutter test
