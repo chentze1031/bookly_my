@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../constants.dart';
 
-// ─── Pro Badge ────────────────────────────────────────────────────────────────
+// --- Pro Badge ----------------------------------------------------------------
 class ProBadge extends StatelessWidget {
   final bool small;
   const ProBadge({super.key, this.small = false});
@@ -13,13 +13,13 @@ class ProBadge extends StatelessWidget {
       gradient: const LinearGradient(colors: [Color(0xFF7C3AED), Color(0xFFA855F7)]),
       borderRadius: BorderRadius.circular(99),
     ),
-    child: Text('✦ PRO',
+    child: Text('? PRO',
       style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800,
         fontSize: small ? 9 : 11, letterSpacing: 0.5)),
   );
 }
 
-// ─── Section Card ─────────────────────────────────────────────────────────────
+// --- Section Card -------------------------------------------------------------
 class SectionCard extends StatelessWidget {
   final String title;
   final Widget child;
@@ -54,7 +54,7 @@ class SectionCard extends StatelessWidget {
   );
 }
 
-// ─── Lock Banner ─────────────────────────────────────────────────────────────
+// --- Lock Banner -------------------------------------------------------------
 class LockBanner extends StatelessWidget {
   final VoidCallback onUpgrade;
   final String label;
@@ -74,7 +74,7 @@ class LockBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(children: [
-        const Text('🔒', style: TextStyle(fontSize: 28)),
+        const Text('??', style: TextStyle(fontSize: 28)),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(label, style: const TextStyle(color: kPro, fontWeight: FontWeight.w800, fontSize: 14)),
@@ -83,14 +83,14 @@ class LockBanner extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(color: kProBd, borderRadius: BorderRadius.circular(99)),
-          child: const Text('→', style: TextStyle(color: kPro, fontWeight: FontWeight.w700, fontSize: 12)),
+          child: const Text('?', style: TextStyle(color: kPro, fontWeight: FontWeight.w700, fontSize: 12)),
         ),
       ]),
     ),
   );
 }
 
-// ─── Field Input ──────────────────────────────────────────────────────────────
+// --- Field Input --------------------------------------------------------------
 class FieldInput extends StatelessWidget {
   final String label;
   final String? placeholder;
@@ -132,7 +132,7 @@ class FieldInput extends StatelessWidget {
   );
 }
 
-// ─── Toggle Switch ────────────────────────────────────────────────────────────
+// --- Toggle Switch ------------------------------------------------------------
 class ToggleRow extends StatelessWidget {
   final String label;
   final String? sublabel;
@@ -152,8 +152,8 @@ class ToggleRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: value ? activeColor.withOpacity(0.08) : kBg,
-        border: Border.all(color: value ? activeColor.withOpacity(0.4) : kBorder),
+        color: value ? activeColor.withValues(alpha: 0.08) : kBg,
+        border: Border.all(color: value ? activeColor.withValues(alpha: 0.4) : kBorder),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(children: [
@@ -168,7 +168,7 @@ class ToggleRow extends StatelessWidget {
   );
 }
 
-// ─── Amount Display ───────────────────────────────────────────────────────────
+// --- Amount Display -----------------------------------------------------------
 class AmountDisplay extends StatelessWidget {
   final double amount;
   final bool isIncome;
@@ -188,7 +188,7 @@ class AmountDisplay extends StatelessWidget {
   );
 }
 
-// ─── Bottom Sheet wrapper ─────────────────────────────────────────────────────
+// --- Bottom Sheet wrapper -----------------------------------------------------
 Future<T?> showAppSheet<T>({
   required BuildContext context,
   required Widget child,
@@ -205,7 +205,7 @@ Future<T?> showAppSheet<T>({
 );
 
 
-// ─── Confirm Dialog ───────────────────────────────────────────────────────────
+// --- Confirm Dialog -----------------------------------------------------------
 Future<bool?> showConfirmDialog({
   required BuildContext context,
   required String title,
@@ -230,12 +230,11 @@ Future<bool?> showConfirmDialog({
     ],
   ),
 );
-// ─── Month Label ──────────────────────────────────────────────────────────────
+// --- Month Label --------------------------------------------------------------
 String monthLabel(String ym, String lang) {
   final d = DateTime.parse('$ym-01');
   final months = lang == 'zh'
-    ? ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月']
+    ? ['??','??','??','??','??','??','??','??','??','??','???','???']
     : ['January','February','March','April','May','June','July','August','September','October','November','December'];
   return '${months[d.month - 1]} ${d.year}';
 }
-             
