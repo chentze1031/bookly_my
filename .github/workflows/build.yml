@@ -17,7 +17,7 @@ jobs:
           java-version: "21"
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.44.1"
+          flutter-version: "3.27.4"
           channel: stable
           cache: true
 
@@ -28,7 +28,7 @@ jobs:
         run: |
           dart analyze lib > analyze.log 2>&1 || true
           cat analyze.log
-          if grep -q 'error •' analyze.log; then
+          if grep -q '  error ' analyze.log; then
             echo "::error::Analysis found errors"
             exit 1
           fi
@@ -66,4 +66,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.ap
+          path: build/app/outputs/flutter-apk/app-release.apk
