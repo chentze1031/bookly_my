@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'payroll_screen.dart';
@@ -512,13 +512,13 @@ class _PayrollHistoryState extends State<PayrollHistoryScreen> {
 
   Future<void> _togglePaid(Map<String, dynamic> r) async {
     final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getString('bly_payrolls') ?? '[]';
+    final raw   = prefs.getString(StorageKeys.payrolls) ?? '[]';
     final list  = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
     final key   = r['key'];
     final idx   = list.indexWhere((e) => e['key'] == key);
     if (idx >= 0) {
       list[idx]['paid'] = !(r['paid'] == true);
-      await prefs.setString('bly_payrolls', jsonEncode(list));
+      await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
     }
     _load();
   }

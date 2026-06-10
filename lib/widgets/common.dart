@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../constants.dart';
 
 // ─── Pro Badge ────────────────────────────────────────────────────────────────
@@ -204,6 +204,32 @@ Future<T?> showAppSheet<T>({
   builder: (_) => child,
 );
 
+
+// ─── Confirm Dialog ───────────────────────────────────────────────────────────
+Future<bool?> showConfirmDialog({
+  required BuildContext context,
+  required String title,
+  String? message,
+  String confirmLabel = 'Delete',
+  String cancelLabel = 'Cancel',
+  Color confirmColor = kRed,
+}) => showDialog<bool>(
+  context: context,
+  builder: (ctx) => AlertDialog(
+    title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+    content: message != null ? Text(message) : null,
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(ctx, false),
+        child: Text(cancelLabel),
+      ),
+      TextButton(
+        onPressed: () => Navigator.pop(ctx, true),
+        child: Text(confirmLabel, style: TextStyle(color: confirmColor, fontWeight: FontWeight.w700)),
+      ),
+    ],
+  ),
+);
 // ─── Month Label ──────────────────────────────────────────────────────────────
 String monthLabel(String ym, String lang) {
   final d = DateTime.parse('$ym-01');

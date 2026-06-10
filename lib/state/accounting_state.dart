@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,9 +20,9 @@ class AccountingState extends ChangeNotifier {
   AppState? appState;
 
   // ── Keys ──────────────────────────────────────────────────────────────────
-  static const _kAr  = 'bly_ar_invoices';
-  static const _kAp  = 'bly_ap_bills';
-  static const _kSup = 'bly_suppliers';
+  static const _kAr  = StorageKeys.arInvoices;
+  static const _kAp  = StorageKeys.apBills;
+  static const _kSup = StorageKeys.suppliers;
 
   // ── Summary getters ───────────────────────────────────────────────────────
   double get totalReceivable => arInvoices.fold(0, (s, i) => s + i.balance);

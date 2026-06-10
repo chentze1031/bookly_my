@@ -1,7 +1,7 @@
 name: bookly_my
 description: Bookly MY - Malaysia Business Accounting App
 publish_to: none
-version: 1.0.0+36
+version: 1.0.0+38
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -56,12 +56,14 @@ dependencies:
   excel: ^4.0.3
 
   cupertino_icons: ^1.0.8
+  go_router: ^17.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.13.1
+  test: ^1.31.0
 
 flutter:
   uses-material-design: true

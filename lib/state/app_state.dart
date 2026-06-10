@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,6 +6,7 @@ import '../models.dart';
 import '../constants.dart';
 import '../services/db_service.dart';
 import '../services/fx_service.dart';
+import '../services/settings_service.dart';
 import '../services/supabase_service.dart';
 
 enum SyncStatus { idle, pulling, pushing, done, error }
@@ -60,9 +61,8 @@ class AppState extends ChangeNotifier {
     customers = await DbService.loadCustomers();
     employees = await DbService.loadEmployees();
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('bly_settings');
-    if (raw != null) settings = AppSettings.fromMap(jsonDecode(raw));
-    final q = prefs.getString('bly_offline_queue');
+    settings = await SettingsService.load();
+    final q = prefs.getString(StorageKeys.offlineQueue);
     if (q != null) {
       final list = (jsonDecode(q) as List);
       _queue.addAll(list.map((e) => _QueuedOp.fromMap(Map<String, dynamic>.from(e))));
@@ -83,9 +83,9 @@ class AppState extends ChangeNotifier {
     await DbService.clearTxs();
     txs = []; customers = []; employees = [];
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('bly_invoices');
-    await prefs.remove('bly_payrolls');
-    await prefs.remove('bly_offline_queue');
+    await prefs.remove(StorageKeys.invoices);
+    await prefs.remove(StorageKeys.payrolls);
+    await prefs.remove(StorageKeys.offlineQueue);
     _queue.clear();
     pendingOps = 0;
     notifyListeners();
@@ -99,8 +99,8 @@ class AppState extends ChangeNotifier {
     try {
       await pushCloud();
       final prefs = await SharedPreferences.getInstance();
-      final invList = jsonDecode(prefs.getString('bly_invoices') ?? '[]') as List;
-      final payList = jsonDecode(prefs.getString('bly_payrolls') ?? '[]') as List;
+      final invList = jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List;
+      final payList = jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List;
       if (invList.isNotEmpty) await _pushInvoicesCloud(invList);
       if (payList.isNotEmpty) await _pushPayrollsCloud(payList);
       syncStatus = SyncStatus.done;
@@ -114,8 +114,7 @@ class AppState extends ChangeNotifier {
   // ── Settings ─────────────────────────────────────────────────────────────────
   Future<void> updateSettings(AppSettings s) async {
     settings = s;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('bly_settings', jsonEncode(s.toMap()));
+    await SettingsService.save(s);
     notifyListeners();
     if (_loggedIn) _pushSettingsCloud();
   }
@@ -230,7 +229,7 @@ class AppState extends ChangeNotifier {
     String? logoB64, String? sigB64,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final list  = (jsonDecode(prefs.getString('bly_invoices') ?? '[]') as List)
+    final list  = (jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List)
         .cast<Map<String, dynamic>>();
     final record = {
       'invNo': invNo, 'invDate': invDate, 'dueDate': dueDate,
@@ -240,7 +239,7 @@ class AppState extends ChangeNotifier {
     };
     final idx = list.indexWhere((e) => e['invNo'] == invNo);
     if (idx >= 0) list[idx] = record; else list.insert(0, record);
-    await prefs.setString('bly_invoices', jsonEncode(list));
+    await prefs.setString(StorageKeys.invoices, jsonEncode(list));
     if (_loggedIn) _pushInvoicesCloud(list);
   }
 
@@ -252,7 +251,7 @@ class AppState extends ChangeNotifier {
     required bool useEPF, required bool useSOCSO, required bool useEIS,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final list  = (jsonDecode(prefs.getString('bly_payrolls') ?? '[]') as List)
+    final list  = (jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List)
         .cast<Map<String, dynamic>>();
     final key = '${emp.id}_${year}_$month';
     final record = {
@@ -264,7 +263,7 @@ class AppState extends ChangeNotifier {
     };
     final idx = list.indexWhere((e) => e['key'] == key);
     if (idx >= 0) list[idx] = record; else list.insert(0, record);
-    await prefs.setString('bly_payrolls', jsonEncode(list));
+    await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
     if (_loggedIn) _pushPayrollsCloud(list);
   }
 
@@ -308,13 +307,13 @@ class AppState extends ChangeNotifier {
       final invRow = await _sb.from('user_data').select('invoices').eq('user_id', uid).maybeSingle();
       if (invRow != null && invRow['invoices'] != null) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('bly_invoices', jsonEncode(invRow['invoices']));
+        await prefs.setString(StorageKeys.invoices, jsonEncode(invRow['invoices']));
       }
 
       final payRow = await _sb.from('user_data').select('payrolls').eq('user_id', uid).maybeSingle();
       if (payRow != null && payRow['payrolls'] != null) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('bly_payrolls', jsonEncode(payRow['payrolls']));
+        await prefs.setString(StorageKeys.payrolls, jsonEncode(payRow['payrolls']));
       }
 
       final remoteS = await SupabaseService.loadSettings();
@@ -358,7 +357,7 @@ class AppState extends ChangeNotifier {
     pendingOps = _queue.length;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('bly_offline_queue',
+    await prefs.setString(StorageKeys.offlineQueue,
         jsonEncode(_queue.map((e) => e.toMap()).toList()));
   }
 
@@ -385,9 +384,9 @@ class AppState extends ChangeNotifier {
     pendingOps = _queue.length;
     final prefs = await SharedPreferences.getInstance();
     if (_queue.isEmpty) {
-      await prefs.remove('bly_offline_queue');
+      await prefs.remove(StorageKeys.offlineQueue);
     } else {
-      await prefs.setString('bly_offline_queue',
+      await prefs.setString(StorageKeys.offlineQueue,
           jsonEncode(_queue.map((e) => e.toMap()).toList()));
     }
     notifyListeners();
@@ -476,27 +475,27 @@ class AppState extends ChangeNotifier {
 
   Future<List<Map<String, dynamic>>> loadInvoices() async {
     final prefs = await SharedPreferences.getInstance();
-    return (jsonDecode(prefs.getString('bly_invoices') ?? '[]') as List).cast<Map<String, dynamic>>();
+    return (jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List).cast<Map<String, dynamic>>();
   }
 
   Future<void> deleteInvoice(String invNo) async {
     final prefs = await SharedPreferences.getInstance();
-    final list = (jsonDecode(prefs.getString('bly_invoices') ?? '[]') as List).cast<Map<String, dynamic>>();
+    final list = (jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List).cast<Map<String, dynamic>>();
     list.removeWhere((e) => e['invNo'] == invNo);
-    await prefs.setString('bly_invoices', jsonEncode(list));
+    await prefs.setString(StorageKeys.invoices, jsonEncode(list));
     if (_loggedIn) _pushInvoicesCloud(list);
   }
 
   Future<List<Map<String, dynamic>>> loadPayrolls() async {
     final prefs = await SharedPreferences.getInstance();
-    return (jsonDecode(prefs.getString('bly_payrolls') ?? '[]') as List).cast<Map<String, dynamic>>();
+    return (jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List).cast<Map<String, dynamic>>();
   }
 
   Future<void> deletePayroll(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    final list = (jsonDecode(prefs.getString('bly_payrolls') ?? '[]') as List).cast<Map<String, dynamic>>();
+    final list = (jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List).cast<Map<String, dynamic>>();
     list.removeWhere((e) => e['key'] == key);
-    await prefs.setString('bly_payrolls', jsonEncode(list));
+    await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
     if (_loggedIn) _pushPayrollsCloud(list);
   }
 }

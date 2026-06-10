@@ -1,11 +1,11 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
 
 class FxService {
-  static const _cacheKey = 'bly_fx_cache';
-  static const _tsKey    = 'bly_fx_ts';
+  static const _cacheKey = StorageKeys.fxCached;
+  static const _tsKey    = StorageKeys.fxTimestamp;
   static const _ttlMs    = 6 * 3600 * 1000; // 6 hours
 
   /// Load from cache or defaults

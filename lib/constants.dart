@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'models.dart';
 
 // ─── Design ───────────────────────────────────────────────────────────────────
@@ -211,6 +211,19 @@ TxCategory? findCat(String id) {
 }
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
+
+// ── Storage Keys ────────────────────────────────────────────────────────────
+abstract class StorageKeys {
+  static const settings    = 'bly_settings';
+  static const offlineQueue = 'bly_offline_queue';
+  static const invoices    = 'bly_invoices';
+  static const payrolls    = 'bly_payrolls';
+  static const arInvoices  = 'bly_ar_invoices';
+  static const apBills     = 'bly_ap_bills';
+  static const suppliers   = 'bly_suppliers';
+  static const fxCached    = 'bly_fx_cache';
+  static const fxTimestamp = 'bly_fx_ts';
+}
 class L10n {
   final String lang;
   const L10n(this.lang);

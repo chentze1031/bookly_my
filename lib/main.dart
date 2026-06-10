@@ -1,5 +1,6 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -70,14 +71,42 @@ void main() async {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// ROUTER
+// ════════════════════════════════════════════════════════════════════════════
+int _tabIndex(String loc) {
+  if (loc.startsWith('/records')) return 1;
+  if (loc.startsWith('/reports')) return 2;
+  if (loc.startsWith('/accounting')) return 3;
+  if (loc.startsWith('/settings')) return 4;
+  return 0;
+}
+
+GoRouter _buildRouter() => GoRouter(
+  initialLocation: '/home',
+  routes: [
+    ShellRoute(
+      builder: (context, state, child) =>
+          AuthGate(child: _AppShell(key: state.pageKey, child: child)),
+      routes: [
+        GoRoute(path: '/home', pageBuilder: (_, __) => const NoTransitionPage(child: _HomeTab())),
+        GoRoute(path: '/records', pageBuilder: (_, __) => const NoTransitionPage(child: _RecordsTab())),
+        GoRoute(path: '/reports', pageBuilder: (_, __) => const NoTransitionPage(child: _ReportsTab())),
+        GoRoute(path: '/accounting', pageBuilder: (_, __) => const NoTransitionPage(child: _AccountingTab())),
+        GoRoute(path: '/settings', pageBuilder: (_, __) => const NoTransitionPage(child: _SettingsTab())),
+      ],
+    ),
+  ],
+);
+
+// ════════════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ════════════════════════════════════════════════════════════════════════════
 class BooklyApp extends StatelessWidget {
   const BooklyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    final lang = context.watch<AppState>().settings.lang;
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: _buildRouter(),
       title: 'Bookly MY',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -102,22 +131,20 @@ class BooklyApp extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
         ),
       ),
-      home: const AuthGate(child: MainShell()),
     );
   }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// MAIN SHELL — BottomNavigationBar
-// ════════════════════════════════════════════════════════════════════════════
-class MainShell extends StatefulWidget {
-  const MainShell({super.key});
-  @override State<MainShell> createState() => _MainShellState();
+// ══════════════════════════════════════════════════════════════════════════
+// APP SHELL — BottomNavigationBar via go_router
+// ══════════════════════════════════════════════════════════════════════════
+class _AppShell extends StatefulWidget {
+  final Widget child;
+  const _AppShell({super.key, required this.child});
+  @override State<_AppShell> createState() => _AppShellState();
 }
 
-class _MainShellState extends State<MainShell> {
-  int _tab = 0;
-
+class _AppShellState extends State<_AppShell> {
   void _showPaywall() => showSubSheet(context);
 
   void _showAddTx({String? type, Transaction? edit}) {
@@ -154,34 +181,18 @@ class _MainShellState extends State<MainShell> {
     final app  = context.watch<AppState>();
     final sub  = context.watch<SubState>();
     final t    = L10n(app.settings.lang);
+    final loc  = GoRouterState.of(context).uri.toString();
+    final idx  = _tabIndex(loc);
 
     final titles = [t.home, t.records, t.reports, t.accounting, t.settTitle];
 
     return Scaffold(
-      appBar: (_tab == 0) ? null : AppBar(
-        title: Text(titles[_tab]),
+      appBar: (idx == 0) ? null : AppBar(
+        title: Text(titles[idx]),
         actions: [if (sub.isPro) const Padding(padding: EdgeInsets.only(right: 14), child: ProBadge())],
       ),
-      body: IndexedStack(
-        index: _tab,
-        children: [
-          HomeScreen(
-            onAddIncome:  () => _showAddTx(type: 'income'),
-            onAddExpense: () => _showAddTx(type: 'expense'),
-            onInvoice:    _showInvoice,
-            onBill:       _showBill,
-            onPayroll:    _showPayroll,
-          ),
-          TransactionsScreen(
-            onEdit:     (tx) => _showAddTx(edit: tx),
-            
-          ),
-          const ReportsScreen(),
-          const AccountingScreen(),
-          const SettingsScreen(),
-        ],
-      ),
-      floatingActionButton: (_tab != 3 && _tab != 4) ? FloatingActionButton(
+      body: widget.child,
+      floatingActionButton: (idx != 3 && idx != 4) ? FloatingActionButton(
         onPressed: () => _showAddTx(),
         backgroundColor: kDark,
         foregroundColor: Colors.white,
@@ -192,8 +203,11 @@ class _MainShellState extends State<MainShell> {
         children: [
           const Divider(height: 1, color: kBorder),
           BottomNavigationBar(
-            currentIndex: _tab,
-            onTap: (i) => setState(() => _tab = i),
+            currentIndex: idx,
+            onTap: (i) {
+              const paths = ['/home', '/records', '/reports', '/accounting', '/settings'];
+              context.go(paths[i]);
+            },
             items: [
               BottomNavigationBarItem(icon: const Text('🏠', style: TextStyle(fontSize: 22)), label: t.home),
               BottomNavigationBarItem(icon: const Text('📋', style: TextStyle(fontSize: 22)), label: t.records),
@@ -206,6 +220,52 @@ class _MainShellState extends State<MainShell> {
       ),
     );
   }
+}
+
+// ── Tab wrappers ───────────────────────────────────────────────────────────
+class _HomeTab extends StatelessWidget {
+  const _HomeTab();
+  @override
+  Widget build(BuildContext context) {
+    final shell = context.findAncestorStateOfType<_AppShellState>()!;
+    return HomeScreen(
+      onAddIncome:  () => shell._showAddTx(type: 'income'),
+      onAddExpense: () => shell._showAddTx(type: 'expense'),
+      onInvoice:    shell._showInvoice,
+      onBill:       shell._showBill,
+      onPayroll:    shell._showPayroll,
+    );
+  }
+}
+
+class _RecordsTab extends StatelessWidget {
+  const _RecordsTab();
+  @override
+  Widget build(BuildContext context) {
+    final shell = context.findAncestorStateOfType<_AppShellState>()!;
+    return TransactionsScreen(
+      key: const ValueKey('records'),
+      onEdit: (tx) => shell._showAddTx(edit: tx),
+    );
+  }
+}
+
+class _ReportsTab extends StatelessWidget {
+  const _ReportsTab();
+  @override
+  Widget build(BuildContext context) => const ReportsScreen();
+}
+
+class _AccountingTab extends StatelessWidget {
+  const _AccountingTab();
+  @override
+  Widget build(BuildContext context) => const AccountingScreen();
+}
+
+class _SettingsTab extends StatelessWidget {
+  const _SettingsTab();
+  @override
+  Widget build(BuildContext context) => const SettingsScreen();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
