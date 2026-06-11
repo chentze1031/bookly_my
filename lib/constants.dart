@@ -443,11 +443,6 @@ class L10n {
   String get proSub     => isZh ? '解锁所有高级功能' : 'Unlock all features';
   String get monthly    => isZh ? '按月订阅' : 'Monthly';
   String get yearly     => isZh ? '按年订阅' : 'Yearly';
-  String get mPrice     => 'RM 9.90 / ${isZh ? "月" : "month"}';
-  String get yPrice     => 'RM 49.90 / ${isZh ? "年" : "year"}';
-  String get ySave      => isZh ? '省58%' : 'Save 58%';
-  String get subM       => isZh ? '月订阅 – RM 9.90' : 'Subscribe Monthly – RM 9.90';
-  String get subY       => isZh ? '年订阅 – RM 49.90' : 'Subscribe Yearly – RM 49.90';
   String get restore    => isZh ? '恢复购买' : 'Restore Purchases';
   String get watchAd    => isZh ? '看广告' : 'Watch Ad';
   String get adPass     => isZh ? '免费日通行证' : 'Free Day Pass';
