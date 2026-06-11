@@ -211,7 +211,7 @@ class _ItemCard extends StatelessWidget {
             Row(children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(99)),
+                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(99)),
                 child: Text(statusLabel, style: TextStyle(fontSize: 10, color: statusColor, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(width: 6),
@@ -361,7 +361,7 @@ class _StockAdjustCardState extends State<_StockAdjustCard> {
                 margin: EdgeInsets.only(right: m.$1 != 'set' ? 6 : 0),
                 padding: const EdgeInsets.symmetric(vertical: 7),
                 decoration: BoxDecoration(
-                  color:  _mode == m.$1 ? m.$3.withOpacity(0.12) : kSurface,
+                  color:  _mode == m.$1 ? m.$3.withValues(alpha: 0.12) : kSurface,
                   border: Border.all(color: _mode == m.$1 ? m.$3 : kBorder),
                   borderRadius: BorderRadius.circular(8),
                 ),

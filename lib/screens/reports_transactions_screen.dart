@@ -161,7 +161,7 @@ class _TxScreenState extends State<TransactionsScreen> {
                                   Container(
                                     width: 40, height: 40,
                                     decoration: BoxDecoration(
-                                      color: (cat?.color ?? Colors.grey).withOpacity(0.1),
+                                      color: (cat?.color ?? Colors.grey).withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(11)),
                                     child: Center(child: Text(cat?.icon ?? '💰',
                                       style: const TextStyle(fontSize: 19)))),

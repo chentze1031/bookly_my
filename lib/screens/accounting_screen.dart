@@ -1231,7 +1231,7 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
               onTap: () => setState(() => _selectedAcc = e.key),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                color: isSelected ? kDark.withOpacity(0.08) : Colors.transparent,
+                color: isSelected ? kDark.withValues(alpha: 0.08) : Colors.transparent,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(acc.name, style: TextStyle(
                     fontSize: 11, fontWeight: FontWeight.w600,
@@ -1328,7 +1328,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: status.color.withOpacity(0.12),
+        color: status.color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text('${status.icon} $label',
@@ -1472,7 +1472,7 @@ class _AmountBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(color: color.withOpacity(0.07), borderRadius: BorderRadius.circular(10)),
+    decoration: BoxDecoration(color: color.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(10)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label, style: TextStyle(fontSize: 10, color: color)),
       Text(large ? value : 'RM $value',

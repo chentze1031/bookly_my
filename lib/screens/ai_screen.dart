@@ -265,7 +265,7 @@ class _ResultCard extends StatelessWidget {
         color: kSurface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: kBorder, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -275,7 +275,7 @@ class _ResultCard extends StatelessWidget {
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: confColor.withOpacity(0.1), borderRadius: BorderRadius.circular(99)),
+            decoration: BoxDecoration(color: confColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(99)),
             child: Text('$pct% match', style: TextStyle(color: confColor, fontSize: 12, fontWeight: FontWeight.w700)),
           ),
         ]),
@@ -287,7 +287,7 @@ class _ResultCard extends StatelessWidget {
         Row(children: [
           Container(
             width: 44, height: 44,
-            decoration: BoxDecoration(color: cat.color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: cat.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
             child: Center(child: Text(cat.icon, style: const TextStyle(fontSize: 24))),
           ),
           const SizedBox(width: 12),
@@ -471,7 +471,7 @@ class _CashflowTabState extends State<_CashflowTab> {
             ...fc.insights.asMap().entries.map((e) => _InsightTile(index: e.key + 1, text: e.value)),
 
             const SizedBox(height: 12),
-            Center(child: Text('Pull down to refresh forecast', style: TextStyle(fontSize: 11, color: kMuted.withOpacity(0.6)))),
+            Center(child: Text('Pull down to refresh forecast', style: TextStyle(fontSize: 11, color: kMuted.withValues(alpha: 0.6)))),
             const SizedBox(height: 20),
           ],
         ),
@@ -518,9 +518,9 @@ class _BarChart extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            _Bar(height: incH,  color: isForecast ? kGreen.withOpacity(0.5) : kGreen),
+                            _Bar(height: incH,  color: isForecast ? kGreen.withValues(alpha: 0.5) : kGreen),
                             const SizedBox(width: 2),
-                            _Bar(height: expH,  color: isForecast ? kRed.withOpacity(0.5)   : kRed),
+                            _Bar(height: expH,  color: isForecast ? kRed.withValues(alpha: 0.5)   : kRed),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -629,7 +629,7 @@ class _MiniStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-    decoration: BoxDecoration(color: color.withOpacity(0.07), borderRadius: BorderRadius.circular(8)),
+    decoration: BoxDecoration(color: color.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(8)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
       const SizedBox(height: 2),

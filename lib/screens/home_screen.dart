@@ -215,7 +215,7 @@ class HomeScreen extends StatelessWidget {
                                 Container(
                                   width: 38, height: 38,
                                   decoration: BoxDecoration(
-                                    color: (cat?.color ?? Colors.grey).withOpacity(0.1),
+                                    color: (cat?.color ?? Colors.grey).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Center(child: Text(cat?.icon ?? '💰', style: const TextStyle(fontSize: 17))),

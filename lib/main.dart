@@ -545,7 +545,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                         padding: const EdgeInsets.all(13),
                         decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder, width: 1.5), borderRadius: BorderRadius.circular(12)),
                         child: Row(children: [
-                          Container(width: 36, height: 36, decoration: BoxDecoration(color: _cat!.color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                          Container(width: 36, height: 36, decoration: BoxDecoration(color: _cat!.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                             child: Center(child: Text(_cat!.icon, style: const TextStyle(fontSize: 20)))),
                           const SizedBox(width: 10),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -583,7 +583,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                             Container(
                               margin: const EdgeInsets.only(top: 4),
                               decoration: BoxDecoration(color: kSurface, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(12),
-                                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 12)]),
+                                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 12)]),
                               constraints: const BoxConstraints(maxHeight: 200),
                               child: SingleChildScrollView(
                                 child: Column(

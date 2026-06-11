@@ -141,6 +141,9 @@ class SubState extends ChangeNotifier {
   // ── Load interstitial ad ──────────────────────────────────────────────────
   void _loadInterstitialAd() {
     if (isPro) return;
+    // 占位符 ID 必然加载失败，直接跳过，避免空耗 5 次重试
+    // TODO: 在 AdMob Console 创建插屏广告单元并替换 _admobInterstitial 后，此行自动失效
+    if (_admobInterstitial.contains('PLACEHOLDER')) return;
     // FIX #10: 连续失败超过上限则停止重试，防止死循环
     if (_adFailCount >= _adMaxRetries) return;
     InterstitialAd.load(
