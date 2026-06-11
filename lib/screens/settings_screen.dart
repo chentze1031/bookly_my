@@ -9,7 +9,10 @@ import '../state/sub_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import '../screens/auth_screen.dart';
+import 'ai_screen.dart';
+import 'bank_import_screen.dart';
 import 'company_info_screen.dart';
+import 'inventory_screen.dart';
 import 'sub_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -222,7 +225,7 @@ class _SettingsState extends State<SettingsScreen> {
               subtitle: const Text('Auto-categorise & cash flow forecast',
                   style: TextStyle(fontSize: 12)),
               trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => _showComingSoon(context),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiScreen())),
             ),
             const Divider(height: 1, color: kBorder, indent: 16),
             ListTile(
@@ -232,7 +235,7 @@ class _SettingsState extends State<SettingsScreen> {
               subtitle: const Text('Import PDF bank statement via AI',
                   style: TextStyle(fontSize: 12)),
               trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => _showComingSoon(context),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BankImportScreen())),
             ),
             const Divider(height: 1, color: kBorder, indent: 16),
             ListTile(
@@ -242,7 +245,7 @@ class _SettingsState extends State<SettingsScreen> {
               subtitle: const Text('Manage stock, prices & alerts',
                   style: TextStyle(fontSize: 12)),
               trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => _showComingSoon(context),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryScreen())),
             ),
           ]),
         ),
@@ -261,18 +264,6 @@ class _SettingsState extends State<SettingsScreen> {
     );
   }
 
-  void _showComingSoon(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('🚧 Coming Soon'),
-        content: const Text('This feature is under development.\nStay tuned for updates!'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-        ],
-      ),
-    );
-  }
 }
 
 // ── Logged-in account tile ────────────────────────────────────────────────────
