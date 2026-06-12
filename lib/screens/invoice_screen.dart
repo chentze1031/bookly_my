@@ -16,6 +16,8 @@ import '../state/sub_state.dart';
 import '../accounting_models.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
+import '../services/inventory_service.dart';
+import '../screens/inventory_screen.dart' show showInventoryPicker;
 
 // ─── Public shared helpers (used by payroll_screen.dart too) ──────────────────
 
@@ -508,6 +510,11 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
         );
         await acc.saveArInvoice(arInv);
       } catch (_) {}
+
+      // ── Auto-deduct inventory for linked line items ──────────────────────
+      try {
+        await context.read<InventoryState>().deductForInvoice(_items, _invNo);
+      } catch (_) {}
       // ─────────────────────────────────────────────────────────────────
       if (mounted) {
         // FIX #3: 触发保存动作广告（非 Pro 用户每 3 分钟最多展示一次）
@@ -952,6 +959,40 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                         'sst': 'none',
                         'note': ''
                       }))),
+              const SizedBox(height: 8),
+              DashedBtn(
+                  label: context.read<AppState>().settings.lang == 'zh'
+                      ? '📦 从库存选择' : '📦 From Inventory',
+                  onTap: () async {
+                    final picked = await showInventoryPicker(context);
+                    if (picked == null || !mounted) return;
+                    setState(() {
+                      // replace a single empty first row instead of appending after it
+                      if (_items.length == 1 && (_items[0]['desc'] ?? '').isEmpty && (_items[0]['price'] ?? '').isEmpty) {
+                        _items.removeAt(0);
+                      }
+                      _items.add({
+                        'desc':   picked.name,
+                        'qty':    '1',
+                        'price':  picked.sellPrice.toStringAsFixed(2),
+                        'disc':   '',
+                        'sst':    'none',
+                        'note':   '',
+                        'inv_id': picked.id.toString(),
+                      });
+                    });
+                    // low / out of stock warning (non-blocking)
+                    if (picked.qty <= picked.lowStockAt && mounted) {
+                      final zh = context.read<AppState>().settings.lang == 'zh';
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(zh
+                            ? '⚠️ "${picked.name}" 库存仅剩 ${picked.qty} ${picked.unit}'
+                            : '⚠️ "${picked.name}" only ${picked.qty} ${picked.unit} left'),
+                        backgroundColor: Colors.orange.shade800,
+                        behavior: SnackBarBehavior.floating,
+                      ));
+                    }
+                  }),
               const SizedBox(height: 14),
 
               // ── Totals ─────────────────────────────────────────────────
