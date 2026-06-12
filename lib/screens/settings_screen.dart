@@ -12,7 +12,6 @@ import '../screens/auth_screen.dart';
 import 'ai_screen.dart';
 import 'bank_import_screen.dart';
 import 'company_info_screen.dart';
-import 'inventory_screen.dart';
 import 'sub_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -236,16 +235,6 @@ class _SettingsState extends State<SettingsScreen> {
                   style: TextStyle(fontSize: 12)),
               trailing: const Icon(Icons.chevron_right, color: kMuted),
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BankImportScreen())),
-            ),
-            const Divider(height: 1, color: kBorder, indent: 16),
-            ListTile(
-              leading: const Text('📦', style: TextStyle(fontSize: 22)),
-              title: const Text('Inventory',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              subtitle: const Text('Manage stock, prices & alerts',
-                  style: TextStyle(fontSize: 12)),
-              trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryScreen())),
             ),
           ]),
         ),
