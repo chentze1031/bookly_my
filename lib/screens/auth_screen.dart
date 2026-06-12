@@ -314,40 +314,47 @@ class _GoogleLogoPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
-    final r  = size.width / 2;
+    final r = size.width / 2;
 
+    // Background circle
     canvas.drawCircle(Offset(cx, cy), r, Paint()..color = Colors.white);
 
-    final segments = [
-      (0.0,   90.0, const Color(0xFF4285F4)),
-      (90.0,  90.0, const Color(0xFF34A853)),
-      (180.0, 90.0, const Color(0xFFFBBC05)),
-      (270.0, 90.0, const Color(0xFFEA4335)),
-    ];
+    // Blue arc (top-right quarter)
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: r * 0.65),
+      _rad(0), _rad(90), false,
+      Paint()..color = const Color(0xFF4285F4)..strokeWidth = r * 0.22..style = PaintingStyle.stroke,
+    );
 
-    for (final seg in segments) {
-      final paint = Paint()
-        ..color = seg.$3
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = size.width * 0.18;
+    // Green arc (bottom-right quarter)
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: r * 0.65),
+      _rad(90), _rad(90), false,
+      Paint()..color = const Color(0xFF34A853)..strokeWidth = r * 0.22..style = PaintingStyle.stroke,
+    );
 
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset(cx, cy), radius: r * 0.72),
-        _deg(seg.$1),
-        _deg(seg.$2),
-        false,
-        paint,
-      );
-    }
+    // Yellow arc (bottom-left quarter)
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: r * 0.65),
+      _rad(180), _rad(90), false,
+      Paint()..color = const Color(0xFFFBBC05)..strokeWidth = r * 0.22..style = PaintingStyle.stroke,
+    );
 
+    // Red arc (top-left quarter)
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: r * 0.65),
+      _rad(270), _rad(90), false,
+      Paint()..color = const Color(0xFFEA4335)..strokeWidth = r * 0.22..style = PaintingStyle.stroke,
+    );
+
+    // Blue connecting rectangle on the right
     canvas.drawRect(
-      Rect.fromLTRB(cx, cy - size.height * 0.09,
-          cx + r * 0.72, cy + size.height * 0.09),
+      Rect.fromLTWH(cx, cy - r * 0.15, r * 0.65, r * 0.3),
       Paint()..color = const Color(0xFF4285F4),
     );
   }
 
-  double _deg(double d) => d * 3.14159265 / 180.0;
+  double _rad(double degrees) => degrees * 3.141592653589793 / 180;
 
   @override
   bool shouldRepaint(_) => false;
