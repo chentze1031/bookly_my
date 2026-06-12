@@ -59,7 +59,7 @@ jobs:
           keyAlias=${{ secrets.KEY_ALIAS }}
           EOF
 
-      - name: name: Build APK
+      - name: Build APK
         run: flutter build apk --release
 
       - name: Upload APK artifact
