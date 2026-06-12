@@ -76,8 +76,7 @@ int _tabIndex(String loc) {
   if (loc.startsWith('/records')) return 1;
   if (loc.startsWith('/reports')) return 2;
   if (loc.startsWith('/accounting')) return 3;
-  if (loc.startsWith('/inventory')) return 4;
-  if (loc.startsWith('/settings')) return 5;
+  if (loc.startsWith('/settings')) return 4;
   return 0;
 }
 
@@ -92,7 +91,6 @@ GoRouter _buildRouter() => GoRouter(
         GoRoute(path: '/records', pageBuilder: (_, __) => const NoTransitionPage(child: _RecordsTab())),
         GoRoute(path: '/reports', pageBuilder: (_, __) => const NoTransitionPage(child: _ReportsTab())),
         GoRoute(path: '/accounting', pageBuilder: (_, __) => const NoTransitionPage(child: _AccountingTab())),
-        GoRoute(path: '/inventory', pageBuilder: (_, __) => const NoTransitionPage(child: _InventoryTab())),
         GoRoute(path: '/settings', pageBuilder: (_, __) => const NoTransitionPage(child: _SettingsTab())),
       ],
     ),
@@ -164,7 +162,7 @@ class _AppShellState extends State<_AppShell> {
     final loc  = GoRouterState.of(context).uri.toString();
     final idx  = _tabIndex(loc);
 
-    final titles = [t.home, t.records, t.reports, t.accounting, t.inventory, t.settTitle];
+    final titles = [t.home, t.records, t.reports, t.accounting, t.settTitle];
 
     return Scaffold(
       appBar: (idx == 0) ? null : AppBar(
@@ -172,7 +170,7 @@ class _AppShellState extends State<_AppShell> {
         actions: [if (sub.isPro) const Padding(padding: EdgeInsets.only(right: 14), child: ProBadge())],
       ),
       body: widget.child,
-      floatingActionButton: (idx < 3) ? FloatingActionButton(
+      floatingActionButton: (idx != 3 && idx != 4) ? FloatingActionButton(
         onPressed: () => _showAddTx(),
         backgroundColor: kDark,
         foregroundColor: Colors.white,
@@ -183,10 +181,9 @@ class _AppShellState extends State<_AppShell> {
         children: [
           const Divider(height: 1, color: kBorder),
           BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
             currentIndex: idx,
             onTap: (i) {
-              const paths = ['/home', '/records', '/reports', '/accounting', '/inventory', '/settings'];
+              const paths = ['/home', '/records', '/reports', '/accounting', '/settings'];
               context.go(paths[i]);
             },
             items: [
@@ -194,7 +191,6 @@ class _AppShellState extends State<_AppShell> {
               BottomNavigationBarItem(icon: const Text('📋', style: TextStyle(fontSize: 22)), label: t.records),
               BottomNavigationBarItem(icon: const Text('📊', style: TextStyle(fontSize: 22)), label: t.reports),
               BottomNavigationBarItem(icon: const Text('📒', style: TextStyle(fontSize: 22)), label: t.accounting),
-              BottomNavigationBarItem(icon: const Text('📦', style: TextStyle(fontSize: 22)), label: t.inventory),
               BottomNavigationBarItem(icon: const Text('⚙️', style: TextStyle(fontSize: 22)), label: t.settings),
             ],
           ),
@@ -242,12 +238,6 @@ class _AccountingTab extends StatelessWidget {
   const _AccountingTab();
   @override
   Widget build(BuildContext context) => const AccountingScreen();
-}
-
-class _InventoryTab extends StatelessWidget {
-  const _InventoryTab();
-  @override
-  Widget build(BuildContext context) => const InventoryScreen(embedded: true);
 }
 
 class _SettingsTab extends StatelessWidget {

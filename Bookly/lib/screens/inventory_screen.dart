@@ -94,10 +94,7 @@ class _T {
 // INVENTORY SCREEN (Products + Reports tabs)
 // ════════════════════════════════════════════════════════════════════════════
 class InventoryScreen extends StatefulWidget {
-  /// [embedded] = true when shown as a bottom-nav tab: the app shell already
-  /// provides the AppBar, so this screen must not render its own.
-  final bool embedded;
-  const InventoryScreen({super.key, this.embedded = false});
+  const InventoryScreen({super.key});
   @override State<InventoryScreen> createState() => _InventoryScreenState();
 }
 
@@ -156,7 +153,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     return Scaffold(
       backgroundColor: kBg,
-      appBar: widget.embedded ? null : AppBar(
+      appBar: AppBar(
         title: Text('📦  ${t.inventory}'),
         actions: [
           IconButton(icon: const Icon(Icons.add), tooltip: t.addItem, onPressed: () => _showForm()),

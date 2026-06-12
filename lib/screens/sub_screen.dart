@@ -175,15 +175,15 @@ class _SubScreenState extends State<SubScreen> {
               child: Row(children: [
                 _PlanTab(
                   label: 'Monthly',
-                  price: 'RM 9.90/mo',
+                  price: sub.monthlyPriceString != null ? '${sub.monthlyPriceString}/mo' : '—',
                   badge: null,
                   selected: !_yearly,
                   onTap: () => setState(() => _yearly = false),
                 ),
                 _PlanTab(
                   label: 'Yearly',
-                  price: 'RM 49.90/yr',
-                  badge: 'Save 58%',
+                  price: sub.yearlyPriceString != null ? '${sub.yearlyPriceString}/yr' : '—',
+                  badge: sub.yearlySavingsLabel,
                   selected: _yearly,
                   onTap: () => setState(() => _yearly = true),
                 ),
@@ -211,8 +211,12 @@ class _SubScreenState extends State<SubScreen> {
                           color: Colors.white, strokeWidth: 2.5))
                     : Text(
                         _yearly
-                            ? 'Subscribe Yearly – RM 49.90'
-                            : 'Subscribe Monthly – RM 9.90',
+                            ? (sub.yearlyPriceString != null
+                                ? 'Subscribe Yearly – ${sub.yearlyPriceString}'
+                                : 'Subscribe Yearly')
+                            : (sub.monthlyPriceString != null
+                                ? 'Subscribe Monthly – ${sub.monthlyPriceString}'
+                                : 'Subscribe Monthly'),
                         style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w800)),
               ),

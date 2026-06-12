@@ -141,6 +141,9 @@ class SubState extends ChangeNotifier {
   // ── Load interstitial ad ──────────────────────────────────────────────────
   void _loadInterstitialAd() {
     if (isPro) return;
+    // 占位符 ID 必然加载失败，直接跳过，避免空耗 5 次重试
+    // TODO: 在 AdMob Console 创建插屏广告单元并替换 _admobInterstitial 后，此行自动失效
+    if (_admobInterstitial.contains('PLACEHOLDER')) return;
     // FIX #10: 连续失败超过上限则停止重试，防止死循环
     if (_adFailCount >= _adMaxRetries) return;
     InterstitialAd.load(
@@ -250,6 +253,31 @@ class SubState extends ChangeNotifier {
         storeId.startsWith('$productId:') ||
         pkg.identifier == productId ||
         pkg.identifier.startsWith('$productId:');
+  }
+
+  // ── Localized store prices ─────────────────────────────────────────────────
+  // FIX (Google Play 订阅政策): 价格必须读取 Google Play 本地化后的 priceString，
+  // 不能硬编码 RM，否则与结账界面币种不一致会被拒审。
+  Package? _findPackage(bool yearly) {
+    final offering = _offerings?.current;
+    if (offering == null) return null;
+    final productId = yearly ? _prodYearly : _prodMonthly;
+    return offering.availablePackages
+            .where((p) => _matchesProductId(p, productId)).firstOrNull ??
+        (yearly ? offering.annual : offering.monthly);
+  }
+
+  /// e.g. "RM 9.90" in Malaysia — always matches the Google Play checkout currency.
+  String? get monthlyPriceString => _findPackage(false)?.storeProduct.priceString;
+  String? get yearlyPriceString  => _findPackage(true)?.storeProduct.priceString;
+
+  /// Savings badge computed from real store prices (null until prices load).
+  String? get yearlySavingsLabel {
+    final m = _findPackage(false)?.storeProduct.price;
+    final y = _findPackage(true)?.storeProduct.price;
+    if (m == null || y == null || m <= 0) return null;
+    final pct = ((1 - y / (m * 12)) * 100).round();
+    return pct >= 1 ? 'Save $pct%' : null;
   }
 
   void _syncAdsAfterAccessChange() {
