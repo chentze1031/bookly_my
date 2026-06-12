@@ -61,7 +61,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   // ✅ 使用原生 Google Sign-In，不跳浏览器
   static const _webClientId =
-      '784514295822-dgouumjkujlsrhmc7j82k973csko4a5e.apps.googleusercontent.com';
+      '85568769779-on81qr46oevv4396ss2sc7ggakl1758f.apps.googleusercontent.com';
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     serverClientId: _webClientId,
