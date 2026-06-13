@@ -187,6 +187,9 @@ class _AppShellState extends State<_AppShell> {
             currentIndex: idx,
             onTap: (i) {
               const paths = ['/home', '/records', '/reports', '/accounting', '/inventory', '/settings'];
+              // Pop any sub-pages (e.g. SstReportScreen, CompanyInfoScreen) before switching tabs
+              final nav = Navigator.of(context);
+              if (nav.canPop()) nav.popUntil((route) => route.isFirst);
               context.go(paths[i]);
             },
             items: [
