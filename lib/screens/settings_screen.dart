@@ -10,6 +10,7 @@ import '../utils.dart';
 import '../widgets/common.dart';
 import '../screens/auth_screen.dart';
 import 'ai_screen.dart';
+import 'auth_screen.dart' show guestMode;
 import 'bank_import_screen.dart';
 import 'company_info_screen.dart';
 import 'sub_screen.dart';
@@ -318,9 +319,13 @@ class _LoggedInTile extends StatelessWidget {
             style: ElevatedButton.styleFrom(backgroundColor: kRed, foregroundColor: Colors.white),
             onPressed: () async {
               Navigator.pop(context);
-              await context.read<SubState>().forgetUser();
-              await context.read<AppState>().signOut();
-              // AuthGate will detect signOut and show AuthScreen automatically
+              // FIX(黑屏): 任何一步抛异常都不能中断登出链；
+              // RevenueCat 匿名用户 logOut 会抛错，必须包裹
+              final sub = context.read<SubState>();
+              final app = context.read<AppState>();
+              try { await sub.forgetUser(); } catch (_) {}
+              try { await app.signOut(); } catch (_) {}
+              guestMode.value = false; // 确保 AuthGate 走登录分支
             },
             child: Text(t.isZh ? '登出' : 'Sign Out'),
           ),
