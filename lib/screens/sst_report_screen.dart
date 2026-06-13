@@ -119,7 +119,7 @@ class _SstReportScreenState extends State<SstReportScreen> {
               ),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                initialValue: periods.contains(_period) ? _period : periods.first,
+                value: periods.contains(_period) ? _period : periods.first,
                 items: periods.map((p) => DropdownMenuItem(
                   value: p,
                   child: Text(p.replaceFirst('/', ' → '),
