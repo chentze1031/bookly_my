@@ -71,10 +71,9 @@ class AppState extends ChangeNotifier {
     loading = false;
     notifyListeners();
     fetchFxRates();
-    if (_loggedIn) {
-      await _flushQueue();
-      pullCloud();
-    }
+    // FIX: 不在 init 里调 pullCloud()，避免与 AuthGate.syncOnLogin() 并发竞跑。
+    // 云端同步统一由 AuthGate 在 signedIn / initialSession 事件后触发。
+    if (_loggedIn) await _flushQueue();
   }
 
   // ── Sign Out ──────────────────────────────────────────────────────────────────
@@ -115,36 +114,14 @@ class AppState extends ChangeNotifier {
     return pushedOk;
   }
 
-  /// 登录成功后调用：把本地（游客期间录入的）数据合并上云，再拉取云端。
-  /// 这是修复"数据从不上云"的核心 —— 之前 migrateGuestData 定义了却从未被调用。
+  /// 登录成功后调用：合并本地数据与云端数据。
+  /// pullCloud() 内部已处理本地独有记录的上传，不需要先单独 push。
   Future<void> syncOnLogin() async {
     if (!_loggedIn) return;
-    try {
-      await migrateGuestData(); // push 本地 → 云端
-      await pullCloud();        // 再拉云端（含其它设备的数据）合并
-    } catch (_) {
-      // 同步失败不阻塞进入 App，数据仍在本地，下次可重试
-    }
-  }
-
-  // ── Guest → Account Migration ─────────────────────────────────────────────────
-  Future<void> migrateGuestData() async {
-    if (!_loggedIn) return;
-    syncStatus = SyncStatus.pushing;
-    notifyListeners();
-    try {
-      await pushCloud();
-      final prefs = await SharedPreferences.getInstance();
-      final invList = jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List;
-      final payList = jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List;
-      if (invList.isNotEmpty) await _pushInvoicesCloud(invList);
-      if (payList.isNotEmpty) await _pushPayrollsCloud(payList);
-      syncStatus = SyncStatus.done;
-    } catch (e) {
-      syncStatus = SyncStatus.error;
-      syncError  = e.toString().substring(0, 60.clamp(0, e.toString().length));
-    }
-    notifyListeners();
+    await _flushQueue();
+    // pullCloud() 内部：本地有、云端没有的 → 推上云；云端有的 → 拉下来合并。
+    // 失败时保留现有本地数据，不清空。
+    await pullCloud();
   }
 
   // ── Settings ─────────────────────────────────────────────────────────────────
@@ -309,6 +286,8 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     try {
       final uid = _uid!;
+
+      // ── Transactions ──────────────────────────────────────────────────────
       final remoteTxs = await SupabaseService.loadTxs();
       final remoteMap = {for (final tx in remoteTxs) tx.id: tx};
       final localMap  = {for (final tx in txs) tx.id: tx};
@@ -318,9 +297,11 @@ class AppState extends ChangeNotifier {
         final r = remoteMap[id];
         final l = localMap[id];
         if (r == null) {
+          // 本地有，云端没有 → 推上云，保留本地版本
           merged.add(l!);
           _pushTxCloud(l);
         } else {
+          // 云端有 → 云端为准，写回本地 SQLite
           merged.add(r);
           await DbService.upsertTx(r);
         }
@@ -328,18 +309,34 @@ class AppState extends ChangeNotifier {
       merged.sort((a, b) => b.date.compareTo(a.date));
       txs = merged;
 
+      // ── Customers ─────────────────────────────────────────────────────────
       final remoteCusts = await _sb.from('customers').select().eq('user_id', uid);
-      if ((remoteCusts as List).isNotEmpty) {
-        for (final row in remoteCusts) { await DbService.upsertCustomer(Customer.fromMap(row)); }
-        customers = await DbService.loadCustomers();
+      // 合并：云端有的写回本地；本地有云端没有的推上云
+      final remoteCustomerIds = <int>{};
+      for (final row in (remoteCusts as List)) {
+        final c = Customer.fromMap(row);
+        remoteCustomerIds.add(c.id);
+        await DbService.upsertCustomer(c);
       }
+      for (final c in customers) {
+        if (!remoteCustomerIds.contains(c.id)) _pushCustomerCloud(c);
+      }
+      customers = await DbService.loadCustomers();
 
+      // ── Employees ─────────────────────────────────────────────────────────
       final remoteEmps = await _sb.from('employees').select().eq('user_id', uid);
-      if ((remoteEmps as List).isNotEmpty) {
-        for (final row in remoteEmps) { await DbService.upsertEmployee(Employee.fromMap(row)); }
-        employees = await DbService.loadEmployees();
+      final remoteEmpIds = <int>{};
+      for (final row in (remoteEmps as List)) {
+        final e = Employee.fromMap(row);
+        remoteEmpIds.add(e.id);
+        await DbService.upsertEmployee(e);
       }
+      for (final e in employees) {
+        if (!remoteEmpIds.contains(e.id)) _pushEmployeeCloud(e);
+      }
+      employees = await DbService.loadEmployees();
 
+      // ── Invoices / Payrolls ───────────────────────────────────────────────
       final invRow = await _sb.from('user_data').select('invoices').eq('user_id', uid).maybeSingle();
       if (invRow != null && invRow['invoices'] != null) {
         final prefs = await SharedPreferences.getInstance();
@@ -352,6 +349,7 @@ class AppState extends ChangeNotifier {
         await prefs.setString(StorageKeys.payrolls, jsonEncode(payRow['payrolls']));
       }
 
+      // ── Settings ──────────────────────────────────────────────────────────
       final remoteS = await SupabaseService.loadSettings();
       if (remoteS != null) settings = AppSettings.fromMap(remoteS);
 
@@ -359,6 +357,7 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
+      // FIX: 拉取失败时不改动 txs/customers/employees，保留现有本地数据
       syncStatus = SyncStatus.error;
       syncError  = e.toString().substring(0, 60.clamp(0, e.toString().length));
       notifyListeners();

@@ -19,8 +19,11 @@ create table if not exists public.transactions (
   desc_zh       text,
   date          text,
   entries       text,
+  updated_at    timestamptz default now(),
   primary key (id, user_id)          -- 对应代码里 onConflict: 'id,user_id'
 );
+-- 已有旧表时补充 updated_at 列
+alter table public.transactions add column if not exists updated_at timestamptz default now();
 create index if not exists idx_tx_user_date on public.transactions(user_id, date desc);
 
 -- ─── 2. 客户表 ──────────────────────────────────────────────────────────────
@@ -33,8 +36,10 @@ create table if not exists public.customers (
   address    text,
   phone      text,
   email      text,
+  updated_at timestamptz default now(),
   primary key (id, user_id)
 );
+alter table public.customers add column if not exists updated_at timestamptz default now();
 
 -- ─── 3. 员工表（薪资/EPF/SOCSO） ────────────────────────────────────────────
 create table if not exists public.employees (
@@ -51,8 +56,10 @@ create table if not exists public.employees (
   bank_acct    text,
   phone        text,
   email        text,
+  updated_at   timestamptz default now(),
   primary key (id, user_id)
 );
+alter table public.employees add column if not exists updated_at timestamptz default now();
 
 -- ─── 4. 发票流水号（每年一行） ──────────────────────────────────────────────
 create table if not exists public.invoice_seq (
