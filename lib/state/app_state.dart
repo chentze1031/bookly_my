@@ -496,8 +496,43 @@ class AppState extends ChangeNotifier {
     return b;
   }
 
+  // ── Date range filter (Task 3: custom date range) ────────────────────────────
+  DateTime? filterFrom;
+  DateTime? filterTo;
+
+  void setDateRange(DateTime? from, DateTime? to) {
+    filterFrom = from;
+    filterTo   = to;
+    notifyListeners();
+  }
+
+  void clearDateRange() {
+    filterFrom = null;
+    filterTo   = null;
+    notifyListeners();
+  }
+
+  bool get hasCustomRange => filterFrom != null && filterTo != null;
+
   String get currentMonth => DateTime.now().toIso8601String().substring(0, 7);
-  List<Transaction> get thisMonthTxs => txs.where((t) => t.date.startsWith(currentMonth)).toList();
+
+  String get dateRangeLabel {
+    if (hasCustomRange) {
+      final f = filterFrom!; final t = filterTo!;
+      return '${f.day}/${f.month}/${f.year} – ${t.day}/${t.month}/${t.year}';
+    }
+    return currentMonth;
+  }
+
+  List<Transaction> get thisMonthTxs {
+    if (hasCustomRange) {
+      final fromStr = filterFrom!.toIso8601String().substring(0, 10);
+      final toStr   = filterTo!.toIso8601String().substring(0, 10);
+      return txs.where((t) => t.date.compareTo(fromStr) >= 0 && t.date.compareTo(toStr) <= 0).toList();
+    }
+    return txs.where((t) => t.date.startsWith(currentMonth)).toList();
+  }
+
   List<String> get availableMonths => txs.map((t) => t.date.substring(0, 7)).toSet().toList()..sort((a,b)=>b.compareTo(a));
 
   String? get currentUid => _uid;

@@ -78,10 +78,32 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(co, style: const TextStyle(color: Color(0xFF6B6860), fontSize: 12)),
-                            Text(monthLabel(curMonth, lang),
-                              style: const TextStyle(color: Color(0xFF4B4840), fontSize: 11)),
+                            // ── Date range selector (Task 3) ─────────────────
+                            GestureDetector(
+                              onTap: () => _showDateRangePicker(context, app, lang),
+                              child: Row(children: [
+                                Text(
+                                  app.hasCustomRange
+                                    ? app.dateRangeLabel
+                                    : monthLabel(curMonth, lang),
+                                  style: const TextStyle(color: Color(0xFF4B4840), fontSize: 11)),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.keyboard_arrow_down, color: Color(0xFF4B4840), size: 14),
+                                if (app.hasCustomRange) ...[
+                                  const SizedBox(width: 4),
+                                  GestureDetector(
+                                    onTap: () => app.clearDateRange(),
+                                    child: const Icon(Icons.close, color: Color(0xFF6B6860), size: 12),
+                                  ),
+                                ],
+                              ]),
+                            ),
                           ]),
-                          if (sub.isPro) const ProBadge(),
+                          Row(children: [
+                            // ── Sync status indicator (Task 4) ──────────────
+                            _SyncChip(status: app.syncStatus, pendingOps: app.pendingOps),
+                            if (sub.isPro) ...[const SizedBox(width: 8), const ProBadge()],
+                          ]),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -299,6 +321,72 @@ class _BannerAdWidgetState extends State<_BannerAdWidget> {
       width: _bannerAd!.size.width.toDouble(),
       height: _bannerAd!.size.height.toDouble(),
       child: AdWidget(ad: _bannerAd!),
+    );
+  }
+}
+
+// ── Date range picker helper (Task 3) ─────────────────────────────────────────
+Future<void> _showDateRangePicker(BuildContext context, AppState app, String lang) async {
+  final now = DateTime.now();
+  final initial = DateTimeRange(
+    start: app.filterFrom ?? DateTime(now.year, now.month, 1),
+    end:   app.filterTo   ?? DateTime(now.year, now.month + 1, 0),
+  );
+  final picked = await showDateRangePicker(
+    context: context,
+    firstDate: DateTime(2020),
+    lastDate:  DateTime(now.year + 1, 12, 31),
+    initialDateRange: initial,
+    builder: (ctx, child) => Theme(
+      data: ThemeData.light().copyWith(
+        colorScheme: const ColorScheme.light(primary: Color(0xFF1A1A1A), onPrimary: Colors.white),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: const Color(0xFF1A1A1A)),
+        ),
+      ),
+      child: child!,
+    ),
+  );
+  if (picked != null) {
+    app.setDateRange(picked.start, picked.end);
+  }
+}
+
+// ── Sync status chip (Task 4) ─────────────────────────────────────────────────
+class _SyncChip extends StatelessWidget {
+  final SyncStatus status;
+  final int pendingOps;
+  const _SyncChip({required this.status, required this.pendingOps});
+
+  @override
+  Widget build(BuildContext context) {
+    if (status == SyncStatus.idle && pendingOps == 0) return const SizedBox.shrink();
+
+    final (icon, label, color) = switch (status) {
+      SyncStatus.pulling || SyncStatus.pushing => (Icons.sync, 'Syncing…', const Color(0xFF60A5FA)),
+      SyncStatus.done    => (Icons.cloud_done_outlined, 'Synced', const Color(0xFF4ADE80)),
+      SyncStatus.error   => (Icons.cloud_off_outlined, 'Offline', const Color(0xFFF87171)),
+      SyncStatus.idle    => pendingOps > 0
+          ? (Icons.upload_outlined, '$pendingOps pending', const Color(0xFFFBBF24))
+          : (Icons.cloud_done_outlined, 'Synced', const Color(0xFF4ADE80)),
+    };
+
+    final isAnimating = status == SyncStatus.pulling || status == SyncStatus.pushing;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        isAnimating
+          ? SizedBox(width: 12, height: 12,
+              child: CircularProgressIndicator(strokeWidth: 1.5, color: color))
+          : Icon(icon, size: 12, color: color),
+        const SizedBox(width: 4),
+        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color)),
+      ]),
     );
   }
 }

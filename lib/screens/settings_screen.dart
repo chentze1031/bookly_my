@@ -12,6 +12,7 @@ import '../screens/auth_screen.dart';
 import 'ai_screen.dart';
 import 'bank_import_screen.dart';
 import 'company_info_screen.dart';
+import 'sst_report_screen.dart';
 import 'sub_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -138,6 +139,26 @@ class _SettingsState extends State<SettingsScreen> {
             trailing: const Icon(Icons.chevron_right, color: kMuted),
             onTap: () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const CompanyInfoScreen())),
+          ),
+        ),
+
+        // ── SST-02 Report ────────────────────────────────────────────────
+        SectionCard(
+          title: '🧾 ${t.isZh ? "SST-02 申报摘要" : "SST-02 Tax Summary"}',
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            leading: const Text('📊', style: TextStyle(fontSize: 28)),
+            title: Text(
+              t.isZh ? 'SST-02 双月申报摘要' : 'Bi-Monthly SST-02 Summary',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText),
+            ),
+            subtitle: Text(
+              t.isZh ? '按税率汇总应税销售额与 SST' : 'Taxable sales & SST grouped by rate',
+              style: const TextStyle(fontSize: 12, color: kMuted),
+            ),
+            trailing: const Icon(Icons.chevron_right, color: kMuted),
+            onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const SstReportScreen())),
           ),
         ),
 
