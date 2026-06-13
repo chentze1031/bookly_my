@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../state/sub_state.dart';
+import '../state/app_state.dart';
+import '../services/inventory_service.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // AUTH GATE — listens to Supabase auth state, routes to AuthScreen or app
@@ -30,9 +32,19 @@ class AuthGate extends StatelessWidget {
             }
             final session = Supabase.instance.client.auth.currentSession;
             if (session != null) {
+              // FIX(数据丢失): 登录后触发一次完整同步（本地→云端→拉取合并）。
+              // 用 event==signedIn 判断，确保只在真正登录那一刻同步，避免重复。
+              final event = snapshot.data?.event;
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (context.mounted) {
                   context.read<SubState>().identifyUser(session.user.id);
+                  if (event == AuthChangeEvent.signedIn ||
+                      event == AuthChangeEvent.initialSession) {
+                    context.read<AppState>().syncOnLogin();
+                    // FIX(游客模式): 登录后把本地库存迁移上云，再刷新列表
+                    final inv = context.read<InventoryState>();
+                    inv.migrateLocalToCloud().then((_) => inv.load());
+                  }
                 }
               });
               return child;

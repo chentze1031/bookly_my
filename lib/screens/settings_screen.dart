@@ -326,7 +326,17 @@ class _LoggedInTile extends StatelessWidget {
     );
     if (ok == true) {
       try { await sub.forgetUser(); } catch (_) {}
-      try { await app.signOut(); } catch (_) {}
+      bool pushed = true;
+      try { pushed = await app.signOut(); } catch (_) { pushed = false; }
+      // FIX(数据丢失): 若云端推送失败，本地数据已保留，提示用户。
+      if (!pushed && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.isZh
+            ? '⚠️ 数据未能上传到云端，已保留在本机。请联网后重新登录同步。'
+            : 'Data could not be synced to cloud; kept on this device. Re-login when online to sync.'),
+          duration: const Duration(seconds: 4),
+        ));
+      }
     }
   }
 }
