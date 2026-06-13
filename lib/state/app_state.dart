@@ -78,17 +78,53 @@ class AppState extends ChangeNotifier {
   }
 
   // ── Sign Out ──────────────────────────────────────────────────────────────────
-  Future<void> signOut() async {
+  /// 登出。返回 true=本地数据已安全上云后清除；false=推送失败，本地数据已保留。
+  Future<bool> signOut() async {
+    // FIX(数据丢失): 登出前先把本地数据推到云端，确认成功后才清本地。
+    // 推送失败则【不清除】本地数据，避免永久丢失。
+    bool pushedOk = true;
+    if (_loggedIn) {
+      try {
+        await _flushQueue();
+        final ok1 = await pushCloud();              // txs + customers + employees + settings
+        final prefs0 = await SharedPreferences.getInstance();
+        final invList = jsonDecode(prefs0.getString(StorageKeys.invoices) ?? '[]') as List;
+        final payList = jsonDecode(prefs0.getString(StorageKeys.payrolls) ?? '[]') as List;
+        if (invList.isNotEmpty) await _pushInvoicesCloud(invList);
+        if (payList.isNotEmpty) await _pushPayrollsCloud(payList);
+        pushedOk = ok1;
+      } catch (_) {
+        pushedOk = false;
+      }
+    }
+
     await _sb.auth.signOut();
-    await DbService.clearTxs();
-    txs = []; customers = []; employees = [];
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(StorageKeys.invoices);
-    await prefs.remove(StorageKeys.payrolls);
-    await prefs.remove(StorageKeys.offlineQueue);
-    _queue.clear();
-    pendingOps = 0;
+
+    // 只有确认数据已上云，才清除本地；否则保留本地数据等下次登录再同步。
+    if (pushedOk) {
+      await DbService.clearTxs();
+      txs = []; customers = []; employees = [];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(StorageKeys.invoices);
+      await prefs.remove(StorageKeys.payrolls);
+      await prefs.remove(StorageKeys.offlineQueue);
+      _queue.clear();
+      pendingOps = 0;
+    }
     notifyListeners();
+    return pushedOk;
+  }
+
+  /// 登录成功后调用：把本地（游客期间录入的）数据合并上云，再拉取云端。
+  /// 这是修复"数据从不上云"的核心 —— 之前 migrateGuestData 定义了却从未被调用。
+  Future<void> syncOnLogin() async {
+    if (!_loggedIn) return;
+    try {
+      await migrateGuestData(); // push 本地 → 云端
+      await pullCloud();        // 再拉云端（含其它设备的数据）合并
+    } catch (_) {
+      // 同步失败不阻塞进入 App，数据仍在本地，下次可重试
+    }
   }
 
   // ── Guest → Account Migration ─────────────────────────────────────────────────
