@@ -10,7 +10,6 @@ import '../utils.dart';
 import '../widgets/common.dart';
 import '../screens/auth_screen.dart';
 import 'ai_screen.dart';
-import 'auth_screen.dart' show guestMode;
 import 'bank_import_screen.dart';
 import 'company_info_screen.dart';
 import 'sub_screen.dart';
@@ -302,36 +301,33 @@ class _LoggedInTile extends StatelessWidget {
     ]);
   }
 
-  void _confirmSignOut(BuildContext context) {
-    showDialog(
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final sub = context.read<SubState>();
+    final app = context.read<AppState>();
+    final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: Text(t.isZh ? '确认登出？' : 'Sign Out?'),
         content: Text(t.isZh
           ? '登出后本地数据将被清除。\n云端数据仍然保留。'
           : 'Local data will be cleared after signing out.\nYour cloud data remains safe.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogCtx, false),
             child: Text(t.isZh ? '取消' : 'Cancel'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: kRed, foregroundColor: Colors.white),
-            onPressed: () async {
-              Navigator.pop(context);
-              // FIX(黑屏): 任何一步抛异常都不能中断登出链；
-              // RevenueCat 匿名用户 logOut 会抛错，必须包裹
-              final sub = context.read<SubState>();
-              final app = context.read<AppState>();
-              try { await sub.forgetUser(); } catch (_) {}
-              try { await app.signOut(); } catch (_) {}
-              guestMode.value = false; // 确保 AuthGate 走登录分支
-            },
+            onPressed: () => Navigator.pop(dialogCtx, true),
             child: Text(t.isZh ? '登出' : 'Sign Out'),
           ),
         ],
       ),
     );
+    if (ok == true) {
+      try { await sub.forgetUser(); } catch (_) {}
+      try { await app.signOut(); } catch (_) {}
+    }
   }
 }
 
@@ -386,33 +382,29 @@ class _GuestTile extends StatelessWidget {
     ]);
   }
 
-  void _signInAndMigrate(BuildContext context) {
-    showDialog(
+  Future<void> _signInAndMigrate(BuildContext context) async {
+    final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: Text(t.isZh ? '登录 Google？' : 'Sign in with Google?'),
         content: Text(t.isZh
           ? '登录后，您的本地数据将自动上传到云端，可在多设备使用。'
           : 'Your local data will be uploaded to the cloud so you can access it on any device.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogCtx, false),
             child: Text(t.isZh ? '取消' : 'Cancel'),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: kDark, foregroundColor: Colors.white),
-            onPressed: () async {
-              Navigator.pop(context);
-              // Pop guest mode → AuthScreen shows
-              guestMode.value = false;
-              // After login, migrateGuestData will be called from AuthGate
-            },
+            onPressed: () => Navigator.pop(dialogCtx, true),
             child: Text(t.isZh ? '继续' : 'Continue'),
           ),
         ],
       ),
     );
+    if (ok == true) guestMode.value = false;
   }
 }
 
