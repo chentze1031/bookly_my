@@ -21,9 +21,7 @@ import 'screens/invoice_screen.dart';
 import 'screens/payroll_screen.dart';
 import 'screens/sub_screen.dart';
 import 'screens/auth_screen.dart';
-import 'screens/bank_import_screen.dart';
 import 'screens/inventory_screen.dart';
-import 'screens/ai_screen.dart';
 import 'services/supabase_service.dart';
 import 'services/inventory_service.dart';
 import 'state/accounting_state.dart';
@@ -81,10 +79,14 @@ int _tabIndex(String loc) {
   return 0;
 }
 
+// ShellRoute's inner navigator key — lets _AppShell pop sub-pages before tab switch
+final _shellNavKey = GlobalKey<NavigatorState>();
+
 GoRouter _buildRouter() => GoRouter(
   initialLocation: '/home',
   routes: [
     ShellRoute(
+      navigatorKey: _shellNavKey,
       builder: (context, state, child) =>
           AuthGate(child: _AppShell(child: child)),
       routes: [
@@ -187,9 +189,8 @@ class _AppShellState extends State<_AppShell> {
             currentIndex: idx,
             onTap: (i) {
               const paths = ['/home', '/records', '/reports', '/accounting', '/inventory', '/settings'];
-              // Pop any sub-pages (e.g. SstReportScreen, CompanyInfoScreen) before switching tabs
-              final nav = Navigator.of(context);
-              if (nav.canPop()) nav.popUntil((route) => route.isFirst);
+              // Pop sub-pages (SST report, company info, etc.) via the shell's own navigator key
+              _shellNavKey.currentState?.popUntil((route) => route.isFirst);
               context.go(paths[i]);
             },
             items: [

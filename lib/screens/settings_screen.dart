@@ -9,8 +9,6 @@ import '../state/sub_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import '../screens/auth_screen.dart';
-import 'ai_screen.dart';
-import 'bank_import_screen.dart';
 import 'company_info_screen.dart';
 import 'sst_report_screen.dart';
 import 'sub_screen.dart';
@@ -230,32 +228,6 @@ class _SettingsState extends State<SettingsScreen> {
                 icon: const Icon(Icons.refresh, size: 16),
                 label: Text(t.fxReset),
               ),
-            ),
-          ]),
-        ),
-
-        // ── Tools & AI ──────────────────────────────────────────────────
-        SectionCard(
-          title: '🛠️  Tools',
-          child: Column(children: [
-            ListTile(
-              leading: const Text('✨', style: TextStyle(fontSize: 22)),
-              title: const Text('AI Assistant',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              subtitle: const Text('Auto-categorise & cash flow forecast',
-                  style: TextStyle(fontSize: 12)),
-              trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiScreen())),
-            ),
-            const Divider(height: 1, color: kBorder, indent: 16),
-            ListTile(
-              leading: const Text('🏦', style: TextStyle(fontSize: 22)),
-              title: const Text('Bank Statement Import',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              subtitle: const Text('Import PDF bank statement via AI',
-                  style: TextStyle(fontSize: 12)),
-              trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BankImportScreen())),
             ),
           ]),
         ),
