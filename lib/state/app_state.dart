@@ -543,6 +543,48 @@ class AppState extends ChangeNotifier {
     return '${n.hour.toString().padLeft(2,'0')}:${n.minute.toString().padLeft(2,'0')}';
   }
 
+  // ── Quotation CRUD ────────────────────────────────────────────────────────────
+  Future<void> saveQuotation({
+    required String quotNo, required String quotDate, required String validUntil,
+    required Customer customer, required List<Map<String, String>> items,
+    required String notes, String status = 'draft',
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list  = (jsonDecode(prefs.getString(StorageKeys.quotations) ?? '[]') as List)
+        .cast<Map<String, dynamic>>();
+    final record = {
+      'quotNo': quotNo, 'quotDate': quotDate, 'validUntil': validUntil,
+      'customer': customer.toMap(), 'items': items,
+      'notes': notes, 'status': status,
+      'savedAt': DateTime.now().toIso8601String(),
+    };
+    final idx = list.indexWhere((e) => e['quotNo'] == quotNo);
+    if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
+    await prefs.setString(StorageKeys.quotations, jsonEncode(list));
+  }
+
+  Future<List<Map<String, dynamic>>> loadQuotations() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (jsonDecode(prefs.getString(StorageKeys.quotations) ?? '[]') as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deleteQuotation(String quotNo) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.quotations) ?? '[]') as List).cast<Map<String, dynamic>>();
+    list.removeWhere((e) => e['quotNo'] == quotNo);
+    await prefs.setString(StorageKeys.quotations, jsonEncode(list));
+  }
+
+  Future<void> markQuotationStatus(String quotNo, String status) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.quotations) ?? '[]') as List).cast<Map<String, dynamic>>();
+    final idx = list.indexWhere((e) => e['quotNo'] == quotNo);
+    if (idx >= 0) {
+      list[idx] = Map<String, dynamic>.from(list[idx])..['status'] = status;
+      await prefs.setString(StorageKeys.quotations, jsonEncode(list));
+    }
+  }
+
   Future<List<Map<String, dynamic>>> loadInvoices() async {
     final prefs = await SharedPreferences.getInstance();
     return (jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List).cast<Map<String, dynamic>>();

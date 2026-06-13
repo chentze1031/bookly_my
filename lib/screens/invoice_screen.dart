@@ -354,7 +354,19 @@ class _CustCard extends StatelessWidget {
 
 // ─── Full Invoice Sheet ───────────────────────────────────────────────────────
 class FullInvoiceSheet extends StatefulWidget {
-  const FullInvoiceSheet({super.key});
+  // Optional pre-fill from quotation conversion
+  final Customer?                  initCustomer;
+  final List<Map<String, String>>? initItems;
+  final String?                    initNotes;
+  final String?                    fromQuotNo; // source quotation number
+
+  const FullInvoiceSheet({
+    super.key,
+    this.initCustomer,
+    this.initItems,
+    this.initNotes,
+    this.fromQuotNo,
+  });
 
   @override
   State<FullInvoiceSheet> createState() => _FullInvoiceSheetState();
@@ -407,6 +419,19 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
   @override
   void initState() {
     super.initState();
+    // Pre-fill from quotation if converting
+    if (widget.initCustomer != null) _customer = widget.initCustomer!;
+    if (widget.initItems != null && widget.initItems!.isNotEmpty) {
+      _items
+        ..clear()
+        ..addAll(widget.initItems!.map((e) => Map<String, String>.from(e)));
+    }
+    if (widget.initNotes != null && widget.initNotes!.isNotEmpty) {
+      _notes = widget.initNotes!;
+    }
+    if (widget.fromQuotNo != null) {
+      _notes = 'Ref: ${widget.fromQuotNo}\n$_notes';
+    }
     // Load sequential invoice number from DB
     DbService.nextInvoiceNo().then((no) {
       if (mounted) setState(() => _invNo = no);

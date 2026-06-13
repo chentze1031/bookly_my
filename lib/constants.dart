@@ -220,6 +220,7 @@ abstract class StorageKeys {
   static const invoices    = 'bly_invoices';
   static const payrolls    = 'bly_payrolls';
   static const arInvoices  = 'bly_ar_invoices';
+  static const quotations  = 'bly_quotations';
   static const apBills     = 'bly_ap_bills';
   static const suppliers   = 'bly_suppliers';
   static const fxCached    = 'bly_fx_cache';
@@ -401,6 +402,18 @@ class L10n {
   String get drawSig    => isZh ? '手写签名' : 'Draw';
   String get clearSig   => isZh ? '清除' : 'Clear';
   String get saveSig    => isZh ? '保存签名' : 'Save Signature';
+
+  // Quotation
+  String get quotation    => isZh ? '报价单管理' : 'Quotation Manager';
+  String get newQuotation => isZh ? '新增报价单' : 'New Quotation';
+  String get quotHistory  => isZh ? '报价单记录' : 'Quotation History';
+  String get quotNo       => isZh ? '报价单号' : 'Quotation No.';
+  String get quotDate     => isZh ? '报价日期' : 'Quotation Date';
+  String get validUntil   => isZh ? '有效期至' : 'Valid Until';
+  String get convertToInv => isZh ? '转为发票' : 'Convert to Invoice';
+  String get accepted     => isZh ? '已接受' : 'Accepted';
+  String get rejected     => isZh ? '已拒绝' : 'Rejected';
+  String get converted    => isZh ? '已转发票' : 'Converted';
 
   // Customer
   String get customers  => isZh ? '客户管理' : 'Customers';

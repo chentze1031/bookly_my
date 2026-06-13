@@ -7,6 +7,8 @@ import '../state/sub_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import 'history_screen.dart';
+import 'quotation_screen.dart';
+import 'sub_screen.dart' show showSubSheet;
 
 // ── 横幅广告ID ────────────────────────────────────────────────────────────────
 const _admobBanner = 'ca-app-pub-1544282175684415/4562575468';
@@ -142,6 +144,15 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     SizedBox(width: 68, child: _QuickBtn(icon:'🧾', label: lang=='zh'?'发票':'Invoice', color:kMuted, bg:kBg, bd:kBorder, onTap: onInvoice)),
                     const SizedBox(width: 8),
+                    SizedBox(width: 68, child: _QuickBtn(
+                      icon:'📋', label: lang=='zh'?'报价单':'Quotation', color:kMuted, bg:kBg, bd:kBorder,
+                      onTap: () {
+                        if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (_) => const QuotationHistoryScreen()));
+                      },
+                    )),
+                    const SizedBox(width: 8),
                     SizedBox(width: 68, child: _QuickBtn(icon:'📄', label: lang=='zh'?'账单':'Bill', color:kMuted, bg:kBg, bd:kBorder, onTap: onBill)),
                     const SizedBox(width: 8),
                     SizedBox(width: 68, child: _QuickBtn(icon:'💼', label: lang=='zh'?'薪资':'Payslip', color:kMuted, bg:kBg, bd:kBorder, onTap: onPayroll)),
@@ -153,24 +164,42 @@ class HomeScreen extends StatelessWidget {
                 // ── History shortcuts ─────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(children: [
-                    Expanded(
-                      child: _HistoryBtn(
-                        icon: '🧾',
-                        label: lang == 'zh' ? '发票记录' : 'Invoice History',
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const InvoiceHistoryScreen())),
+                  child: Column(children: [
+                    Row(children: [
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '🧾',
+                          label: lang == 'zh' ? '发票记录' : 'Invoice History',
+                          onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const InvoiceHistoryScreen())),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _HistoryBtn(
-                        icon: '💼',
-                        label: lang == 'zh' ? '薪资记录' : 'Payroll History',
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const PayrollHistoryScreen())),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '📋',
+                          label: lang == 'zh' ? '报价单记录' : 'Quotation History',
+                          onTap: () {
+                            if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                            Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const QuotationHistoryScreen()));
+                          },
+                        ),
                       ),
-                    ),
+                    ]),
+                    const SizedBox(height: 10),
+                    Row(children: [
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '💼',
+                          label: lang == 'zh' ? '薪资记录' : 'Payroll History',
+                          onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const PayrollHistoryScreen())),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(child: SizedBox()),
+                    ]),
                   ]),
                 ),
                 const SizedBox(height: 14),

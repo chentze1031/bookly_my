@@ -12,7 +12,7 @@ class DbService {
 
   static Future<Database> _open() async {
     final path = join(await getDatabasesPath(), 'bookly.db');
-    return openDatabase(path, version: 3, onCreate: (db, v) async {
+    return openDatabase(path, version: 4, onCreate: (db, v) async {
       await db.execute('''CREATE TABLE transactions(
         id INTEGER PRIMARY KEY, type TEXT, cat_id TEXT,
         amount_myr REAL, orig_amount REAL, orig_currency TEXT,
@@ -35,6 +35,10 @@ class DbService {
         year INTEGER PRIMARY KEY,
         last_seq INTEGER NOT NULL DEFAULT 0
       )''');
+      await db.execute('''CREATE TABLE quotation_seq(
+        year INTEGER PRIMARY KEY,
+        last_seq INTEGER NOT NULL DEFAULT 0
+      )''');
       await _createInventoryTables(db);
     }, onUpgrade: (db, oldV, newV) async {
       if (oldV < 2) {
@@ -45,6 +49,12 @@ class DbService {
       }
       if (oldV < 3) {
         await _createInventoryTables(db);
+      }
+      if (oldV < 4) {
+        await db.execute('''CREATE TABLE IF NOT EXISTS quotation_seq(
+          year INTEGER PRIMARY KEY,
+          last_seq INTEGER NOT NULL DEFAULT 0
+        )''');
       }
     });
   }
@@ -87,6 +97,22 @@ class DbService {
     final rows = await d.query('invoice_seq', where: 'year = ?', whereArgs: [year]);
     final seq  = (rows.first['last_seq'] as int?) ?? 1;
     return 'INV-$year-${seq.toString().padLeft(4, '0')}';
+  }
+
+  static Future<String> nextQuotNo() async {
+    final d    = await db;
+    final year = DateTime.now().year;
+    await d.execute(
+      'INSERT OR IGNORE INTO quotation_seq(year, last_seq) VALUES(?, 0)',
+      [year],
+    );
+    await d.execute(
+      'UPDATE quotation_seq SET last_seq = last_seq + 1 WHERE year = ?',
+      [year],
+    );
+    final rows = await d.query('quotation_seq', where: 'year = ?', whereArgs: [year]);
+    final seq  = (rows.first['last_seq'] as int?) ?? 1;
+    return 'QT-$year-${seq.toString().padLeft(4, '0')}';
   }
 
   static Future<List<Transaction>> loadTxs() async {
