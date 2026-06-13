@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'db_service.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // INVENTORY MODELS
@@ -160,6 +161,8 @@ class InventoryState extends ChangeNotifier {
   int                 get totalProducts => _items.length;
 
   static SupabaseClient get _db => Supabase.instance.client;
+  // FIX(游客模式): 未登录时数据走本地 SQLite，登录后走 Supabase。
+  static bool get _isGuest => _db.auth.currentUser == null;
 
   InventoryItem? byId(int id) {
     final idx = _items.indexWhere((i) => i.id == id);
@@ -170,8 +173,13 @@ class InventoryState extends ChangeNotifier {
   Future<void> load() async {
     _loading = true; _error = null; notifyListeners();
     try {
-      final rows = await _db.from('inventory').select().order('name');
-      _items = (rows as List).map((r) => InventoryItem.fromMap(r as Map<String, dynamic>)).toList();
+      if (_isGuest) {
+        final rows = await DbService.loadInventory();
+        _items = rows.map((r) => InventoryItem.fromMap(r)).toList();
+      } else {
+        final rows = await _db.from('inventory').select().order('name');
+        _items = (rows as List).map((r) => InventoryItem.fromMap(r as Map<String, dynamic>)).toList();
+      }
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -179,9 +187,55 @@ class InventoryState extends ChangeNotifier {
     }
   }
 
+  // ── Migrate local (guest) inventory → cloud on login ───────────────────────
+  /// 登录后调用：把本地 SQLite 的库存 + 历史迁移到 Supabase，成功后清空本地。
+  /// 图片：本地路径（file://...）会在此时上传到 Storage 换成云端 URL。
+  Future<void> migrateLocalToCloud() async {
+    if (_isGuest) return; // 必须已登录
+    try {
+      final localItems = await DbService.loadInventory();
+      if (localItems.isEmpty) return;
+
+      for (final li in localItems) {
+        final localId = li['id'] as int;
+        // 1) 处理图片：本地路径则上传，换成云端 URL
+        String? imageUrl = li['image_url'] as String?;
+        if (imageUrl != null && !imageUrl.startsWith('http')) {
+          try {
+            imageUrl = await uploadImage(XFile(imageUrl));
+          } catch (_) {
+            imageUrl = null; // 上传失败就丢弃图片，不阻塞数据迁移
+          }
+        }
+        // 2) 插入云端 inventory（去掉本地 id，让云端生成新 id）
+        final map = Map<String, dynamic>.from(li)
+          ..remove('id')
+          ..['image_url'] = imageUrl;
+        final row = await _db.from('inventory').insert(map).select().single();
+        final newId = (row as Map<String, dynamic>)['id'] as int;
+
+        // 3) 迁移该 item 的历史记录，item_id 指向云端新 id
+        final movements = await DbService.movementsForItem(localId, limit: 100000);
+        for (final mv in movements) {
+          final m = Map<String, dynamic>.from(mv)
+            ..remove('id')
+            ..['item_id'] = newId;
+          try { await _db.from('stock_movements').insert(m); } catch (_) {}
+        }
+      }
+      // 4) 全部迁移成功后清空本地库存表
+      await DbService.clearInventory();
+    } catch (e) {
+      debugPrint('Inventory migration failed: $e');
+      // 迁移失败保留本地数据，下次登录再试
+    }
+  }
+
   // ── Image upload (Supabase Storage: bucket 'product-images') ─────────────
   /// Returns public URL, or throws with a clean message.
   Future<String> uploadImage(XFile file) async {
+    // 游客模式：图片只存本地路径，登录迁移时再上传云端。
+    if (_isGuest) return file.path;
     try {
       final uid   = _db.auth.currentUser?.id ?? 'anon';
       final ext   = file.path.split('.').last.toLowerCase();
@@ -209,8 +263,14 @@ class InventoryState extends ChangeNotifier {
       if (image != null) imageUrl = await uploadImage(image);
       final map = item.copyWith(imageUrl: imageUrl).toMap()
         ..['created_at'] = DateTime.now().toIso8601String();
-      final row = await _db.from('inventory').insert(map).select().single();
-      final newItem = InventoryItem.fromMap(row);
+      late InventoryItem newItem;
+      if (_isGuest) {
+        final newId = await DbService.insertInventory(map);
+        newItem = InventoryItem.fromMap({...map, 'id': newId});
+      } else {
+        final row = await _db.from('inventory').insert(map).select().single();
+        newItem = InventoryItem.fromMap(row);
+      }
       _items = [newItem, ..._items]..sort((a, b) => a.name.compareTo(b.name));
       notifyListeners();
       // Opening stock counts as a purchase movement
@@ -234,7 +294,11 @@ class InventoryState extends ChangeNotifier {
     String? imageUrl = item.imageUrl;
     if (image != null) imageUrl = await uploadImage(image);
     final updated = item.copyWith(imageUrl: imageUrl);
-    await _db.from('inventory').update(updated.toMap()).eq('id', item.id);
+    if (_isGuest) {
+      await DbService.updateInventory(item.id, updated.toMap());
+    } else {
+      await _db.from('inventory').update(updated.toMap()).eq('id', item.id);
+    }
     final idx = _items.indexWhere((i) => i.id == item.id);
     if (idx != -1) {
       _items = List.from(_items)..[idx] = updated;
@@ -244,7 +308,11 @@ class InventoryState extends ChangeNotifier {
 
   // ── Delete (movements cascade-deleted by FK) ──────────────────────────────
   Future<void> deleteItem(int id) async {
-    await _db.from('inventory').delete().eq('id', id);
+    if (_isGuest) {
+      await DbService.deleteInventory(id);
+    } else {
+      await _db.from('inventory').delete().eq('id', id);
+    }
     _items = _items.where((i) => i.id != id).toList();
     notifyListeners();
   }
@@ -266,7 +334,11 @@ class InventoryState extends ChangeNotifier {
     final after  = before + qtyChange;
 
     final updated = _items[idx].copyWith(qty: after);
-    await _db.from('inventory').update(updated.toMap()).eq('id', itemId);
+    if (_isGuest) {
+      await DbService.setInventoryQty(itemId, after);
+    } else {
+      await _db.from('inventory').update(updated.toMap()).eq('id', itemId);
+    }
     _items = List.from(_items)..[idx] = updated;
     notifyListeners();
 
@@ -285,7 +357,7 @@ class InventoryState extends ChangeNotifier {
     int itemId, String type, double change, double before, double after,
     {String? note, String? invoiceNo}) async {
     try {
-      await _db.from('stock_movements').insert({
+      final mv = {
         'item_id':    itemId,
         'type':       type,
         'qty_change': change,
@@ -294,7 +366,12 @@ class InventoryState extends ChangeNotifier {
         'note':       note,
         'invoice_no': invoiceNo,
         'created_at': DateTime.now().toIso8601String(),
-      });
+      };
+      if (_isGuest) {
+        await DbService.insertMovement(mv);
+      } else {
+        await _db.from('stock_movements').insert(mv);
+      }
     } catch (e) {
       // Movement logging must never break the stock operation itself.
       debugPrint('stock_movements insert failed: $e');
@@ -321,6 +398,10 @@ class InventoryState extends ChangeNotifier {
 
   // ── Movement queries ──────────────────────────────────────────────────────
   Future<List<StockMovement>> movementsFor(int itemId, {int limit = 100}) async {
+    if (_isGuest) {
+      final rows = await DbService.movementsForItem(itemId, limit: limit);
+      return rows.map((r) => StockMovement.fromMap(r)).toList();
+    }
     final rows = await _db.from('stock_movements')
         .select().eq('item_id', itemId)
         .order('created_at', ascending: false).limit(limit);
@@ -328,6 +409,10 @@ class InventoryState extends ChangeNotifier {
   }
 
   Future<List<StockMovement>> allMovements({int days = 90}) async {
+    if (_isGuest) {
+      final rows = await DbService.allMovements(days: days);
+      return rows.map((r) => StockMovement.fromMap(r)).toList();
+    }
     final since = DateTime.now().subtract(Duration(days: days)).toIso8601String();
     final rows = await _db.from('stock_movements')
         .select().gte('created_at', since)
