@@ -734,24 +734,13 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
               onTap: _saving ? () {} : _saveInvoice,
             ),
             const SizedBox(width: 8),
-            ElevatedButton.icon(
-              onPressed: _sharing ? null : _share,
-              icon: _sharing
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
-                  : const Text('📤', style: TextStyle(fontSize: 16)),
-              label: Text(_sharing ? 'Sharing…' : t.sharePrint),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: kDark,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(9)),
-                  elevation: 0),
+            // ── Share button (same size as Save, no icon) ─────────────
+            SmBtn(
+              label: _sharing ? (t.isZh ? '分享中…' : 'Sharing…') : t.sharePrint,
+              color: kDark,
+              borderColor: kDark,
+              textColor: Colors.white,
+              onTap: _sharing ? () {} : _share,
             ),
             const SizedBox(width: 8),
             GestureDetector(
