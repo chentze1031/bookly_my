@@ -135,29 +135,32 @@ class HomeScreen extends StatelessWidget {
                 // ── Quick actions ─────────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(children: [
-                    SizedBox(width: 68, child: _QuickBtn(icon:'📥', label:t.addIncome,  color:kGreen, bg:kGreenBg, bd:kGreenBd, onTap: onAddIncome)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(icon:'📤', label:t.addExpense, color:kRed,   bg:kRedBg,   bd:kRedBd,   onTap: onAddExpense)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(icon:'🧾', label: lang=='zh'?'发票':'Invoice', color:kMuted, bg:kBg, bd:kBorder, onTap: onInvoice)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(
-                      icon:'📋', label: lang=='zh'?'报价单':'Quotation', color:kMuted, bg:kBg, bd:kBorder,
-                      onTap: () {
-                        if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (_) => const QuotationHistoryScreen()));
-                      },
-                    )),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(icon:'📄', label: lang=='zh'?'账单':'Bill', color:kMuted, bg:kBg, bd:kBorder, onTap: onBill)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(icon:'💼', label: lang=='zh'?'薪资':'Payslip', color:kMuted, bg:kBg, bd:kBorder, onTap: onPayroll)),
+                  child: Column(children: [
+                    // Row 1: Income + Expense (half each)
+                    Row(children: [
+                      Expanded(child: _QuickBtn(icon:'📥', label:t.addIncome,  color:kGreen, bg:kGreenBg, bd:kGreenBd, onTap: onAddIncome)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _QuickBtn(icon:'📤', label:t.addExpense, color:kRed,   bg:kRedBg,   bd:kRedBd,   onTap: onAddExpense)),
+                    ]),
+                    const SizedBox(height: 8),
+                    // Row 2: Invoice / Quotation / Bill / Payslip (quarter each)
+                    Row(children: [
+                      Expanded(child: _QuickBtn(icon:'🧾', label: lang=='zh'?'发票':'Invoice', color:kMuted, bg:kBg, bd:kBorder, onTap: onInvoice)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _QuickBtn(
+                        icon:'📋', label: lang=='zh'?'报价单':'Quotation', color:kMuted, bg:kBg, bd:kBorder,
+                        onTap: () {
+                          if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => const QuotationHistoryScreen()));
+                        },
+                      )),
+                      const SizedBox(width: 8),
+                      Expanded(child: _QuickBtn(icon:'📄', label: lang=='zh'?'账单':'Bill', color:kMuted, bg:kBg, bd:kBorder, onTap: onBill)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _QuickBtn(icon:'💼', label: lang=='zh'?'薪资':'Payslip', color:kMuted, bg:kBg, bd:kBorder, onTap: onPayroll)),
+                    ]),
                   ]),
-                ),
                 ),
                 const SizedBox(height: 14),
 
