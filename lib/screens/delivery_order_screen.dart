@@ -285,6 +285,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
   String _doDate = nowISO();
   String _notes  = '';
   String _refInvNo = '';
+  String _driver = '';
   bool   _saving  = false;
   bool   _sharing = false;
 
@@ -303,6 +304,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
       _doDate   = d['doDate'] ?? nowISO();
       _notes    = d['notes'] ?? '';
       _refInvNo = d['refInvNo'] ?? '';
+      _driver   = d['driver'] ?? '';
       if (d['customer'] != null) {
         _customer = Customer.fromMap(Map<String, dynamic>.from(d['customer']));
       }
@@ -333,6 +335,81 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
   double get _totalQty =>
       _items.fold(0, (s, r) => s + (double.tryParse(r['qty'] ?? '0') ?? 0));
 
+  // One-click: pick a saved invoice → fills ref no. + customer + items (qty only)
+  Future<void> _pickInvoice() async {
+    final lang     = context.read<AppState>().settings.lang;
+    final invoices = await context.read<AppState>().loadInvoices();
+    if (!mounted) return;
+    if (invoices.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(L10n(lang).noInvoices)));
+      return;
+    }
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: kSurface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.7),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
+            child: Row(children: [
+              Text(L10n(lang).selectInvoice,
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => Navigator.pop(ctx),
+                child: const Icon(Icons.close, size: 20, color: kMuted),
+              ),
+            ]),
+          ),
+          const Divider(height: 1, color: kBorder),
+          Flexible(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              itemCount: invoices.length,
+              separatorBuilder: (_, __) => const Divider(height: 1, color: kBorder),
+              itemBuilder: (_, i) {
+                final inv  = invoices[i];
+                final cust = inv['customer'] as Map? ?? {};
+                return ListTile(
+                  title: Text(inv['invNo'] ?? '—',
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                  subtitle: Text(
+                    '${cust['name'] ?? ''}${(inv['invDate'] ?? '').isNotEmpty ? ' · ${inv['invDate']}' : ''}',
+                    style: const TextStyle(fontSize: 12, color: kMuted)),
+                  trailing: const Icon(Icons.chevron_right, color: kMuted),
+                  onTap: () { _applyInvoice(inv); Navigator.pop(ctx); },
+                );
+              },
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  void _applyInvoice(Map<String, dynamic> inv) {
+    setState(() {
+      _refInvNo = inv['invNo'] ?? '';
+      if (inv['customer'] != null) {
+        _customer = Customer.fromMap(Map<String, dynamic>.from(inv['customer']));
+      }
+      final items = (inv['items'] as List? ?? []).map((e) => {
+        'desc': (e['desc'] ?? '').toString(),
+        'qty':  (e['qty']  ?? '1').toString(),
+        'note': (e['note'] ?? '').toString(),
+      }).toList();
+      if (items.isNotEmpty) { _items..clear()..addAll(items); }
+    });
+  }
+
   Future<void> _save({String status = 'draft'}) async {
     if (_saving) return;
     setState(() => _saving = true);
@@ -344,6 +421,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
         items:    List<Map<String, String>>.from(_items),
         notes:    _notes,
         refInvNo: _refInvNo,
+        driver:   _driver,
         status:   status,
       );
       if (mounted) {
@@ -382,6 +460,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
         doNo:       _doNo,
         doDate:     _doDate,
         refInvNo:   _refInvNo.isNotEmpty ? _refInvNo : null,
+        driver:     _driver.isNotEmpty ? _driver : null,
         logoBase64: app.settings.logoBase64,
         notes:      _notes.isNotEmpty ? _notes : null,
       );
@@ -468,11 +547,56 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
                   )),
                   const SizedBox(width: 10),
                   Expanded(child: FieldInput(
-                    label: t.refInvoice, value: _refInvNo,
-                    placeholder: 'INV-…',
-                    onChanged: (v) => setState(() => _refInvNo = v),
+                    label: t.deliveryDriver, value: _driver,
+                    placeholder: lang == 'zh' ? '司机姓名' : 'Driver name',
+                    onChanged: (v) => setState(() => _driver = v),
                   )),
                 ]),
+                // ── One-click invoice picker ────────────────────────────────
+                const SizedBox(height: 2),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(t.refInvoice.toUpperCase(),
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                          color: kMuted, letterSpacing: 0.5)),
+                ),
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: _pickInvoice,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: kBg,
+                      border: Border.all(color: kBorder, width: 1.5),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.receipt_long_outlined, size: 18, color: kBlue),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _refInvNo.isNotEmpty
+                              ? _refInvNo
+                              : (lang == 'zh' ? '点击选择发票（带出客户+明细）'
+                                              : 'Tap to select invoice'),
+                          style: TextStyle(fontSize: 14,
+                              color: _refInvNo.isNotEmpty ? kText : kMuted,
+                              fontWeight: _refInvNo.isNotEmpty ? FontWeight.w700 : FontWeight.normal),
+                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (_refInvNo.isNotEmpty)
+                        GestureDetector(
+                          onTap: () => setState(() => _refInvNo = ''),
+                          child: const Icon(Icons.close, size: 16, color: kMuted),
+                        )
+                      else
+                        const Icon(Icons.chevron_right, size: 18, color: kMuted),
+                    ]),
+                  ),
+                ),
+                const SizedBox(height: 10),
               ]),
             ),
           ),

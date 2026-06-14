@@ -589,7 +589,8 @@ class AppState extends ChangeNotifier {
   Future<void> saveDeliveryOrder({
     required String doNo, required String doDate,
     required Customer customer, required List<Map<String, String>> items,
-    required String notes, String refInvNo = '', String status = 'draft',
+    required String notes, String refInvNo = '', String driver = '',
+    String status = 'draft',
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final list  = (jsonDecode(prefs.getString(StorageKeys.deliveryOrders) ?? '[]') as List)
@@ -597,7 +598,7 @@ class AppState extends ChangeNotifier {
     final record = {
       'doNo': doNo, 'doDate': doDate,
       'customer': customer.toMap(), 'items': items,
-      'notes': notes, 'refInvNo': refInvNo, 'status': status,
+      'notes': notes, 'refInvNo': refInvNo, 'driver': driver, 'status': status,
       'savedAt': DateTime.now().toIso8601String(),
     };
     final idx = list.indexWhere((e) => e['doNo'] == doNo);

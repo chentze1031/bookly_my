@@ -725,15 +725,6 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                       fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
             ),
             const SizedBox(width: 8),
-            // ── Generate Delivery Order (Pro) ─────────────────────────
-            SmBtn(
-              label: '🚚',
-              color: kGreenBg,
-              borderColor: kGreenBd,
-              textColor: kGreen,
-              onTap: _toDeliveryOrder,
-            ),
-            const SizedBox(width: 8),
             // ── Save button ──────────────────────────────────────────
             SmBtn(
               label: _saving ? 'Saving…' : '💾 Save',
@@ -1153,7 +1144,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                   onChanged: (v) => setState(() => _terms = v)),
               const SizedBox(height: 8),
 
-              // ── Bottom action buttons ──────────────────────────────────
+              // ── Bottom action buttons (3 equal) ────────────────────────
               Row(children: [
                 Expanded(
                   child: OutlinedButton.icon(
@@ -1161,37 +1152,55 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                     icon: _saving
                         ? const SizedBox(width: 16, height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text('💾', style: TextStyle(fontSize: 16)),
-                    label: Text(_saving ? 'Saving…' : t.save),
+                        : const Text('💾', style: TextStyle(fontSize: 15)),
+                    label: Text(_saving ? '…' : t.save,
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
                     style: OutlinedButton.styleFrom(
                         foregroundColor: kGreen,
                         side: const BorderSide(color: kGreenBd),
                         backgroundColor: kGreenBg,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14))),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
-                  flex: 2,
                   child: ElevatedButton.icon(
                     onPressed: _sharing ? null : _share,
                     icon: _sharing
                         ? const SizedBox(
-                            width: 18,
-                            height: 18,
+                            width: 16,
+                            height: 16,
                             child: CircularProgressIndicator(
                                 color: Colors.white, strokeWidth: 2))
-                        : const Text('📤', style: TextStyle(fontSize: 20)),
-                    label: Text(_sharing ? 'Sharing…' : t.sharePrint),
+                        : const Text('📤', style: TextStyle(fontSize: 16)),
+                    label: Text(_sharing ? '…' : (t.isZh ? '分享' : 'Share'),
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
                     style: ElevatedButton.styleFrom(
                         backgroundColor: kDark,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 15),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                         elevation: 0),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // ── Generate Delivery Order (Pro) ──────────────────────
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _toDeliveryOrder,
+                    icon: const Text('🚚', style: TextStyle(fontSize: 15)),
+                    label: Text(t.isZh ? '送货单' : 'D.O.',
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    style: OutlinedButton.styleFrom(
+                        foregroundColor: kBlue,
+                        side: const BorderSide(color: kBlueBd),
+                        backgroundColor: kBlueBg,
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14))),
                   ),
                 ),
               ]),

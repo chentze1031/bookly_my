@@ -22,6 +22,7 @@ Future<Uint8List> generateDeliveryOrderPdf({
   required String doNo,
   required String doDate,
   String? refInvNo,
+  String? driver,
   String? logoBase64,
   String? notes,
 }) async {
@@ -119,6 +120,8 @@ Future<Uint8List> generateDeliveryOrderPdf({
               metaRow('Date',    doDate, ts(8, c: _grey), ts(8)),
               if (refInvNo != null && refInvNo.isNotEmpty)
                 metaRow('Ref. Invoice', refInvNo, ts(8, c: _grey), ts(8)),
+              if (driver != null && driver.isNotEmpty)
+                metaRow('Driver', driver, ts(8, c: _grey), ts(8)),
             ],
           ),
         ],

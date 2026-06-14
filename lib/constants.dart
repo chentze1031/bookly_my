@@ -427,6 +427,9 @@ class L10n {
   String get convertToDo     => isZh ? '转送货单' : 'To D.O.';
   String get receivedBy      => isZh ? '收货人签名' : 'Received By';
   String get delivered       => isZh ? '已送达' : 'Delivered';
+  String get deliveryDriver  => isZh ? '送货员（可选）' : 'Delivery Driver (optional)';
+  String get selectInvoice   => isZh ? '选择发票' : 'Select Invoice';
+  String get noInvoices      => isZh ? '暂无发票' : 'No invoices yet';
 
   // Customer
   String get customers  => isZh ? '客户管理' : 'Customers';
