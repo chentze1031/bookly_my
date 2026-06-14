@@ -188,6 +188,59 @@ class AccountingState extends ChangeNotifier {
   }
 
   // ════════════════════════════════════════════════════════════════════════
+  // CREDIT NOTE → AR (negative credit memo)
+  // ════════════════════════════════════════════════════════════════════════
+  // A credit note is posted as a NEGATIVE ArInvoice ("credit memo"). This:
+  //   • reduces totalReceivable (negative balance offsets the customer's AR)
+  //   • via saveArInvoice's GL hook posts Dr 1100 / Cr 4010 with negative
+  //     values → reduces both Accounts Receivable and Revenue (correct
+  //     accounting for a sales return / billing adjustment)
+  // Upsert by stable id (from cnNo) → editing the CN never double-posts.
+  static int creditMemoId(String cnNo) => cnNo.hashCode.abs();
+
+  Future<void> issueCreditNote({
+    required String cnNo,
+    required String refInvNo,
+    required String customerId,
+    required String customerName,
+    required String date,
+    required double subtotal,
+    required double sstAmount,
+    required double total,
+    required List<ArInvoiceItem> items,
+    String? reason,
+  }) async {
+    final memo = ArInvoice(
+      id:           creditMemoId(cnNo),
+      invNo:        cnNo,
+      customerId:   customerId,
+      customerName: customerName,
+      issueDate:    date,
+      dueDate:      date,
+      subtotal:     -subtotal,
+      sstAmount:    -sstAmount,
+      total:        -total,
+      amountPaid:   0,
+      status:       InvoiceStatus.sent,
+      notes:        'Credit Note${refInvNo.isNotEmpty ? ' for $refInvNo' : ''}'
+                    '${(reason ?? '').isNotEmpty ? ' · $reason' : ''}',
+      items:        items
+          .map((i) => ArInvoiceItem(
+                description: i.description,
+                qty:         i.qty,
+                unitPrice:   i.unitPrice,
+                amount:      -i.amount,
+              ))
+          .toList(),
+    );
+    await saveArInvoice(memo); // persists + posts the reversing GL entry
+  }
+
+  Future<void> removeCreditNote(String cnNo) async {
+    await deleteArInvoice(creditMemoId(cnNo)); // removes memo + its GL entry
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
   // AP BILL CRUD
   // ════════════════════════════════════════════════════════════════════════
 

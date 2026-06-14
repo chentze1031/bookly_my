@@ -24,6 +24,7 @@ import 'screens/auth_screen.dart';
 import 'screens/inventory_screen.dart';
 import 'services/supabase_service.dart';
 import 'services/inventory_service.dart';
+import 'services/overdue_reminder.dart';
 import 'state/accounting_state.dart';
 import 'screens/accounting_screen.dart';
 import 'screens/company_info_screen.dart';
@@ -54,14 +55,20 @@ void main() async {
 
   final appState = AppState();
   final subState = SubState();
+  // Init early so the home overdue banner + reminder have AR data on launch.
+  final accountingState = AccountingState()..appState = appState;
   await Future.wait([appState.init(), subState.init()]);
+  await accountingState.init();
+
+  // Task 8: system reminder for overdue receivables (best-effort, once/day).
+  OverdueReminder.checkAndNotify(accountingState, appState.settings.lang);
 
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: appState),
       ChangeNotifierProvider.value(value: subState),
       ChangeNotifierProvider(create: (_) => InventoryState()),
-      ChangeNotifierProvider(create: (_) => AccountingState()),
+      ChangeNotifierProvider.value(value: accountingState),
     ],
     child: const BooklyApp(),
   ));

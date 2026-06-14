@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' hide AppState;
 import '../constants.dart';
 import '../state/app_state.dart';
 import '../state/sub_state.dart';
+import '../state/accounting_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import 'history_screen.dart';
+import 'quotation_screen.dart';
+import 'delivery_order_screen.dart';
+import 'credit_note_screen.dart';
+import 'sub_screen.dart' show showSubSheet;
 
 // ── 横幅广告ID ────────────────────────────────────────────────────────────────
 const _admobBanner = 'ca-app-pub-1544282175684415/4562575468';
@@ -31,8 +37,13 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final sub = context.watch<SubState>();
+    final acc = context.watch<AccountingState>();
     final t   = L10n(app.settings.lang);
     final lang = app.settings.lang;
+
+    // Overdue receivables (Task 8)
+    final overdueCount = acc.overdueArCount;
+    final overdueTotal = acc.totalOverdueAr;
 
     final curMonth = app.currentMonth;
     final moTxs   = app.thisMonthTxs;
@@ -128,49 +139,117 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
+                // ── Overdue receivables reminder (Task 8) ──────────────────
+                if (overdueCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                    child: _OverdueBanner(
+                      count: overdueCount,
+                      total: overdueTotal,
+                      lang:  lang,
+                      onTap: () => context.go('/accounting'),
+                    ),
+                  ),
+
                 const SizedBox(height: 14),
 
                 // ── Quick actions ─────────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(children: [
-                    SizedBox(width: 68, child: _QuickBtn(icon:'📥', label:t.addIncome,  color:kGreen, bg:kGreenBg, bd:kGreenBd, onTap: onAddIncome)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(icon:'📤', label:t.addExpense, color:kRed,   bg:kRedBg,   bd:kRedBd,   onTap: onAddExpense)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(icon:'🧾', label: lang=='zh'?'发票':'Invoice', color:kMuted, bg:kBg, bd:kBorder, onTap: onInvoice)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(icon:'📄', label: lang=='zh'?'账单':'Bill', color:kMuted, bg:kBg, bd:kBorder, onTap: onBill)),
-                    const SizedBox(width: 8),
-                    SizedBox(width: 68, child: _QuickBtn(icon:'💼', label: lang=='zh'?'薪资':'Payslip', color:kMuted, bg:kBg, bd:kBorder, onTap: onPayroll)),
+                  child: Column(children: [
+                    // Row 1: Income + Expense (half each)
+                    Row(children: [
+                      Expanded(child: _QuickBtn(icon:'📥', label:t.addIncome,  color:kGreen, bg:kGreenBg, bd:kGreenBd, onTap: onAddIncome)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _QuickBtn(icon:'📤', label:t.addExpense, color:kRed,   bg:kRedBg,   bd:kRedBd,   onTap: onAddExpense)),
+                    ]),
+                    const SizedBox(height: 8),
+                    // Row 2: Invoice / Quotation / Bill / Payslip (quarter each)
+                    Row(children: [
+                      Expanded(child: _QuickBtn(icon:'🧾', label: lang=='zh'?'发票':'Invoice', color:kMuted, bg:kBg, bd:kBorder, onTap: onInvoice)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _QuickBtn(
+                        icon:'📋', label: lang=='zh'?'报价单':'Quotation', color:kMuted, bg:kBg, bd:kBorder,
+                        onTap: () {
+                          if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => const QuotationHistoryScreen()));
+                        },
+                      )),
+                      const SizedBox(width: 8),
+                      Expanded(child: _QuickBtn(icon:'📄', label: lang=='zh'?'账单':'Bill', color:kMuted, bg:kBg, bd:kBorder, onTap: onBill)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _QuickBtn(icon:'💼', label: lang=='zh'?'薪资':'Payslip', color:kMuted, bg:kBg, bd:kBorder, onTap: onPayroll)),
+                    ]),
                   ]),
-                ),
                 ),
                 const SizedBox(height: 14),
 
                 // ── History shortcuts ─────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(children: [
-                    Expanded(
-                      child: _HistoryBtn(
-                        icon: '🧾',
-                        label: lang == 'zh' ? '发票记录' : 'Invoice History',
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const InvoiceHistoryScreen())),
+                  child: Column(children: [
+                    Row(children: [
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '🧾',
+                          label: lang == 'zh' ? '发票记录' : 'Invoice History',
+                          onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const InvoiceHistoryScreen())),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _HistoryBtn(
-                        icon: '💼',
-                        label: lang == 'zh' ? '薪资记录' : 'Payroll History',
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const PayrollHistoryScreen())),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '📋',
+                          label: lang == 'zh' ? '报价单记录' : 'Quotation History',
+                          onTap: () {
+                            if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                            Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const QuotationHistoryScreen()));
+                          },
+                        ),
                       ),
-                    ),
+                    ]),
+                    const SizedBox(height: 10),
+                    Row(children: [
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '💼',
+                          label: lang == 'zh' ? '薪资记录' : 'Payroll History',
+                          onTap: () => Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => const PayrollHistoryScreen())),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '🚚',
+                          label: lang == 'zh' ? '送货单记录' : 'Delivery Orders',
+                          onTap: () {
+                            if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                            Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const DeliveryOrderHistoryScreen()));
+                          },
+                        ),
+                      ),
+                    ]),
+                    const SizedBox(height: 10),
+                    Row(children: [
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '🧾',
+                          label: lang == 'zh' ? '信用备注记录' : 'Credit Notes',
+                          onTap: () {
+                            if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                            Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const CreditNoteHistoryScreen()));
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(child: SizedBox()),
+                    ]),
                   ]),
                 ),
                 const SizedBox(height: 14),
@@ -409,6 +488,67 @@ class _HeroCard extends StatelessWidget {
   );
 }
 
+// ── Overdue receivables reminder banner (Task 8, style A — red) ───────────────
+class _OverdueBanner extends StatelessWidget {
+  final int count;
+  final double total;
+  final String lang;
+  final VoidCallback onTap;
+  const _OverdueBanner({required this.count, required this.total,
+      required this.lang, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = lang == 'zh' ? '$count 张发票逾期' : '$count invoice${count == 1 ? '' : 's'} overdue';
+    final sub   = lang == 'zh'
+        ? '共 ${fmtMYR(total)} 待催收'
+        : '${fmtMYR(total)} to collect';
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: kRedBg,
+          border: Border.all(color: kRedBd, width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(children: [
+          Container(
+            width: 38, height: 38,
+            decoration: BoxDecoration(
+              color: kSurface,
+              border: Border.all(color: kRedBd),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.warning_amber_rounded, size: 21, color: kRed),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kRed)),
+              const SizedBox(height: 1),
+              Text(sub, style: const TextStyle(fontSize: 12, color: kMuted)),
+            ]),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: kRed,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Row(children: [
+              Text(lang == 'zh' ? '查看' : 'View',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
+              const Icon(Icons.chevron_right, size: 16, color: Colors.white),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
 class _QuickBtn extends StatelessWidget {
   final String icon, label; final Color color, bg, bd;
   final VoidCallback onTap; final bool pro;
@@ -421,6 +561,7 @@ class _QuickBtn extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
             decoration: BoxDecoration(color: bg, border: Border.all(color: bd, width: 2), borderRadius: BorderRadius.circular(14)),
             child: Column(children: [

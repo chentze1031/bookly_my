@@ -197,7 +197,18 @@ class _ArInvoiceCard extends StatelessWidget {
           Row(children: [
             Expanded(child: Text(invoice.invNo,
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText))),
-            _StatusBadge(status: s),
+            if (invoice.total < 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: kRedBg, borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: kRedBd),
+                ),
+                child: const Text('C/N',
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: kRed)),
+              )
+            else
+              _StatusBadge(status: s),
           ]),
           const SizedBox(height: 4),
           Text(invoice.customerName, style: const TextStyle(fontSize: 13, color: kMuted)),
@@ -339,8 +350,28 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
               )),
             ],
 
-            // Record Payment
-            if (inv.status != InvoiceStatus.paid && inv.status != InvoiceStatus.void_) ...[
+            // Credit note (negative memo): no payment to collect
+            if (inv.total < 0) ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: kRedBg, border: Border.all(color: kRedBd),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(children: [
+                  const Text('🧾 ', style: TextStyle(fontSize: 16)),
+                  Expanded(child: Text(
+                    t.lang == 'zh'
+                      ? '这是一张信用备注，已冲减应收账款，无需收款。'
+                      : 'This is a credit note — it reduces receivables. No payment to collect.',
+                    style: const TextStyle(fontSize: 12, color: kRed, fontWeight: FontWeight.w600),
+                  )),
+                ]),
+              ),
+            ]
+            // Record Payment (regular invoices only)
+            else if (inv.status != InvoiceStatus.paid && inv.status != InvoiceStatus.void_) ...[
               const SizedBox(height: 20),
               Text(t.recordPayment.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted, letterSpacing: 0.6)),
               const SizedBox(height: 10),

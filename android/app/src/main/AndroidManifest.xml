@@ -2,8 +2,13 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="com.android.vending.BILLING"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- Android 13+ runtime notification permission (overdue reminder) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- 相机非必需：保证无摄像头设备也能在 Play 商店安装 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
 
         android:maxSdkVersion="28"/>

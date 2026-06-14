@@ -69,7 +69,9 @@ class ArInvoice {
   });
 
   double get balance       => total - amountPaid;
-  bool   get isOverdue     => status != InvoiceStatus.paid &&
+  // Only something still owed can be overdue. Credit notes (negative balance)
+  // and settled invoices are never overdue.
+  bool   get isOverdue     => balance > 0 && status != InvoiceStatus.paid &&
                               DateTime.tryParse(dueDate)?.isBefore(DateTime.now()) == true;
   int    get daysOverdue   {
     if (!isOverdue) return 0;
@@ -192,7 +194,7 @@ class ApBill {
   });
 
   double get balance     => total - amountPaid;
-  bool   get isOverdue   => status != InvoiceStatus.paid &&
+  bool   get isOverdue   => balance > 0 && status != InvoiceStatus.paid &&
                             DateTime.tryParse(dueDate)?.isBefore(DateTime.now()) == true;
   int    get daysOverdue {
     if (!isOverdue) return 0;

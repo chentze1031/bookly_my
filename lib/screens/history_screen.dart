@@ -18,6 +18,9 @@ import '../state/sub_state.dart';
 import '../utils.dart';
 import '../utils/invoice_pdf.dart';
 import '../widgets/common.dart';
+import 'delivery_order_screen.dart';
+import 'credit_note_screen.dart';
+import 'sub_screen.dart' show showSubSheet;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // INVOICE HISTORY
@@ -72,6 +75,38 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
     _load();
   }
 
+  // Convert an invoice into a delivery order (Pro). Carries customer + items
+  // (quantities only) and references the source invoice number.
+  Future<void> _toDeliveryOrder(Map<String, dynamic> inv) async {
+    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+    final customer = Customer.fromMap(Map<String, dynamic>.from(inv['customer'] ?? {}));
+    final items = (inv['items'] as List? ?? [])
+        .map((e) => Map<String, String>.from(e)).toList();
+    await Navigator.push(context, MaterialPageRoute(
+      builder: (_) => DeliveryOrderSheet(
+        initCustomer: customer,
+        initItems:    items,
+        refInvNo:     inv['invNo'] as String?,
+      ),
+    ));
+  }
+
+  // Convert an invoice into a credit note (Pro). Carries customer + items and
+  // references the source invoice; the credit note reduces AR on save.
+  Future<void> _toCreditNote(Map<String, dynamic> inv) async {
+    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+    final customer = Customer.fromMap(Map<String, dynamic>.from(inv['customer'] ?? {}));
+    final items = (inv['items'] as List? ?? [])
+        .map((e) => Map<String, String>.from(e)).toList();
+    await Navigator.push(context, MaterialPageRoute(
+      builder: (_) => CreditNoteSheet(
+        initCustomer: customer,
+        initItems:    items,
+        refInvNo:     inv['invNo'] as String?,
+      ),
+    ));
+  }
+
   // Calculate invoice total from items
   static double _total(Map<String, dynamic> inv) {
     const sstMap = {'sst5':0.05,'sst10':0.10,'service6':0.06,'service8':0.08};
@@ -111,10 +146,13 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
                   return _InvoiceCard(
                     inv: inv,
                     total: _total(inv),
+                    lang: lang,
                     onView: () => Navigator.push(context, MaterialPageRoute(
                         builder: (_) => _InvoiceDetailScreen(inv: inv, onExport: () => _exportPdf(inv)))),
                     onExport: () => _exportPdf(inv),
                     onDelete: () => _confirmDelete(context, inv['invNo'] ?? '', () => _delete(inv['invNo'] ?? '')),
+                    onToDo: () => _toDeliveryOrder(inv),
+                    onToCn: () => _toCreditNote(inv),
                   );
                 },
               ),
@@ -139,9 +177,11 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
 class _InvoiceCard extends StatelessWidget {
   final Map<String, dynamic> inv;
   final double total;
-  final VoidCallback onView, onExport, onDelete;
-  const _InvoiceCard({required this.inv, required this.total,
-      required this.onView, required this.onExport, required this.onDelete});
+  final String lang;
+  final VoidCallback onView, onExport, onDelete, onToDo, onToCn;
+  const _InvoiceCard({required this.inv, required this.total, required this.lang,
+      required this.onView, required this.onExport, required this.onDelete,
+      required this.onToDo, required this.onToCn});
 
   @override
   Widget build(BuildContext context) {
@@ -186,6 +226,7 @@ class _InvoiceCard extends StatelessWidget {
               if ((inv['dueDate'] ?? '').isNotEmpty)
                 Text('Due: ${inv['dueDate']}', style: const TextStyle(fontSize: 11, color: kRed)),
               const SizedBox(height: 10),
+              // Row 1: View / PDF / delete
               Row(children: [
                 Expanded(
                   child: OutlinedButton.icon(
@@ -215,6 +256,35 @@ class _InvoiceCard extends StatelessWidget {
                 IconButton(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_outline, color: kRed, size: 20),
+                ),
+              ]),
+              const SizedBox(height: 6),
+              // Row 2: convert to Delivery Order / Credit Note
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onToDo,
+                    icon: const Icon(Icons.local_shipping_outlined, size: 15),
+                    label: Text(L10n(lang).convertToDo),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: kGreen, side: const BorderSide(color: kGreenBd),
+                      backgroundColor: kGreenBg,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onToCn,
+                    icon: const Icon(Icons.assignment_return_outlined, size: 15),
+                    label: Text(L10n(lang).convertToCn),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: kRed, side: const BorderSide(color: kRedBd),
+                      backgroundColor: kRedBg,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
+                  ),
                 ),
               ]),
             ]),
