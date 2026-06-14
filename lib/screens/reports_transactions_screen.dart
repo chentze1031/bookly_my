@@ -6,6 +6,7 @@ import '../state/sub_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import 'sub_screen.dart';
+import 'customer_analytics_screen.dart';
 import '../models.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -351,6 +352,41 @@ class _ReportsState extends State<ReportsScreen> {
           if (_view == 'sst' && sub.hasAccess)
             _SSTView(t: t, sstIn: sstIn, sstOut: sstOut,
               reminder: t.reminder, sstRegNo: app.settings.sstRegNo),
+
+          // ── Customer analytics entry (Task 10, Pro) ─────────────────────
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () => sub.hasAccess
+                ? Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => const CustomerAnalyticsScreen()))
+                : showSubSheet(context),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: kSurface, border: Border.all(color: kBorder),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: kBlueBg, borderRadius: BorderRadius.circular(10)),
+                  child: const Center(child: Text('👥', style: TextStyle(fontSize: 20))),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(lang == 'zh' ? '顾客消费分析' : 'Customer Analytics',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
+                  Text(lang == 'zh' ? '客户排行 · 客单 · 常买项目' : 'Top customers · spend · top items',
+                      style: const TextStyle(fontSize: 11, color: kMuted)),
+                ])),
+                if (sub.hasAccess)
+                  const Icon(Icons.chevron_right, color: kMuted)
+                else
+                  const Icon(Icons.lock_outline, size: 18, color: kPro),
+              ]),
+            ),
+          ),
         ],
       ),
     );
