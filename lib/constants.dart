@@ -221,6 +221,7 @@ abstract class StorageKeys {
   static const payrolls    = 'bly_payrolls';
   static const arInvoices  = 'bly_ar_invoices';
   static const quotations  = 'bly_quotations';
+  static const deliveryOrders = 'bly_delivery_orders';
   static const apBills     = 'bly_ap_bills';
   static const suppliers   = 'bly_suppliers';
   static const fxCached    = 'bly_fx_cache';
@@ -414,6 +415,18 @@ class L10n {
   String get accepted     => isZh ? '已接受' : 'Accepted';
   String get rejected     => isZh ? '已拒绝' : 'Rejected';
   String get converted    => isZh ? '已转发票' : 'Converted';
+
+  // Delivery Order
+  String get deliveryOrder   => isZh ? '送货单管理' : 'Delivery Order';
+  String get newDeliveryOrder=> isZh ? '新增送货单' : 'New Delivery Order';
+  String get doHistory       => isZh ? '送货单记录' : 'Delivery Order History';
+  String get doNo            => isZh ? '送货单号' : 'D.O. No.';
+  String get doDate          => isZh ? '送货日期' : 'Delivery Date';
+  String get deliverTo       => isZh ? '送货至' : 'Deliver To';
+  String get refInvoice      => isZh ? '关联发票' : 'Ref. Invoice';
+  String get convertToDo     => isZh ? '转送货单' : 'To D.O.';
+  String get receivedBy      => isZh ? '收货人签名' : 'Received By';
+  String get delivered       => isZh ? '已送达' : 'Delivered';
 
   // Customer
   String get customers  => isZh ? '客户管理' : 'Customers';

@@ -8,6 +8,7 @@ import '../utils.dart';
 import '../widgets/common.dart';
 import 'history_screen.dart';
 import 'quotation_screen.dart';
+import 'delivery_order_screen.dart';
 import 'sub_screen.dart' show showSubSheet;
 
 // ── 横幅广告ID ────────────────────────────────────────────────────────────────
@@ -201,7 +202,17 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      const Expanded(child: SizedBox()),
+                      Expanded(
+                        child: _HistoryBtn(
+                          icon: '🚚',
+                          label: lang == 'zh' ? '送货单记录' : 'Delivery Orders',
+                          onTap: () {
+                            if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                            Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => const DeliveryOrderHistoryScreen()));
+                          },
+                        ),
+                      ),
                     ]),
                   ]),
                 ),

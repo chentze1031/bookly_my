@@ -585,6 +585,48 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // ── Delivery Order CRUD ─────────────────────────────────────────────────────
+  Future<void> saveDeliveryOrder({
+    required String doNo, required String doDate,
+    required Customer customer, required List<Map<String, String>> items,
+    required String notes, String refInvNo = '', String status = 'draft',
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list  = (jsonDecode(prefs.getString(StorageKeys.deliveryOrders) ?? '[]') as List)
+        .cast<Map<String, dynamic>>();
+    final record = {
+      'doNo': doNo, 'doDate': doDate,
+      'customer': customer.toMap(), 'items': items,
+      'notes': notes, 'refInvNo': refInvNo, 'status': status,
+      'savedAt': DateTime.now().toIso8601String(),
+    };
+    final idx = list.indexWhere((e) => e['doNo'] == doNo);
+    if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
+    await prefs.setString(StorageKeys.deliveryOrders, jsonEncode(list));
+  }
+
+  Future<List<Map<String, dynamic>>> loadDeliveryOrders() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (jsonDecode(prefs.getString(StorageKeys.deliveryOrders) ?? '[]') as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deleteDeliveryOrder(String doNo) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.deliveryOrders) ?? '[]') as List).cast<Map<String, dynamic>>();
+    list.removeWhere((e) => e['doNo'] == doNo);
+    await prefs.setString(StorageKeys.deliveryOrders, jsonEncode(list));
+  }
+
+  Future<void> markDeliveryOrderStatus(String doNo, String status) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.deliveryOrders) ?? '[]') as List).cast<Map<String, dynamic>>();
+    final idx = list.indexWhere((e) => e['doNo'] == doNo);
+    if (idx >= 0) {
+      list[idx] = Map<String, dynamic>.from(list[idx])..['status'] = status;
+      await prefs.setString(StorageKeys.deliveryOrders, jsonEncode(list));
+    }
+  }
+
   Future<List<Map<String, dynamic>>> loadInvoices() async {
     final prefs = await SharedPreferences.getInstance();
     return (jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List).cast<Map<String, dynamic>>();
