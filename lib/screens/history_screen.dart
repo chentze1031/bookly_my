@@ -70,55 +70,6 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
     }
   }
 
-  // Send the invoice to the customer via WhatsApp (Task 9). Shares the PDF
-  // with a pre-filled message; the user picks WhatsApp in the share sheet.
-  Future<void> _whatsApp(Map<String, dynamic> inv) async {
-    final app  = context.read<AppState>();
-    final lang = app.settings.lang;
-    try {
-      final customer = Customer.fromMap(Map<String, dynamic>.from(inv['customer'] ?? {}));
-      final items = (inv['items'] as List).map((e) => Map<String, String>.from(e)).toList();
-      final bytes = await generateInvoicePdf(
-        co: app.settings, customer: customer, rows: items,
-        invNo: inv['invNo'] ?? '', invDate: inv['invDate'] ?? '',
-        dueDate:  (inv['dueDate']  ?? '').isNotEmpty ? inv['dueDate']  : null,
-        notes:    (inv['notes']    ?? '').isNotEmpty ? inv['notes']    : null,
-        terms:    (inv['terms']    ?? '').isNotEmpty ? inv['terms']    : null,
-        bankName: (inv['bankName'] ?? '').isNotEmpty ? inv['bankName'] : null,
-        bankAcct: (inv['bankAcct'] ?? '').isNotEmpty ? inv['bankAcct'] : null,
-      );
-      final msg = _whatsAppMessage(
-        lang: lang, company: app.settings.companyName,
-        customerName: customer.name, invNo: inv['invNo'] ?? '',
-        total: _total(inv), dueDate: inv['dueDate'] ?? '');
-      final dir  = await getTemporaryDirectory();
-      final safe = (inv['invNo'] ?? 'inv').replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '_');
-      final file = File('${dir.path}/Invoice_$safe.pdf');
-      await file.writeAsBytes(bytes);
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'application/pdf')],
-        text: msg, subject: 'Invoice ${inv['invNo']}');
-      context.read<SubState>().onShareAction();
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('WhatsApp send failed: $e'), backgroundColor: Colors.red));
-    }
-  }
-
-  static String _whatsAppMessage({
-    required String lang, required String company, required String customerName,
-    required String invNo, required double total, required String dueDate,
-  }) {
-    final hi   = customerName.isNotEmpty ? ' $customerName' : '';
-    final sign = company.isNotEmpty ? '\n— $company' : '';
-    if (lang == 'zh') {
-      final due = dueDate.isNotEmpty ? '，到期日 $dueDate' : '';
-      return '您好$hi，附上发票 $invNo，金额 ${fmtMYR(total)}$due。请查收，谢谢！$sign';
-    }
-    final due = dueDate.isNotEmpty ? ', due $dueDate' : '';
-    return 'Hi$hi, please find invoice $invNo for ${fmtMYR(total)}$due. Thank you!$sign';
-  }
-
   Future<void> _delete(String invNo) async {
     await context.read<AppState>().deleteInvoice(invNo);
     _load();
@@ -202,7 +153,6 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
                     onDelete: () => _confirmDelete(context, inv['invNo'] ?? '', () => _delete(inv['invNo'] ?? '')),
                     onToDo: () => _toDeliveryOrder(inv),
                     onToCn: () => _toCreditNote(inv),
-                    onWhatsApp: () => _whatsApp(inv),
                   );
                 },
               ),
@@ -228,10 +178,10 @@ class _InvoiceCard extends StatelessWidget {
   final Map<String, dynamic> inv;
   final double total;
   final String lang;
-  final VoidCallback onView, onExport, onDelete, onToDo, onToCn, onWhatsApp;
+  final VoidCallback onView, onExport, onDelete, onToDo, onToCn;
   const _InvoiceCard({required this.inv, required this.total, required this.lang,
       required this.onView, required this.onExport, required this.onDelete,
-      required this.onToDo, required this.onToCn, required this.onWhatsApp});
+      required this.onToDo, required this.onToCn});
 
   @override
   Widget build(BuildContext context) {
@@ -276,7 +226,7 @@ class _InvoiceCard extends StatelessWidget {
               if ((inv['dueDate'] ?? '').isNotEmpty)
                 Text('Due: ${inv['dueDate']}', style: const TextStyle(fontSize: 11, color: kRed)),
               const SizedBox(height: 10),
-              // Row 1: View / WhatsApp / delete
+              // Row 1: View / PDF / delete
               Row(children: [
                 Expanded(
                   child: OutlinedButton.icon(
@@ -293,13 +243,11 @@ class _InvoiceCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: onWhatsApp,
-                    icon: const Icon(Icons.chat, size: 15),
-                    label: const Text('WhatsApp'),
+                    onPressed: onExport,
+                    icon: const Text('📤', style: TextStyle(fontSize: 13)),
+                    label: const Text('PDF'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF128C7E),
-                      side: const BorderSide(color: Color(0xFF9FE1CB)),
-                      backgroundColor: const Color(0xFFE1F5EE),
+                      foregroundColor: kText, side: const BorderSide(color: kBorder),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                   ),
@@ -311,20 +259,8 @@ class _InvoiceCard extends StatelessWidget {
                 ),
               ]),
               const SizedBox(height: 6),
-              // Row 2: PDF / convert to Delivery Order / Credit Note
+              // Row 2: convert to Delivery Order / Credit Note
               Row(children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: onExport,
-                    icon: const Text('📤', style: TextStyle(fontSize: 13)),
-                    label: const Text('PDF'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: kText, side: const BorderSide(color: kBorder),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
-                  ),
-                ),
-                const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onToDo,
