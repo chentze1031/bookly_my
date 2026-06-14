@@ -20,6 +20,8 @@ import '../utils/invoice_pdf.dart';
 import '../widgets/common.dart';
 import 'delivery_order_screen.dart';
 import 'credit_note_screen.dart';
+import 'payroll_reports_screen.dart';
+import 'leave_management_screen.dart';
 import 'sub_screen.dart' show showSubSheet;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -530,31 +532,73 @@ class _PayrollHistoryState extends State<PayrollHistoryScreen> {
       ),
       body: _loading
         ? const Center(child: CircularProgressIndicator())
-        : _payrolls.isEmpty
-          ? const Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text('💼', style: TextStyle(fontSize: 48)),
-              SizedBox(height: 12),
-              Text('No payslips saved yet', style: TextStyle(color: kMuted, fontSize: 15)),
-            ]))
-          : RefreshIndicator(
-              onRefresh: _load,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _payrolls.length,
-                itemBuilder: (_, i) {
-                  final p   = _payrolls[i];
-                  final c   = _calc(p);
-                  return _PayrollCard(
-                    p: p, calc: c, months: _months,
-                    onView: () => Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => _PayrollDetailScreen(p: p, calc: c, months: _months))),
-                    onEdit: () => _reopenPayslip(context, p),
-                    onTogglePaid: () => _togglePaid(p),
-                    onDelete: () => _confirmDelete(context, p, c, () => _delete(p['key'] ?? '')),
-                  );
-                },
-              ),
+        : Column(children: [
+            _hrHub(context, lang),
+            Expanded(child: _payrolls.isEmpty
+              ? const Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Text('💼', style: TextStyle(fontSize: 48)),
+                  SizedBox(height: 12),
+                  Text('No payslips saved yet', style: TextStyle(color: kMuted, fontSize: 15)),
+                ]))
+              : RefreshIndicator(
+                  onRefresh: _load,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _payrolls.length,
+                    itemBuilder: (_, i) {
+                      final p   = _payrolls[i];
+                      final c   = _calc(p);
+                      return _PayrollCard(
+                        p: p, calc: c, months: _months,
+                        onView: () => Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => _PayrollDetailScreen(p: p, calc: c, months: _months))),
+                        onEdit: () => _reopenPayslip(context, p),
+                        onTogglePaid: () => _togglePaid(p),
+                        onDelete: () => _confirmDelete(context, p, c, () => _delete(p['key'] ?? '')),
+                      );
+                    },
+                  ),
+                )),
+          ]),
+    );
+  }
+
+  // ── HR & compliance hub (Phase 3 #11-14, Pro) ───────────────────────────────
+  Widget _hrHub(BuildContext context, String lang) {
+    final zh = lang == 'zh';
+    void open(Widget screen) {
+      if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+      Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    }
+    final items = [
+      ('🧾', zh ? 'CP39 扣税' : 'CP39 (PCB)',      const Cp39ReportScreen()),
+      ('🏦', 'EPF/SOCSO/EIS',                       const StatutoryReportScreen()),
+      ('📑', zh ? 'EA 表格' : 'Form EA',            const EaFormScreen()),
+      ('🏖️', zh ? '请假管理' : 'Leave',             const LeaveManagementScreen()),
+    ];
+    return Container(
+      color: kSurface,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(children: items.map((it) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: GestureDetector(
+            onTap: () => open(it.$3),
+            child: Container(
+              width: 88,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+              decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(12)),
+              child: Column(children: [
+                Text(it.$1, style: const TextStyle(fontSize: 22)),
+                const SizedBox(height: 6),
+                Text(it.$2, textAlign: TextAlign.center, maxLines: 2,
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kText)),
+              ]),
             ),
+          ),
+        )).toList()),
+      ),
     );
   }
 

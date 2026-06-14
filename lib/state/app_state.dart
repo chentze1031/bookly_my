@@ -686,4 +686,22 @@ class AppState extends ChangeNotifier {
     await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
     if (_loggedIn) _pushPayrollsCloud(list);
   }
+
+  // ── Leave store (Phase 3 Task #14) ────────────────────────────────────────────
+  // Self-contained local store so we don't touch the Employee schema / cloud sync.
+  // Shape: { "hireDates": { "<empId>": "yyyy-MM-dd" }, "records": [ {...} ] }
+  Future<Map<String, dynamic>> loadLeaveStore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(StorageKeys.leave);
+    if (raw == null) return {'hireDates': <String, dynamic>{}, 'records': <dynamic>[]};
+    final m = Map<String, dynamic>.from(jsonDecode(raw));
+    m['hireDates'] = Map<String, dynamic>.from(m['hireDates'] ?? {});
+    m['records']   = (m['records'] as List? ?? []);
+    return m;
+  }
+
+  Future<void> saveLeaveStore(Map<String, dynamic> store) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(StorageKeys.leave, jsonEncode(store));
+  }
 }

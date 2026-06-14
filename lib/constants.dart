@@ -54,6 +54,14 @@ double socsoEr(double g) => (g * 0.0175).clamp(0, 49.40);
 double eisEe(double g)   => (g * 0.002).clamp(0, 3.90);
 double eisEr(double g)   => (g * 0.004).clamp(0, 7.90);
 
+// ─── Statutory annual leave (Malaysia Employment Act) ─────────────────────────
+// Entitlement by completed years of service: <2y → 8, 2–5y → 12, >5y → 16 days.
+int statutoryAnnualLeave(int yearsOfService) {
+  if (yearsOfService < 2) return 8;
+  if (yearsOfService <= 5) return 12;
+  return 16;
+}
+
 // ─── FX Defaults ─────────────────────────────────────────────────────────────
 const defaultRates = <String, double>{
   'MYR': 1.0,   'USD': 4.72,  'CNY': 0.65,  'SGD': 3.52,
@@ -223,6 +231,7 @@ abstract class StorageKeys {
   static const quotations  = 'bly_quotations';
   static const deliveryOrders = 'bly_delivery_orders';
   static const creditNotes = 'bly_credit_notes';
+  static const leave       = 'bly_leave';
   static const apBills     = 'bly_ap_bills';
   static const suppliers   = 'bly_suppliers';
   static const fxCached    = 'bly_fx_cache';
