@@ -18,6 +18,8 @@ import '../utils.dart';
 import '../widgets/common.dart';
 import '../services/inventory_service.dart';
 import '../screens/inventory_screen.dart' show showInventoryPicker;
+import 'delivery_order_screen.dart' show DeliveryOrderSheet;
+import 'sub_screen.dart' show showSubSheet;
 
 // ─── Public shared helpers (used by payroll_screen.dart too) ──────────────────
 
@@ -637,6 +639,24 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
     }
   }
 
+  // ── Generate a delivery order from the current invoice (Pro) ───────────────
+  // Carries customer + line items (quantities only) and references this invoice.
+  Future<void> _toDeliveryOrder() async {
+    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+    if (_customer.name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Select a customer first'), backgroundColor: kRed));
+      return;
+    }
+    await Navigator.push(context, MaterialPageRoute(
+      builder: (_) => DeliveryOrderSheet(
+        initCustomer: _customer,
+        initItems:    _items,
+        refInvNo:     _invNo,
+      ),
+    ));
+  }
+
   Future<void> _pickLogo() async {
     final img = await ImagePicker().pickImage(
         source: ImageSource.gallery, imageQuality: 80, maxWidth: 400);
@@ -698,10 +718,22 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
               border: Border(bottom: BorderSide(color: kBorder))),
           child: Row(children: [
             const Text('🧾 ', style: TextStyle(fontSize: 20)),
-            Text(t.invoice,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
-            const Spacer(),
+            Expanded(
+              child: Text(t.invoice,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+            ),
+            const SizedBox(width: 8),
+            // ── Generate Delivery Order (Pro) ─────────────────────────
+            SmBtn(
+              label: '🚚',
+              color: kGreenBg,
+              borderColor: kGreenBd,
+              textColor: kGreen,
+              onTap: _toDeliveryOrder,
+            ),
+            const SizedBox(width: 8),
             // ── Save button ──────────────────────────────────────────
             SmBtn(
               label: _saving ? 'Saving…' : '💾 Save',
