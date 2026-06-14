@@ -628,6 +628,39 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  // ── Credit Note CRUD (document storage; AR posting done in AccountingState) ──
+  Future<void> saveCreditNote({
+    required String cnNo, required String cnDate,
+    required Customer customer, required List<Map<String, String>> items,
+    required String notes, required String reason,
+    String refInvNo = '', String status = 'draft',
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list  = (jsonDecode(prefs.getString(StorageKeys.creditNotes) ?? '[]') as List)
+        .cast<Map<String, dynamic>>();
+    final record = {
+      'cnNo': cnNo, 'cnDate': cnDate,
+      'customer': customer.toMap(), 'items': items,
+      'notes': notes, 'reason': reason, 'refInvNo': refInvNo, 'status': status,
+      'savedAt': DateTime.now().toIso8601String(),
+    };
+    final idx = list.indexWhere((e) => e['cnNo'] == cnNo);
+    if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
+    await prefs.setString(StorageKeys.creditNotes, jsonEncode(list));
+  }
+
+  Future<List<Map<String, dynamic>>> loadCreditNotes() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (jsonDecode(prefs.getString(StorageKeys.creditNotes) ?? '[]') as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deleteCreditNote(String cnNo) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.creditNotes) ?? '[]') as List).cast<Map<String, dynamic>>();
+    list.removeWhere((e) => e['cnNo'] == cnNo);
+    await prefs.setString(StorageKeys.creditNotes, jsonEncode(list));
+  }
+
   Future<List<Map<String, dynamic>>> loadInvoices() async {
     final prefs = await SharedPreferences.getInstance();
     return (jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List).cast<Map<String, dynamic>>();

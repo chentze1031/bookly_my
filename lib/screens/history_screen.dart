@@ -19,6 +19,7 @@ import '../utils.dart';
 import '../utils/invoice_pdf.dart';
 import '../widgets/common.dart';
 import 'delivery_order_screen.dart';
+import 'credit_note_screen.dart';
 import 'sub_screen.dart' show showSubSheet;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -90,6 +91,22 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
     ));
   }
 
+  // Convert an invoice into a credit note (Pro). Carries customer + items and
+  // references the source invoice; the credit note reduces AR on save.
+  Future<void> _toCreditNote(Map<String, dynamic> inv) async {
+    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+    final customer = Customer.fromMap(Map<String, dynamic>.from(inv['customer'] ?? {}));
+    final items = (inv['items'] as List? ?? [])
+        .map((e) => Map<String, String>.from(e)).toList();
+    await Navigator.push(context, MaterialPageRoute(
+      builder: (_) => CreditNoteSheet(
+        initCustomer: customer,
+        initItems:    items,
+        refInvNo:     inv['invNo'] as String?,
+      ),
+    ));
+  }
+
   // Calculate invoice total from items
   static double _total(Map<String, dynamic> inv) {
     const sstMap = {'sst5':0.05,'sst10':0.10,'service6':0.06,'service8':0.08};
@@ -135,6 +152,7 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
                     onExport: () => _exportPdf(inv),
                     onDelete: () => _confirmDelete(context, inv['invNo'] ?? '', () => _delete(inv['invNo'] ?? '')),
                     onToDo: () => _toDeliveryOrder(inv),
+                    onToCn: () => _toCreditNote(inv),
                   );
                 },
               ),
@@ -160,10 +178,10 @@ class _InvoiceCard extends StatelessWidget {
   final Map<String, dynamic> inv;
   final double total;
   final String lang;
-  final VoidCallback onView, onExport, onDelete, onToDo;
+  final VoidCallback onView, onExport, onDelete, onToDo, onToCn;
   const _InvoiceCard({required this.inv, required this.total, required this.lang,
       required this.onView, required this.onExport, required this.onDelete,
-      required this.onToDo});
+      required this.onToDo, required this.onToCn});
 
   @override
   Widget build(BuildContext context) {
@@ -208,6 +226,7 @@ class _InvoiceCard extends StatelessWidget {
               if ((inv['dueDate'] ?? '').isNotEmpty)
                 Text('Due: ${inv['dueDate']}', style: const TextStyle(fontSize: 11, color: kRed)),
               const SizedBox(height: 10),
+              // Row 1: View / PDF / delete
               Row(children: [
                 Expanded(
                   child: OutlinedButton.icon(
@@ -233,7 +252,15 @@ class _InvoiceCard extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
+                IconButton(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline, color: kRed, size: 20),
+                ),
+              ]),
+              const SizedBox(height: 6),
+              // Row 2: convert to Delivery Order / Credit Note
+              Row(children: [
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onToDo,
@@ -246,10 +273,18 @@ class _InvoiceCard extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                   ),
                 ),
-                const SizedBox(width: 4),
-                IconButton(
-                  onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline, color: kRed, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onToCn,
+                    icon: const Icon(Icons.assignment_return_outlined, size: 15),
+                    label: Text(L10n(lang).convertToCn),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: kRed, side: const BorderSide(color: kRedBd),
+                      backgroundColor: kRedBg,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
+                  ),
                 ),
               ]),
             ]),

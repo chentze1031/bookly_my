@@ -222,6 +222,7 @@ abstract class StorageKeys {
   static const arInvoices  = 'bly_ar_invoices';
   static const quotations  = 'bly_quotations';
   static const deliveryOrders = 'bly_delivery_orders';
+  static const creditNotes = 'bly_credit_notes';
   static const apBills     = 'bly_ap_bills';
   static const suppliers   = 'bly_suppliers';
   static const fxCached    = 'bly_fx_cache';
@@ -430,6 +431,17 @@ class L10n {
   String get deliveryDriver  => isZh ? '送货员（可选）' : 'Delivery Driver (optional)';
   String get selectInvoice   => isZh ? '选择发票' : 'Select Invoice';
   String get noInvoices      => isZh ? '暂无发票' : 'No invoices yet';
+
+  // Credit Note
+  String get creditNote     => isZh ? '信用备注管理' : 'Credit Note';
+  String get newCreditNote  => isZh ? '新增信用备注' : 'New Credit Note';
+  String get cnHistory      => isZh ? '信用备注记录' : 'Credit Notes';
+  String get cnNo           => isZh ? '信用备注号' : 'Credit Note No.';
+  String get cnDate         => isZh ? '日期' : 'Date';
+  String get creditReason   => isZh ? '退款/调整原因' : 'Reason';
+  String get convertToCn    => isZh ? '转信用备注' : 'To C/N';
+  String get totalCredit    => isZh ? '信用总额' : 'TOTAL CREDIT';
+  String get arReduced      => isZh ? '应收已冲减' : 'AR reduced';
 
   // Customer
   String get customers  => isZh ? '客户管理' : 'Customers';
