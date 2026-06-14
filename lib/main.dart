@@ -54,14 +54,17 @@ void main() async {
 
   final appState = AppState();
   final subState = SubState();
+  // Init early so the home overdue banner + reminder have AR data on launch.
+  final accountingState = AccountingState()..appState = appState;
   await Future.wait([appState.init(), subState.init()]);
+  await accountingState.init();
 
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: appState),
       ChangeNotifierProvider.value(value: subState),
       ChangeNotifierProvider(create: (_) => InventoryState()),
-      ChangeNotifierProvider(create: (_) => AccountingState()),
+      ChangeNotifierProvider.value(value: accountingState),
     ],
     child: const BooklyApp(),
   ));

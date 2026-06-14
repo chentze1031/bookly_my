@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' hide AppState;
 import '../constants.dart';
 import '../state/app_state.dart';
 import '../state/sub_state.dart';
+import '../state/accounting_state.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import 'history_screen.dart';
@@ -35,8 +37,13 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final sub = context.watch<SubState>();
+    final acc = context.watch<AccountingState>();
     final t   = L10n(app.settings.lang);
     final lang = app.settings.lang;
+
+    // Overdue receivables (Task 8)
+    final overdueCount = acc.overdueArCount;
+    final overdueTotal = acc.totalOverdueAr;
 
     final curMonth = app.currentMonth;
     final moTxs   = app.thisMonthTxs;
@@ -131,6 +138,18 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                // ── Overdue receivables reminder (Task 8) ──────────────────
+                if (overdueCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                    child: _OverdueBanner(
+                      count: overdueCount,
+                      total: overdueTotal,
+                      lang:  lang,
+                      onTap: () => context.go('/accounting'),
+                    ),
+                  ),
 
                 const SizedBox(height: 14),
 
@@ -467,6 +486,67 @@ class _HeroCard extends StatelessWidget {
         style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Georgia')),
     ]),
   );
+}
+
+// ── Overdue receivables reminder banner (Task 8, style A — red) ───────────────
+class _OverdueBanner extends StatelessWidget {
+  final int count;
+  final double total;
+  final String lang;
+  final VoidCallback onTap;
+  const _OverdueBanner({required this.count, required this.total,
+      required this.lang, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = lang == 'zh' ? '$count 张发票逾期' : '$count invoice${count == 1 ? '' : 's'} overdue';
+    final sub   = lang == 'zh'
+        ? '共 ${fmtMYR(total)} 待催收'
+        : '${fmtMYR(total)} to collect';
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: kRedBg,
+          border: Border.all(color: kRedBd, width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(children: [
+          Container(
+            width: 38, height: 38,
+            decoration: BoxDecoration(
+              color: kSurface,
+              border: Border.all(color: kRedBd),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.warning_amber_rounded, size: 21, color: kRed),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kRed)),
+              const SizedBox(height: 1),
+              Text(sub, style: const TextStyle(fontSize: 12, color: kMuted)),
+            ]),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: kRed,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Row(children: [
+              Text(lang == 'zh' ? '查看' : 'View',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
+              const Icon(Icons.chevron_right, size: 16, color: Colors.white),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
 }
 
 class _QuickBtn extends StatelessWidget {
