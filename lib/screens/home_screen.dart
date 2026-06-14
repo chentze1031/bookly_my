@@ -453,6 +453,7 @@ class _QuickBtn extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
             decoration: BoxDecoration(color: bg, border: Border.all(color: bd, width: 2), borderRadius: BorderRadius.circular(14)),
             child: Column(children: [
