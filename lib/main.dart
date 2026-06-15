@@ -299,11 +299,11 @@ class _AddTxSheetState extends State<AddTxSheet> {
   // ── Receipt OCR (Phase 4 #19, Pro) ──────────────────────────────────────
   // Snap/pick a receipt → Gemini Vision extracts merchant/amount/date/category
   // → prefills an expense and jumps to the confirm step. Pure-Dart (no native).
-  Future<void> _scanReceipt(BuildContext ctx) async {
-    if (!ctx.read<SubState>().isPro) { showSubSheet(ctx); return; }
-    final lang = ctx.read<AppState>().settings.lang;
+  Future<void> _scanReceipt() async {
+    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+    final lang = context.read<AppState>().settings.lang;
     final src = await showModalBottomSheet<ImageSource>(
-      context: ctx,
+      context: context,
       builder: (sctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
         ListTile(leading: const Icon(Icons.photo_camera_outlined),
           title: Text(tr(lang, 'Camera', '拍照', 'Kamera')),
@@ -337,7 +337,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _scanning = false);
-      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(tr(lang, 'Scan failed: $e', '扫描失败：$e', 'Imbas gagal: $e'))));
     }
   }
@@ -491,7 +491,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                       const SizedBox(height: 14),
                       // Receipt OCR shortcut (Pro) — snap a receipt to auto-fill an expense.
                       GestureDetector(
-                        onTap: _scanning ? null : () => _scanReceipt(context),
+                        onTap: _scanning ? null : () => _scanReceipt(),
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 14),
