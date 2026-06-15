@@ -20,79 +20,83 @@ import 'sub_screen.dart' show showSubSheet;
 // INVENTORY L10N (follows app-wide lang setting)
 // ════════════════════════════════════════════════════════════════════════════
 class _T {
-  final bool zh;
-  const _T(this.zh);
-  String get inventory   => zh ? '库存' : 'Inventory';
-  String get products    => zh ? '产品' : 'Products';
-  String get reports     => zh ? '报表' : 'Reports';
-  String get lowStock    => zh ? '低库存' : 'Low Stock';
-  String get out         => zh ? '缺货' : 'Out';
-  String get value       => zh ? '总值' : 'Value';
-  String get all         => zh ? '全部' : 'All';
-  String get searchHint  => zh ? '搜索名称、SKU、分类...' : 'Search name, SKU, category...';
-  String get inStock     => zh ? '有货' : 'In Stock';
-  String get outOfStock  => zh ? '缺货' : 'Out of Stock';
-  String get negative    => zh ? '负库存' : 'Negative';
-  String get addItem     => zh ? '添加产品' : 'Add Item';
-  String get editItem    => zh ? '编辑产品' : 'Edit Item';
-  String get newItem     => zh ? '新产品' : 'New Item';
-  String get noResults   => zh ? '没有找到结果' : 'No results found';
-  String get noInventory => zh ? '还没有库存' : 'No inventory yet';
-  String get trysearch   => zh ? '换个关键词试试' : 'Try a different search';
-  String get addFirst    => zh ? '添加第一个产品' : 'Add your first product';
-  String get details     => zh ? '详情' : 'Details';
-  String get history     => zh ? '历史' : 'History';
-  String get currentStock=> zh ? '当前库存' : 'Current Stock';
-  String get stockIn     => zh ? '入库' : 'Stock In';
-  String get stockOut    => zh ? '出库' : 'Stock Out';
-  String get setQty      => zh ? '设置' : 'Set';
-  String get qty         => zh ? '数量' : 'Quantity';
-  String get newQty      => zh ? '新数量' : 'New quantity';
-  String get reason      => zh ? '原因' : 'Reason';
-  String get noteOpt     => zh ? '备注（可选）' : 'Note (optional)';
-  String get apply       => zh ? '确定' : 'Apply';
-  String get validNum    => zh ? '请输入有效数字' : 'Enter a valid number';
-  String get sellPrice   => zh ? '售价' : 'Sell Price';
-  String get costPrice   => zh ? '成本价' : 'Cost Price';
-  String get marginL     => zh ? '毛利率' : 'Margin';
-  String get stockValue  => zh ? '库存价值' : 'Stock Value';
-  String get lowAlert    => zh ? '低库存提醒' : 'Low Stock Alert';
-  String get category    => zh ? '分类' : 'Category';
-  String get notes       => zh ? '备注' : 'Notes';
-  String get deleteItem  => zh ? '删除产品' : 'Delete Item';
-  String get deleteConfirm => zh ? '将同时删除其全部历史记录，无法撤销。' : 'Its history will also be deleted. This cannot be undone.';
-  String get cancel      => zh ? '取消' : 'Cancel';
-  String get delete      => zh ? '删除' : 'Delete';
-  String get save        => zh ? '保存修改' : 'Save Changes';
-  String get nameReq     => zh ? '产品名称必填' : 'Product name is required.';
-  String get nameLabel   => zh ? '产品名称 *' : 'PRODUCT NAME *';
-  String get skuLabel    => zh ? 'SKU / 条码' : 'SKU / BARCODE';
-  String get unitLabel   => zh ? '单位' : 'UNIT';
-  String get catLabel    => zh ? '分类' : 'CATEGORY';
-  String get costLabel   => zh ? '成本价 (RM)' : 'COST PRICE (RM)';
-  String get sellLabel   => zh ? '售价 (RM)' : 'SELL PRICE (RM)';
-  String get qtyLabel    => zh ? '数量' : 'QUANTITY';
-  String get lowLabel    => zh ? '低库存提醒' : 'LOW STOCK ALERT';
-  String get notesLabel  => zh ? '备注' : 'NOTES';
-  String get photo       => zh ? '产品图片' : 'PRODUCT PHOTO';
-  String get takePhoto   => zh ? '拍照' : 'Camera';
-  String get gallery     => zh ? '相册' : 'Gallery';
-  String get removePhoto => zh ? '移除' : 'Remove';
-  String get noHistory   => zh ? '暂无记录' : 'No movements yet';
-  String get last30      => zh ? '近 30 天' : '30 days';
-  String get last90      => zh ? '近 90 天' : '90 days';
-  String get valueTrend  => zh ? '库存总值趋势' : 'Stock Value Trend';
-  String get topSellers  => zh ? '最畅销产品' : 'Top Sellers';
-  String get slowMovers  => zh ? '滞销产品' : 'Slow Movers';
-  String get lowList     => zh ? '低库存预警' : 'Low Stock Alerts';
-  String get soldSuffix  => zh ? '已售' : 'sold';
-  String get noSales     => zh ? '该时段无销售' : 'No sales in this period';
-  String get allHealthy  => zh ? '库存全部健康 👍' : 'All stock levels healthy 👍';
-  String get restock     => zh ? '补货' : 'Restock';
-  String get scanBarcode => zh ? '扫描条码' : 'Scan Barcode';
-  String get pointCamera => zh ? '对准条形码' : 'Point camera at barcode';
-  String get enterManually => zh ? '手动输入' : 'Enter manually';
-  String get invoiceRef  => zh ? '发票' : 'Invoice';
+  final String lang;
+  const _T(this.lang);
+  bool get zh => lang == 'zh';
+  bool get ms => lang == 'ms';
+  String _t(String en, String zh, String ms) =>
+      lang == 'zh' ? zh : lang == 'ms' ? ms : en;
+  String get inventory   => _t('Inventory', '库存', 'Inventori');
+  String get products    => _t('Products', '产品', 'Produk');
+  String get reports     => _t('Reports', '报表', 'Laporan');
+  String get lowStock    => _t('Low Stock', '低库存', 'Stok Rendah');
+  String get out         => _t('Out', '缺货', 'Habis');
+  String get value       => _t('Value', '总值', 'Nilai');
+  String get all         => _t('All', '全部', 'Semua');
+  String get searchHint  => _t('Search name, SKU, category...', '搜索名称、SKU、分类...', 'Cari nama, SKU, kategori...');
+  String get inStock     => _t('In Stock', '有货', 'Ada Stok');
+  String get outOfStock  => _t('Out of Stock', '缺货', 'Kehabisan Stok');
+  String get negative    => _t('Negative', '负库存', 'Negatif');
+  String get addItem     => _t('Add Item', '添加产品', 'Tambah Produk');
+  String get editItem    => _t('Edit Item', '编辑产品', 'Sunting Produk');
+  String get newItem     => _t('New Item', '新产品', 'Produk Baharu');
+  String get noResults   => _t('No results found', '没有找到结果', 'Tiada hasil');
+  String get noInventory => _t('No inventory yet', '还没有库存', 'Belum ada inventori');
+  String get trysearch   => _t('Try a different search', '换个关键词试试', 'Cuba kata kunci lain');
+  String get addFirst    => _t('Add your first product', '添加第一个产品', 'Tambah produk pertama');
+  String get details     => _t('Details', '详情', 'Butiran');
+  String get history     => _t('History', '历史', 'Sejarah');
+  String get currentStock=> _t('Current Stock', '当前库存', 'Stok Semasa');
+  String get stockIn     => _t('Stock In', '入库', 'Stok Masuk');
+  String get stockOut    => _t('Stock Out', '出库', 'Stok Keluar');
+  String get setQty      => _t('Set', '设置', 'Tetap');
+  String get qty         => _t('Quantity', '数量', 'Kuantiti');
+  String get newQty      => _t('New quantity', '新数量', 'Kuantiti baharu');
+  String get reason      => _t('Reason', '原因', 'Sebab');
+  String get noteOpt     => _t('Note (optional)', '备注（可选）', 'Nota (pilihan)');
+  String get apply       => _t('Apply', '确定', 'Sahkan');
+  String get validNum    => _t('Enter a valid number', '请输入有效数字', 'Masukkan nombor yang sah');
+  String get sellPrice   => _t('Sell Price', '售价', 'Harga Jual');
+  String get costPrice   => _t('Cost Price', '成本价', 'Harga Kos');
+  String get marginL     => _t('Margin', '毛利率', 'Margin');
+  String get stockValue  => _t('Stock Value', '库存价值', 'Nilai Stok');
+  String get lowAlert    => _t('Low Stock Alert', '低库存提醒', 'Amaran Stok Rendah');
+  String get category    => _t('Category', '分类', 'Kategori');
+  String get notes       => _t('Notes', '备注', 'Nota');
+  String get deleteItem  => _t('Delete Item', '删除产品', 'Padam Produk');
+  String get deleteConfirm => _t('Its history will also be deleted. This cannot be undone.', '将同时删除其全部历史记录，无法撤销。', 'Sejarahnya juga akan dipadam. Tindakan ini tidak boleh dibatalkan.');
+  String get cancel      => _t('Cancel', '取消', 'Batal');
+  String get delete      => _t('Delete', '删除', 'Padam');
+  String get save        => _t('Save Changes', '保存修改', 'Simpan Perubahan');
+  String get nameReq     => _t('Product name is required.', '产品名称必填', 'Nama produk diperlukan.');
+  String get nameLabel   => _t('PRODUCT NAME *', '产品名称 *', 'NAMA PRODUK *');
+  String get skuLabel    => _t('SKU / BARCODE', 'SKU / 条码', 'SKU / BARKOD');
+  String get unitLabel   => _t('UNIT', '单位', 'UNIT');
+  String get catLabel    => _t('CATEGORY', '分类', 'KATEGORI');
+  String get costLabel   => _t('COST PRICE (RM)', '成本价 (RM)', 'HARGA KOS (RM)');
+  String get sellLabel   => _t('SELL PRICE (RM)', '售价 (RM)', 'HARGA JUAL (RM)');
+  String get qtyLabel    => _t('QUANTITY', '数量', 'KUANTITI');
+  String get lowLabel    => _t('LOW STOCK ALERT', '低库存提醒', 'AMARAN STOK RENDAH');
+  String get notesLabel  => _t('NOTES', '备注', 'NOTA');
+  String get photo       => _t('PRODUCT PHOTO', '产品图片', 'FOTO PRODUK');
+  String get takePhoto   => _t('Camera', '拍照', 'Kamera');
+  String get gallery     => _t('Gallery', '相册', 'Galeri');
+  String get removePhoto => _t('Remove', '移除', 'Buang');
+  String get noHistory   => _t('No movements yet', '暂无记录', 'Tiada pergerakan');
+  String get last30      => _t('30 days', '近 30 天', '30 hari');
+  String get last90      => _t('90 days', '近 90 天', '90 hari');
+  String get valueTrend  => _t('Stock Value Trend', '库存总值趋势', 'Trend Nilai Stok');
+  String get topSellers  => _t('Top Sellers', '最畅销产品', 'Paling Laris');
+  String get slowMovers  => _t('Slow Movers', '滞销产品', 'Kurang Laris');
+  String get lowList     => _t('Low Stock Alerts', '低库存预警', 'Amaran Stok Rendah');
+  String get soldSuffix  => _t('sold', '已售', 'dijual');
+  String get noSales     => _t('No sales in this period', '该时段无销售', 'Tiada jualan tempoh ini');
+  String get allHealthy  => _t('All stock levels healthy 👍', '库存全部健康 👍', 'Semua stok sihat 👍');
+  String get restock     => _t('Restock', '补货', 'Tambah Stok');
+  String get scanBarcode => _t('Scan Barcode', '扫描条码', 'Imbas Barkod');
+  String get pointCamera => _t('Point camera at barcode', '对准条形码', 'Halakan kamera ke barkod');
+  String get enterManually => _t('Enter manually', '手动输入', 'Masukkan secara manual');
+  String get invoiceRef  => _t('Invoice', '发票', 'Invois');
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -207,7 +211,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   @override
   Widget build(BuildContext context) {
     final inv = context.watch<InventoryState>();
-    final t   = _T(context.watch<AppState>().settings.lang == 'zh');
+    final t   = _T(context.watch<AppState>().settings.lang);
     final fmt = NumberFormat('#,##0.00');
 
     List<InventoryItem> display = inv.search(_query);
@@ -262,7 +266,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 child: Row(children: [
                   const Text('📦', style: TextStyle(fontSize: 14)),
                   const SizedBox(width: 4),
-                  Text(t.zh ? '采购单' : 'PO', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
+                  Text(tr(t.lang, 'PO', '采购单', 'PO'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
                 ]),
               ),
             ),
@@ -339,7 +343,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(children: [
-                _whChip(t.zh ? '全部仓库' : 'All', _whId == null, () => setState(() => _whId = null)),
+                _whChip(tr(t.lang, 'All', '全部仓库', 'Semua'), _whId == null, () => setState(() => _whId = null)),
                 for (final w in _warehouses)
                   _whChip('🏬 ${w['name']}', _whId == w['id'], () => setState(() => _whId = w['id'] as int)),
                 GestureDetector(
@@ -354,7 +358,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     child: Row(children: [
                       const Icon(Icons.settings_outlined, size: 13, color: kMuted),
                       const SizedBox(width: 3),
-                      Text(t.zh ? '管理仓库' : 'Manage', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kMuted)),
+                      Text(tr(t.lang, 'Manage', '管理仓库', 'Urus'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kMuted)),
                       if (!context.read<SubState>().isPro) const Padding(padding: EdgeInsets.only(left: 3), child: Icon(Icons.lock_outline, size: 12, color: kPro)),
                     ]),
                   ),
@@ -506,7 +510,7 @@ class _ItemDetailSheetState extends State<_ItemDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final inv  = context.watch<InventoryState>();
-    final t    = _T(context.watch<AppState>().settings.lang == 'zh');
+    final t    = _T(context.watch<AppState>().settings.lang);
     final item = inv.byId(widget.itemId);
     if (item == null) return const SizedBox.shrink(); // deleted while open
     final fmt  = NumberFormat('#,##0.00');
@@ -949,7 +953,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final t      = _T(context.watch<AppState>().settings.lang == 'zh');
+    final t      = _T(context.watch<AppState>().settings.lang);
     final isEdit = widget.item != null;
     final hasImage = _pickedImage != null || (_existingImage != null && !_removeImage);
 
@@ -1039,7 +1043,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                 ]),
                 // Warehouse / store assignment (Phase 4 #25) — only when warehouses exist.
                 if (widget.warehouses.isNotEmpty)
-                  _Field(label: t.zh ? '仓库 / 门店' : 'WAREHOUSE / STORE', child: Container(
+                  _Field(label: tr(t.lang, 'WAREHOUSE / STORE', '仓库 / 门店', 'GUDANG / KEDAI'), child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(12)),
                     child: DropdownButtonHideUnderline(
@@ -1048,7 +1052,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                         isExpanded: true,
                         style: const TextStyle(fontSize: 14, color: kText),
                         items: [
-                          DropdownMenuItem<int?>(value: null, child: Text(t.zh ? '未分配' : 'Unassigned', style: const TextStyle(color: kMuted))),
+                          DropdownMenuItem<int?>(value: null, child: Text(tr(t.lang, 'Unassigned', '未分配', 'Tidak Ditetapkan'), style: const TextStyle(color: kMuted))),
                           for (final w in widget.warehouses)
                             DropdownMenuItem<int?>(value: w['id'] as int, child: Text('🏬 ${w['name']}')),
                         ],
@@ -1413,7 +1417,7 @@ class _EmptyState extends StatelessWidget {
 /// Bottom-sheet product picker. Returns the selected [InventoryItem] or null.
 Future<InventoryItem?> showInventoryPicker(BuildContext context) {
   final inv = context.read<InventoryState>();
-  final t   = _T(context.read<AppState>().settings.lang == 'zh');
+  final t   = _T(context.read<AppState>().settings.lang);
   if (inv.items.isEmpty && !inv.loading) inv.load();
   return showModalBottomSheet<InventoryItem>(
     context: context,
