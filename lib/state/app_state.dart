@@ -687,6 +687,105 @@ class AppState extends ChangeNotifier {
     if (_loggedIn) _pushPayrollsCloud(list);
   }
 
+  // ── Budgets (Phase 4 #20): { catId: monthlyLimit } ────────────────────────────
+  Future<Map<String, double>> loadBudgets() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(StorageKeys.budgets);
+    if (raw == null) return {};
+    return (jsonDecode(raw) as Map).map((k, v) => MapEntry(k as String, (v as num).toDouble()));
+  }
+
+  Future<void> saveBudgets(Map<String, double> budgets) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(StorageKeys.budgets, jsonEncode(budgets));
+  }
+
+  // ── Recurring transactions (Phase 4 #21) ──────────────────────────────────────
+  // Template: { id, type, catId, amount, descEN, descZH, freq(monthly|weekly),
+  //             anchorDay, nextDate(yyyy-MM-dd), active }
+  Future<List<Map<String, dynamic>>> loadRecurring() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (jsonDecode(prefs.getString(StorageKeys.recurring) ?? '[]') as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> saveRecurringList(List<Map<String, dynamic>> list) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(StorageKeys.recurring, jsonEncode(list));
+  }
+
+  Future<void> saveRecurring(Map<String, dynamic> tpl) async {
+    final list = await loadRecurring();
+    final idx = list.indexWhere((e) => e['id'] == tpl['id']);
+    if (idx >= 0) { list[idx] = tpl; } else { list.insert(0, tpl); }
+    await saveRecurringList(list);
+  }
+
+  Future<void> deleteRecurring(int id) async {
+    final list = await loadRecurring();
+    list.removeWhere((e) => e['id'] == id);
+    await saveRecurringList(list);
+  }
+
+  /// Generate any due recurring transactions (catch-up) and advance nextDate.
+  /// Deterministic per-occurrence ids → safe to run on every launch.
+  Future<int> processRecurring() async {
+    final list = await loadRecurring();
+    if (list.isEmpty) return 0;
+    final today = DateTime.now();
+    int generated = 0;
+    var changed = false;
+
+    for (final tpl in list) {
+      if (tpl['active'] == false) continue;
+      final catId = tpl['catId'] as String? ?? '';
+      final cat = findCat(catId);
+      if (cat == null) continue;
+      final amount = (tpl['amount'] as num?)?.toDouble() ?? 0;
+      if (amount <= 0) continue;
+
+      var next = DateTime.tryParse(tpl['nextDate'] as String? ?? '');
+      if (next == null) continue;
+      final freq    = tpl['freq'] as String? ?? 'monthly';
+      final anchor  = (tpl['anchorDay'] as int?) ?? next.day;
+
+      while (!next!.isAfter(today)) {
+        final dateStr = next.toIso8601String().substring(0, 10);
+        final occId = (tpl['id'] as int) * 100000000 +
+            int.parse(dateStr.replaceAll('-', ''));
+        await addOrUpdateTx(Transaction(
+          id:           occId,
+          type:         tpl['type'] as String? ?? 'expense',
+          catId:        catId,
+          amountMYR:    amount,
+          origAmount:   amount,
+          origCurrency: 'MYR',
+          sstKey:       'none',
+          sstMYR:       0,
+          descEN:       '${tpl['descEN'] ?? cat.enLabel} (auto)',
+          descZH:       '${tpl['descZH'] ?? cat.zhLabel} (自动)',
+          date:         dateStr,
+          entries:      cat.mkEntries(amount),
+        ));
+        generated++;
+        changed = true;
+        // advance
+        next = freq == 'weekly'
+            ? next.add(const Duration(days: 7))
+            : _addMonthClamped(next, anchor);
+      }
+      tpl['nextDate'] = next.toIso8601String().substring(0, 10);
+    }
+    if (changed) await saveRecurringList(list);
+    return generated;
+  }
+
+  static DateTime _addMonthClamped(DateTime d, int anchorDay) {
+    final y = d.month == 12 ? d.year + 1 : d.year;
+    final m = d.month == 12 ? 1 : d.month + 1;
+    final lastDay = DateTime(y, m + 1, 0).day;
+    return DateTime(y, m, anchorDay.clamp(1, lastDay));
+  }
+
   // ── Purchase Order CRUD (Phase 3 Task #18) ────────────────────────────────────
   Future<void> savePurchaseOrder({
     required String poNo, required String poDate,

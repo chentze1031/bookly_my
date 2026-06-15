@@ -12,6 +12,7 @@ import '../screens/auth_screen.dart';
 import 'company_info_screen.dart';
 import 'sst_report_screen.dart';
 import 'sub_screen.dart';
+import 'recurring_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -157,6 +158,29 @@ class _SettingsState extends State<SettingsScreen> {
             trailing: const Icon(Icons.chevron_right, color: kMuted),
             onTap: () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const SstReportScreen())),
+          ),
+        ),
+
+        // ── Recurring transactions (Phase 4 #21, Pro) ────────────────────
+        SectionCard(
+          title: '🔁 ${t.isZh ? "定期记账" : "Recurring"}',
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            leading: const Text('🔁', style: TextStyle(fontSize: 28)),
+            title: Text(
+              t.isZh ? '定期自动记账' : 'Recurring Transactions',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText),
+            ),
+            subtitle: Text(
+              t.isZh ? '租金、订阅等按月/周自动生成' : 'Auto-create rent, subscriptions monthly/weekly',
+              style: const TextStyle(fontSize: 12, color: kMuted),
+            ),
+            trailing: sub.isPro
+              ? const Icon(Icons.chevron_right, color: kMuted)
+              : const Icon(Icons.lock_outline, size: 18, color: kPro),
+            onTap: () => sub.isPro
+              ? Navigator.push(context, MaterialPageRoute(builder: (_) => const RecurringScreen()))
+              : showSubSheet(context),
           ),
         ),
 

@@ -59,6 +59,8 @@ void main() async {
   final accountingState = AccountingState()..appState = appState;
   await Future.wait([appState.init(), subState.init()]);
   await accountingState.init();
+  // Phase 4 #21: generate any due recurring transactions on launch.
+  await appState.processRecurring();
 
   // Task 8: system reminder for overdue receivables (best-effort, once/day).
   OverdueReminder.checkAndNotify(accountingState, appState.settings.lang);

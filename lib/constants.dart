@@ -233,6 +233,8 @@ abstract class StorageKeys {
   static const creditNotes = 'bly_credit_notes';
   static const leave       = 'bly_leave';
   static const purchaseOrders = 'bly_purchase_orders';
+  static const budgets     = 'bly_budgets';
+  static const recurring   = 'bly_recurring';
   static const apBills     = 'bly_ap_bills';
   static const suppliers   = 'bly_suppliers';
   static const fxCached    = 'bly_fx_cache';
