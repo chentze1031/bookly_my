@@ -14,7 +14,7 @@ import '../utils.dart';
 import '../utils/purchase_order_pdf.dart';
 import '../services/db_service.dart';
 import '../widgets/common.dart';
-import 'invoice_screen.dart' show DashedBtn, SmBtn;
+import 'invoice_screen.dart' show DashedBtn, SmBtn, SheetHandle, EmptyHint;
 import 'inventory_screen.dart' show showInventoryPicker;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -282,44 +282,16 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
   });
 
   Future<void> _pickSupplier() async {
-    final suppliers = context.read<AccountingState>().suppliers;
-    final lang = context.read<AppState>().settings.lang;
-    if (suppliers.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(lang == 'zh' ? '请先在账务→供应商添加供应商，或直接手填名称' : 'Add suppliers in Accounting, or type a name')));
-      return;
-    }
-    final picked = await showModalBottomSheet<Supplier>(
+    await showModalBottomSheet(
       context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Padding(padding: const EdgeInsets.fromLTRB(20, 16, 16, 8), child: Row(children: [
-            Text(lang == 'zh' ? '选择供应商' : 'Select Supplier', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
-            const Spacer(),
-            GestureDetector(onTap: () => Navigator.pop(ctx), child: const Icon(Icons.close, size: 20, color: kMuted)),
-          ])),
-          const Divider(height: 1, color: kBorder),
-          Flexible(child: ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 4), itemCount: suppliers.length,
-            separatorBuilder: (_, __) => const Divider(height: 1, color: kBorder),
-            itemBuilder: (_, i) => ListTile(
-              title: Text(suppliers[i].name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
-              subtitle: suppliers[i].phone.isNotEmpty ? Text(suppliers[i].phone, style: const TextStyle(fontSize: 12, color: kMuted)) : null,
-              trailing: const Icon(Icons.chevron_right, color: kMuted),
-              onTap: () => Navigator.pop(ctx, suppliers[i]),
-            ),
-          )),
-        ]),
+      builder: (_) => ChangeNotifierProvider.value(
+        value: context.read<AccountingState>(),
+        child: SupplierManagerScreen(onSelect: (s) => setState(() => _supplier = {
+          'id': s.id, 'name': s.name, 'regNo': s.regNo,
+          'address': s.address, 'phone': s.phone, 'email': s.email,
+        })),
       ),
     );
-    if (picked != null) {
-      setState(() => _supplier = {
-        'id': picked.id, 'name': picked.name, 'regNo': picked.regNo,
-        'address': picked.address, 'phone': picked.phone, 'email': picked.email,
-      });
-    }
   }
 
   Future<void> _linkInventory(int idx) async {
@@ -490,6 +462,156 @@ class _PoItemRow extends StatelessWidget {
           Expanded(child: FieldInput(label: lang == 'zh' ? '成本价' : 'Unit Cost', value: item['price'] ?? '', keyboard: TextInputType.number, onChanged: (v) => _up('price', v))),
         ]),
       ]),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPPLIER MANAGER (select → add → fill details), mirrors the customer/employee
+// manager. Backed by AccountingState.suppliers.
+// ═══════════════════════════════════════════════════════════════════════════════
+class SupplierManagerScreen extends StatefulWidget {
+  final void Function(Supplier)? onSelect;
+  const SupplierManagerScreen({super.key, this.onSelect});
+  @override State<SupplierManagerScreen> createState() => _SuppMgrState();
+}
+
+class _SuppMgrState extends State<SupplierManagerScreen> {
+  Supplier? _editing;
+
+  @override
+  Widget build(BuildContext context) {
+    final acc = context.watch<AccountingState>();
+    final zh  = context.read<AppState>().settings.lang == 'zh';
+
+    if (_editing != null) {
+      return _SuppEditForm(
+        supplier: _editing!, zh: zh,
+        onSave: (s) async { await acc.saveSupplier(s); if (mounted) setState(() => _editing = null); },
+        onCancel: () => setState(() => _editing = null),
+      );
+    }
+
+    return Container(
+      decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88 - MediaQuery.of(context).viewInsets.bottom),
+      child: Column(children: [
+        SheetHandle(title: zh ? '供应商管理' : 'Suppliers'),
+        Expanded(child: ListView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          children: [
+            DashedBtn(label: '+ ${zh ? '新增供应商' : 'New Supplier'}',
+              onTap: () => setState(() => _editing = const Supplier(id: 0, name: ''))),
+            const SizedBox(height: 10),
+            if (acc.suppliers.isEmpty)
+              EmptyHint(icon: '🏭', label: zh ? '暂无供应商' : 'No suppliers yet'),
+            ...acc.suppliers.map((s) => _SuppCard(
+              supplier: s,
+              onSelect: widget.onSelect != null
+                ? () { widget.onSelect!(s); Navigator.pop(context); } : null,
+              onEdit: () => setState(() => _editing = s),
+              onDelete: () => acc.deleteSupplier(s.id),
+            )),
+          ],
+        )),
+      ]),
+    );
+  }
+}
+
+class _SuppCard extends StatelessWidget {
+  final Supplier supplier;
+  final VoidCallback? onSelect, onEdit, onDelete;
+  const _SuppCard({required this.supplier, this.onSelect, this.onEdit, this.onDelete});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(12)),
+    padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+    child: Row(children: [
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(supplier.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+        if (supplier.regNo.isNotEmpty) Text('Reg: ${supplier.regNo}', style: const TextStyle(fontSize: 11, color: kMuted)),
+        if (supplier.phone.isNotEmpty) Text(supplier.phone, style: const TextStyle(fontSize: 11, color: kMuted)),
+      ])),
+      if (onSelect != null) ...[
+        SmBtn(label: 'Select', color: kDark, textColor: Colors.white, onTap: onSelect!),
+        const SizedBox(width: 6),
+      ],
+      SmBtn(label: 'Edit', onTap: onEdit ?? () {}),
+      const SizedBox(width: 6),
+      GestureDetector(onTap: onDelete, child: const Icon(Icons.delete_outline, color: kRed, size: 22)),
+    ]),
+  );
+}
+
+class _SuppEditForm extends StatefulWidget {
+  final Supplier supplier;
+  final bool zh;
+  final Future<void> Function(Supplier) onSave;
+  final VoidCallback onCancel;
+  const _SuppEditForm({required this.supplier, required this.zh, required this.onSave, required this.onCancel});
+  @override State<_SuppEditForm> createState() => _SuppEditFormState();
+}
+
+class _SuppEditFormState extends State<_SuppEditForm> {
+  late Supplier _s;
+  bool _saving = false;
+  @override void initState() { super.initState(); _s = widget.supplier; }
+  void _u(Supplier s) => setState(() => _s = s);
+
+  @override
+  Widget build(BuildContext context) {
+    final zh = widget.zh;
+    final keyboardH = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardH),
+      child: Container(
+        decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
+        child: Column(children: [
+          SheetHandle(title: _s.id == 0 ? (zh ? '新增供应商' : 'New Supplier') : (zh ? '供应商' : 'Supplier'),
+            trailing: TextButton(onPressed: widget.onCancel, child: const Text('← Back'))),
+          Expanded(child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+            child: Column(children: [
+              FieldInput(label: zh ? '供应商名称' : 'Supplier Name', value: _s.name, onChanged: (v) => _u(_s.copyWith(name: v))),
+              Row(children: [
+                Expanded(child: FieldInput(label: zh ? '注册号' : 'Reg No.', value: _s.regNo, onChanged: (v) => _u(_s.copyWith(regNo: v)))),
+                const SizedBox(width: 10),
+                Expanded(child: FieldInput(label: zh ? 'SST 注册号' : 'SST Reg No.', value: _s.sstRegNo, onChanged: (v) => _u(_s.copyWith(sstRegNo: v)))),
+              ]),
+              FieldInput(label: zh ? '地址' : 'Address', value: _s.address, multiline: true, onChanged: (v) => _u(_s.copyWith(address: v))),
+              Row(children: [
+                Expanded(child: FieldInput(label: zh ? '电话' : 'Phone', value: _s.phone, keyboard: TextInputType.phone, onChanged: (v) => _u(_s.copyWith(phone: v)))),
+                const SizedBox(width: 10),
+                Expanded(child: FieldInput(label: zh ? '邮箱' : 'Email', value: _s.email, keyboard: TextInputType.emailAddress, onChanged: (v) => _u(_s.copyWith(email: v)))),
+              ]),
+              Row(children: [
+                Expanded(child: FieldInput(label: zh ? '银行' : 'Bank', value: _s.bankName ?? '', onChanged: (v) => _u(_s.copyWith(bankName: v)))),
+                const SizedBox(width: 10),
+                Expanded(child: FieldInput(label: zh ? '账号' : 'Account No.', value: _s.bankAcct ?? '', onChanged: (v) => _u(_s.copyWith(bankAcct: v)))),
+              ]),
+              const SizedBox(height: 10),
+              SizedBox(width: double.infinity, child: ElevatedButton(
+                onPressed: _saving || _s.name.trim().isEmpty ? null : () async {
+                  setState(() => _saving = true);
+                  await widget.onSave(_s);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: kDark, foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(_saving ? '…' : (zh ? '保存供应商' : 'Save Supplier'), style: const TextStyle(fontWeight: FontWeight.w700)),
+              )),
+            ]),
+          )),
+        ]),
+      ),
     );
   }
 }
