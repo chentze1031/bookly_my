@@ -362,9 +362,10 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
                 child: Row(children: [
                   const Text('🧾 ', style: TextStyle(fontSize: 16)),
                   Expanded(child: Text(
-                    t.lang == 'zh'
-                      ? '这是一张信用备注，已冲减应收账款，无需收款。'
-                      : 'This is a credit note — it reduces receivables. No payment to collect.',
+                    tr(t.lang,
+                      'This is a credit note — it reduces receivables. No payment to collect.',
+                      '这是一张信用备注，已冲减应收账款，无需收款。',
+                      'Ini nota kredit — ia mengurangkan akaun belum terima. Tiada bayaran untuk dikutip.'),
                     style: const TextStyle(fontSize: 12, color: kRed, fontWeight: FontWeight.w600),
                   )),
                 ]),
@@ -378,14 +379,14 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
               // ── Payment method picker ─────────────────────────────────────
               Row(children: [
                 Expanded(child: _PayMethodBtn(
-                  icon: '💵', label: t.lang == 'zh' ? '现金' : 'Cash',
+                  icon: '💵', label: t.cashPay,
                   selected: _payMethod == 'cash',
                   color: kGreen,
                   onTap: () => setState(() => _payMethod = 'cash'),
                 )),
                 const SizedBox(width: 10),
                 Expanded(child: _PayMethodBtn(
-                  icon: '🏦', label: t.lang == 'zh' ? '银行转账' : 'Bank Transfer',
+                  icon: '🏦', label: t.bankPay,
                   selected: _payMethod == 'bank',
                   color: kBlue,
                   onTap: () => setState(() => _payMethod = 'bank'),
@@ -904,14 +905,14 @@ class _ApDetailSheetState extends State<_ApDetailSheet> {
               // ── Payment method picker ─────────────────────────────────────
               Row(children: [
                 Expanded(child: _PayMethodBtn(
-                  icon: '💵', label: t.lang == 'zh' ? '现金' : 'Cash',
+                  icon: '💵', label: t.cashPay,
                   selected: _payMethod == 'cash',
                   color: kGreen,
                   onTap: () => setState(() => _payMethod = 'cash'),
                 )),
                 const SizedBox(width: 10),
                 Expanded(child: _PayMethodBtn(
-                  icon: '🏦', label: t.lang == 'zh' ? '银行转账' : 'Bank Transfer',
+                  icon: '🏦', label: t.bankPay,
                   selected: _payMethod == 'bank',
                   color: kBlue,
                   onTap: () => setState(() => _payMethod = 'bank'),

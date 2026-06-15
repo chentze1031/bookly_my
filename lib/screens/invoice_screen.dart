@@ -1004,8 +1004,8 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                       }))),
               const SizedBox(height: 8),
               DashedBtn(
-                  label: context.read<AppState>().settings.lang == 'zh'
-                      ? '📦 从库存选择' : '📦 From Inventory',
+                  label: tr(context.read<AppState>().settings.lang,
+                      '📦 From Inventory', '📦 从库存选择', '📦 Dari Inventori'),
                   onTap: () async {
                     final picked = await showInventoryPicker(context);
                     if (picked == null || !mounted) return;
@@ -1026,11 +1026,12 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                     });
                     // low / out of stock warning (non-blocking)
                     if (picked.qty <= picked.lowStockAt && mounted) {
-                      final zh = context.read<AppState>().settings.lang == 'zh';
+                      final lang = context.read<AppState>().settings.lang;
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(zh
-                            ? '⚠️ "${picked.name}" 库存仅剩 ${picked.qty} ${picked.unit}'
-                            : '⚠️ "${picked.name}" only ${picked.qty} ${picked.unit} left'),
+                        content: Text(tr(lang,
+                            '⚠️ "${picked.name}" only ${picked.qty} ${picked.unit} left',
+                            '⚠️ "${picked.name}" 库存仅剩 ${picked.qty} ${picked.unit}',
+                            '⚠️ "${picked.name}" tinggal ${picked.qty} ${picked.unit} sahaja')),
                         backgroundColor: Colors.orange.shade800,
                         behavior: SnackBarBehavior.floating,
                       ));
@@ -1635,7 +1636,7 @@ class _PayStatusPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(lang == 'zh' ? '付款状态' : 'Payment Status',
+      Text(tr(lang, 'Payment Status', '付款状态', 'Status Bayaran'),
         style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted, letterSpacing: 0.5)),
       const SizedBox(height: 6),
       Row(children: [
