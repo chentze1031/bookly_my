@@ -44,14 +44,14 @@ class _BudgetState extends State<BudgetScreen> {
   Widget build(BuildContext context) {
     final app  = context.watch<AppState>();
     final zh   = app.settings.lang == 'zh';
-    final txs  = app.thisMonthTxs;
+    // Month spend per GL account (includes bill-based spend on the same account).
+    final monthBal = app.computeBalances(app.thisMonthTxs);
+    final cats = userExpenseCategories;
 
-    double spentOf(String catId) => txs
-        .where((t) => t.type == 'expense' && t.catId == catId)
-        .fold<double>(0, (s, t) => s + t.amountMYR);
+    double spentOf(TxCategory c) => (monthBal[drAccountOf(c)] ?? 0).clamp(0, double.infinity).toDouble();
 
     final totalBudget = _budgets.values.fold<double>(0, (s, v) => s + v);
-    final totalSpent  = expenseCategories.fold<double>(0, (s, c) => s + spentOf(c.id));
+    final totalSpent  = cats.fold<double>(0, (s, c) => s + spentOf(c));
 
     return Scaffold(
       backgroundColor: kBg,
@@ -97,8 +97,8 @@ class _BudgetState extends State<BudgetScreen> {
                 style: const TextStyle(fontSize: 12, color: kMuted)),
             ),
 
-            ...expenseCategories.map((c) {
-              final spent  = spentOf(c.id);
+            ...cats.map((c) {
+              final spent  = spentOf(c);
               final budget = _budgets[c.id] ?? 0;
               final over   = budget > 0 && spent > budget;
               final pct    = budget > 0 ? (spent / budget).clamp(0.0, 1.0) : 0.0;

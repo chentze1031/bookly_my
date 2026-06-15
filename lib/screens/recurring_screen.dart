@@ -142,7 +142,7 @@ class _RecurringSheetState extends State<_RecurringSheet> {
     }
   }
 
-  List get _cats => _type == 'income' ? incomeCategories : expenseCategories;
+  List get _cats => _type == 'income' ? userIncomeCategories : userExpenseCategories;
 
   @override
   Widget build(BuildContext context) {

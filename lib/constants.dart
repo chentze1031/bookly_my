@@ -219,6 +219,23 @@ TxCategory? findCat(String id) {
   } catch (_) { return null; }
 }
 
+// User-selectable categories: exclude auto-generated bill / AP / AR workflow
+// variants (e.g. bill_rent_cash, ap_payment, ar_invoice) that should never be
+// picked manually. Used by Add Tx, Budget, and Recurring.
+final userExpenseCategories = expenseCategories
+    .where((c) => !c.id.startsWith('bill_') && c.id != 'ap_payment')
+    .toList();
+final userIncomeCategories = incomeCategories
+    .where((c) => !c.id.startsWith('ar_'))
+    .toList();
+
+// The expense (Dr) account a category posts to — used to aggregate spend
+// across a category's bill variants for budgeting.
+String drAccountOf(TxCategory c) {
+  final e = c.mkEntries(1);
+  return e.firstWhere((j) => j.dc == 'Dr', orElse: () => e.first).acc;
+}
+
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 
 // ── Storage Keys ────────────────────────────────────────────────────────────
