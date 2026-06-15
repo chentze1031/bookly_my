@@ -125,7 +125,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
         backgroundColor: kSurface,
         elevation: 0,
         title: Text(
-          lang == 'zh' ? '🏢 公司信息' : '🏢 Company Info',
+          tr(lang, '🏢 Company Info', '🏢 公司信息', '🏢 Maklumat Syarikat'),
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText),
         ),
         leading: IconButton(
@@ -140,7 +140,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
                 ? const SizedBox(width: 18, height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2, color: kDark))
                 : Text(
-                    lang == 'zh' ? '保存' : 'Save',
+                    tr(lang, 'Save', '保存', 'Simpan'),
                     style: const TextStyle(
                       color: kDark, fontWeight: FontWeight.w800, fontSize: 14),
                   ),
@@ -153,17 +153,17 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
           // ── Logo + Signature ──────────────────────────────────────────────
-          _section(lang == 'zh' ? '图像' : 'Images'),
+          _section(tr(lang, 'Images', '图像', 'Imej')),
           Row(children: [
             Expanded(child: _ImageCard(
-              label: lang == 'zh' ? 'Company Logo' : 'Company Logo',
+              label: tr(lang, 'Company Logo', '公司 Logo', 'Logo Syarikat'),
               b64: _logoB64,
               onPick: _pickLogo,
               onRemove: () => setState(() { _logoB64 = null; _dirty = true; }),
             )),
             const SizedBox(width: 12),
             Expanded(child: _ImageCard(
-              label: lang == 'zh' ? 'Signature' : 'Signature',
+              label: tr(lang, 'Signature', '签名', 'Tandatangan'),
               b64: _sigB64,
               onPick: _pickSig,
               onRemove: () => setState(() { _sigB64 = null; _dirty = true; }),
@@ -173,12 +173,12 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
           const SizedBox(height: 20),
 
           // ── Company Details ───────────────────────────────────────────────
-          _section(lang == 'zh' ? '公司资料' : 'Company Details'),
+          _section(tr(lang, 'Company Details', '公司资料', 'Butiran Syarikat')),
 
-          _field(lang == 'zh' ? 'COMPANY NAME 公司名称' : 'COMPANY NAME',
+          _field(tr(lang, 'COMPANY NAME', 'COMPANY NAME 公司名称', 'NAMA SYARIKAT'),
             TextField(controller: _nameCtrl,
               style: const TextStyle(fontSize: 14, color: kText),
-              decoration: _dec(lang == 'zh' ? '公司名称' : 'e.g. ABC Sdn Bhd'))),
+              decoration: _dec(tr(lang, 'e.g. ABC Sdn Bhd', '公司名称', 'cth. ABC Sdn Bhd')))),
 
           _field('TIN (MyTax No.)',
             TextField(controller: _tinCtrl,
@@ -207,7 +207,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
               style: const TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. hello@company.com'))),
 
-          _field(lang == 'zh' ? 'ADDRESS 地址' : 'ADDRESS',
+          _field(tr(lang, 'ADDRESS', 'ADDRESS 地址', 'ALAMAT'),
             TextField(controller: _addrCtrl,
               maxLines: 3,
               style: const TextStyle(fontSize: 14, color: kText),
@@ -216,14 +216,14 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
           const SizedBox(height: 8),
 
           // ── Bank Details ──────────────────────────────────────────────────
-          _section(lang == 'zh' ? '银行资料' : 'Bank Details'),
+          _section(tr(lang, 'Bank Details', '银行资料', 'Butiran Bank')),
 
-          _field(lang == 'zh' ? 'BANK NAME 银行名称' : 'BANK NAME',
+          _field(tr(lang, 'BANK NAME', 'BANK NAME 银行名称', 'NAMA BANK'),
             TextField(controller: _bankNmCtrl,
               style: const TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. Maybank / CIMB / Public Bank'))),
 
-          _field(lang == 'zh' ? 'ACCOUNT NO. 账号' : 'ACCOUNT NO.',
+          _field(tr(lang, 'ACCOUNT NO.', 'ACCOUNT NO. 账号', 'NO. AKAUN'),
             TextField(controller: _bankAcCtrl,
               keyboardType: TextInputType.number,
               style: const TextStyle(fontSize: 14, color: kText),
@@ -246,7 +246,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
                 ? const SizedBox(width: 22, height: 22,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : Text(
-                    lang == 'zh' ? '保存公司信息' : 'Save Company Info',
+                    tr(lang, 'Save Company Info', '保存公司信息', 'Simpan Maklumat Syarikat'),
                     style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
             ),
           ),

@@ -33,9 +33,9 @@ class _BudgetState extends State<BudgetScreen> {
     await context.read<AppState>().saveBudgets(clean);
     if (mounted) {
       setState(() => _saving = false);
-      final zh = context.read<AppState>().settings.lang == 'zh';
+      final lang = context.read<AppState>().settings.lang;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(zh ? '预算已保存' : 'Budget saved'),
+        content: Text(tr(lang, 'Budget saved', '预算已保存', 'Bajet disimpan')),
         backgroundColor: kDark, behavior: SnackBarBehavior.floating));
     }
   }
@@ -43,7 +43,7 @@ class _BudgetState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     final app  = context.watch<AppState>();
-    final zh   = app.settings.lang == 'zh';
+    final lang = app.settings.lang;
     // Month spend per GL account (includes bill-based spend on the same account).
     final monthBal = app.computeBalances(app.thisMonthTxs);
     final cats = userExpenseCategories;
@@ -56,12 +56,12 @@ class _BudgetState extends State<BudgetScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(zh ? '📅 月度预算' : '📅 Monthly Budget'),
+        title: Text(tr(lang, '📅 Monthly Budget', '📅 月度预算', '📅 Bajet Bulanan')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
         actions: [
           TextButton(
             onPressed: _saving ? null : _save,
-            child: Text(_saving ? '…' : (zh ? '保存' : 'Save'),
+            child: Text(_saving ? '…' : tr(lang, 'Save', '保存', 'Simpan'),
               style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
@@ -74,7 +74,7 @@ class _BudgetState extends State<BudgetScreen> {
               decoration: BoxDecoration(color: kDark, borderRadius: BorderRadius.circular(14)),
               child: Column(children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text(zh ? '本月已用 / 预算' : 'Spent / Budget this month',
+                  Text(tr(lang, 'Spent / Budget this month', '本月已用 / 预算', 'Dibelanja / Bajet bulan ini'),
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
                   Text('${fmtMYR(totalSpent)} / ${fmtMYR(totalBudget)}',
                     style: TextStyle(
@@ -93,7 +93,7 @@ class _BudgetState extends State<BudgetScreen> {
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-              child: Text(zh ? '为每个支出分类设置月度上限（留空=不限）' : 'Set a monthly limit per category (blank = none)',
+              child: Text(tr(lang, 'Set a monthly limit per category (blank = none)', '为每个支出分类设置月度上限（留空=不限）', 'Tetapkan had bulanan setiap kategori (kosong = tiada)'),
                 style: const TextStyle(fontSize: 12, color: kMuted)),
             ),
 
@@ -139,8 +139,8 @@ class _BudgetState extends State<BudgetScreen> {
                     const SizedBox(height: 4),
                     Align(alignment: Alignment.centerLeft, child: Text(
                       budget > 0
-                        ? '${zh ? '已用' : 'Spent'} ${fmtMYR(spent)} / ${fmtMYR(budget)}${over ? (zh ? ' · 超支!' : ' · over!') : ''}'
-                        : '${zh ? '已用' : 'Spent'} ${fmtMYR(spent)}',
+                        ? '${tr(lang, 'Spent', '已用', 'Dibelanja')} ${fmtMYR(spent)} / ${fmtMYR(budget)}${over ? tr(lang, ' · over!', ' · 超支!', ' · melebihi!') : ''}'
+                        : '${tr(lang, 'Spent', '已用', 'Dibelanja')} ${fmtMYR(spent)}',
                       style: TextStyle(fontSize: 11, color: over ? kRed : kMuted, fontWeight: over ? FontWeight.w700 : FontWeight.normal))),
                   ],
                 ]),

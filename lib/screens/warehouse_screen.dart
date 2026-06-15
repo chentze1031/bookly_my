@@ -39,15 +39,17 @@ class _WarehouseState extends State<WarehouseScreen> {
 
   Future<void> _addOrRename({Map<String, dynamic>? wh}) async {
     final ctrl = TextEditingController(text: wh?['name'] ?? '');
-    final zh = context.read<AppState>().settings.lang == 'zh';
+    final lang = context.read<AppState>().settings.lang;
     final name = await showDialog<String>(context: context, builder: (dctx) => AlertDialog(
-      title: Text(wh == null ? (zh ? '新增仓库/门店' : 'New Warehouse') : (zh ? '重命名' : 'Rename')),
+      title: Text(wh == null
+          ? tr(lang, 'New Warehouse', '新增仓库/门店', 'Gudang Baharu')
+          : tr(lang, 'Rename', '重命名', 'Namakan Semula')),
       content: TextField(controller: ctrl, autofocus: true,
         onSubmitted: (v) => Navigator.pop(dctx, v.trim()),
-        decoration: InputDecoration(hintText: zh ? '名称' : 'Name')),
+        decoration: InputDecoration(hintText: tr(lang, 'Name', '名称', 'Nama'))),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(dctx), child: Text(zh ? '取消' : 'Cancel')),
-        TextButton(onPressed: () => Navigator.pop(dctx, ctrl.text.trim()), child: Text(zh ? '保存' : 'Save')),
+        TextButton(onPressed: () => Navigator.pop(dctx), child: Text(tr(lang, 'Cancel', '取消', 'Batal'))),
+        TextButton(onPressed: () => Navigator.pop(dctx, ctrl.text.trim()), child: Text(tr(lang, 'Save', '保存', 'Simpan'))),
       ],
     ));
     if (name == null || name.isEmpty) return;
@@ -79,7 +81,7 @@ class _WarehouseState extends State<WarehouseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final zh  = context.watch<AppState>().settings.lang == 'zh';
+    final lang = context.watch<AppState>().settings.lang;
     final inv = context.watch<InventoryState>();
 
     if (_managing != null) {
@@ -89,12 +91,12 @@ class _WarehouseState extends State<WarehouseScreen> {
         appBar: AppBar(
           backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
           leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => setState(() => _managing = null)),
-          title: Text('${zh ? '分配物品' : 'Assign'} · ${wh['name']}'),
+          title: Text('${tr(lang, 'Assign', '分配物品', 'Tetapkan')} · ${wh['name']}'),
         ),
         body: inv.items.isEmpty
-          ? Center(child: Text(zh ? '暂无库存物品' : 'No inventory items', style: const TextStyle(color: kMuted)))
+          ? Center(child: Text(tr(lang, 'No inventory items', '暂无库存物品', 'Tiada item inventori'), style: const TextStyle(color: kMuted)))
           : ListView(padding: const EdgeInsets.all(16), children: [
-              Text(zh ? '勾选属于本仓库的物品（一个物品只能在一个仓库）' : 'Tick items in this warehouse (one warehouse per item)',
+              Text(tr(lang, 'Tick items in this warehouse (one warehouse per item)', '勾选属于本仓库的物品（一个物品只能在一个仓库）', 'Tanda item dalam gudang ini (satu gudang setiap item)'),
                 style: const TextStyle(fontSize: 12, color: kMuted)),
               const SizedBox(height: 8),
               ...inv.items.map((it) {
@@ -113,8 +115,8 @@ class _WarehouseState extends State<WarehouseScreen> {
                     title: Text(it.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kText)),
                     subtitle: Text([
                       if (it.sku.isNotEmpty) it.sku,
-                      '${zh ? '库存' : 'Qty'} ${it.qty % 1 == 0 ? it.qty.toInt() : it.qty}',
-                      if (elsewhere != null) '${zh ? '现属' : 'in'}: $elsewhere',
+                      '${tr(lang, 'Qty', '库存', 'Kuantiti')} ${it.qty % 1 == 0 ? it.qty.toInt() : it.qty}',
+                      if (elsewhere != null) '${tr(lang, 'in', '现属', 'di')}: $elsewhere',
                     ].join(' · '), style: const TextStyle(fontSize: 11, color: kMuted)),
                   ),
                 );
@@ -127,7 +129,7 @@ class _WarehouseState extends State<WarehouseScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(zh ? '🏬 仓库 / 门店' : '🏬 Warehouses'),
+        title: Text(tr(lang, '🏬 Warehouses', '🏬 仓库 / 门店', '🏬 Gudang / Kedai')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
         actions: [IconButton(icon: const Icon(Icons.add, color: kText), onPressed: () => _addOrRename())],
       ),
@@ -136,10 +138,10 @@ class _WarehouseState extends State<WarehouseScreen> {
           ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Text('🏬', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(zh ? '还没有仓库/门店' : 'No warehouses yet', style: const TextStyle(color: kMuted, fontSize: 15)),
+              Text(tr(lang, 'No warehouses yet', '还没有仓库/门店', 'Belum ada gudang'), style: const TextStyle(color: kMuted, fontSize: 15)),
               const SizedBox(height: 16),
               ElevatedButton.icon(onPressed: () => _addOrRename(), icon: const Icon(Icons.add),
-                label: Text(zh ? '新增仓库/门店' : 'New Warehouse'),
+                label: Text(tr(lang, 'New Warehouse', '新增仓库/门店', 'Gudang Baharu')),
                 style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)))),
             ]))
@@ -154,10 +156,10 @@ class _WarehouseState extends State<WarehouseScreen> {
                   const SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(wh['name'] ?? '', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kText)),
-                    Text('$count ${zh ? '件物品' : 'items'}', style: const TextStyle(fontSize: 11, color: kMuted)),
+                    Text('$count ${tr(lang, 'items', '件物品', 'item')}', style: const TextStyle(fontSize: 11, color: kMuted)),
                   ])),
                   TextButton(onPressed: () => setState(() => _managing = wh['id'] as int),
-                    child: Text(zh ? '分配物品' : 'Assign')),
+                    child: Text(tr(lang, 'Assign', '分配物品', 'Tetapkan'))),
                   GestureDetector(onTap: () => _addOrRename(wh: wh), child: const Icon(Icons.edit_outlined, size: 20, color: kMuted)),
                   const SizedBox(width: 10),
                   GestureDetector(onTap: () => _delete(wh['id'] as int), child: const Icon(Icons.delete_outline, size: 20, color: kRed)),
