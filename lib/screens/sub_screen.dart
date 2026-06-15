@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants.dart';
 import '../state/sub_state.dart';
+import '../state/app_state.dart';
 
 class SubScreen extends StatefulWidget {
   const SubScreen({super.key});
@@ -15,6 +16,7 @@ class _SubScreenState extends State<SubScreen> {
   bool _restore = false;
 
   Future<void> _purchase(SubState sub) async {
+    final zh = context.read<AppState>().settings.lang == 'zh';
     setState(() => _loading = true);
     final ok = await sub.purchasePlan(_yearly);
     if (mounted) {
@@ -23,7 +25,7 @@ class _SubScreenState extends State<SubScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('🎉 Welcome to Bookly PRO!'),
+            content: Text(zh ? '🎉 欢迎升级 Bookly PRO！' : '🎉 Welcome to Bookly PRO!'),
             backgroundColor: kPro,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -32,7 +34,7 @@ class _SubScreenState extends State<SubScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Purchase failed. Please try again.'),
+            content: Text(zh ? '购买失败，请重试。' : 'Purchase failed. Please try again.'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -43,6 +45,7 @@ class _SubScreenState extends State<SubScreen> {
   }
 
   Future<void> _restorePurchases(SubState sub) async {
+    final zh = context.read<AppState>().settings.lang == 'zh';
     setState(() => _restore = true);
     final ok = await sub.restorePurchases();
     if (mounted) {
@@ -51,7 +54,7 @@ class _SubScreenState extends State<SubScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('✅ Purchase restored!'),
+            content: Text(zh ? '✅ 已恢复购买！' : '✅ Purchase restored!'),
             backgroundColor: kGreen,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -59,7 +62,7 @@ class _SubScreenState extends State<SubScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No previous purchase found.')),
+          SnackBar(content: Text(zh ? '未找到可恢复的购买记录。' : 'No previous purchase found.')),
         );
       }
     }
@@ -68,7 +71,7 @@ class _SubScreenState extends State<SubScreen> {
   @override
   Widget build(BuildContext context) {
     final sub = context.watch<SubState>();
-    final t   = const L10n('en');
+    final zh  = context.watch<AppState>().settings.lang == 'zh';
 
     return Container(
       decoration: const BoxDecoration(
@@ -111,9 +114,9 @@ class _SubScreenState extends State<SubScreen> {
               style: TextStyle(
                 fontSize: 28, fontWeight: FontWeight.w900, color: kPro),
             ),
-            const Text(
-              'Remove all ads & unlock everything',
-              style: TextStyle(fontSize: 14, color: kMuted),
+            Text(
+              zh ? '解锁全部 Pro 功能 · 永久去除广告' : 'Unlock every Pro feature · remove all ads',
+              style: const TextStyle(fontSize: 14, color: kMuted),
             ),
             const SizedBox(height: 20),
 
@@ -133,17 +136,17 @@ class _SubScreenState extends State<SubScreen> {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Ads appear when you:',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kGold)),
-                        SizedBox(height: 4),
-                        Text('• Save or export invoices & payslips',
-                          style: TextStyle(fontSize: 12, color: kGold)),
-                        Text('• Every few minutes while using the app',
-                          style: TextStyle(fontSize: 12, color: kGold)),
-                        SizedBox(height: 4),
-                        Text('Subscribe to remove all ads permanently.',
-                          style: TextStyle(fontSize: 12, color: kGold, fontWeight: FontWeight.w600)),
+                      children: [
+                        Text(zh ? '以下情况会显示广告：' : 'Ads appear when you:',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kGold)),
+                        const SizedBox(height: 4),
+                        Text(zh ? '• 保存或导出发票、工资单等单据' : '• Save or export invoices & payslips',
+                          style: const TextStyle(fontSize: 12, color: kGold)),
+                        Text(zh ? '• 使用过程中每隔几分钟' : '• Every few minutes while using the app',
+                          style: const TextStyle(fontSize: 12, color: kGold)),
+                        const SizedBox(height: 4),
+                        Text(zh ? '订阅 Pro 永久去除所有广告。' : 'Subscribe to remove all ads permanently.',
+                          style: const TextStyle(fontSize: 12, color: kGold, fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -158,7 +161,7 @@ class _SubScreenState extends State<SubScreen> {
               child: Row(children: [
                 Text(f.$1, style: const TextStyle(fontSize: 18)),
                 const SizedBox(width: 12),
-                Expanded(child: Text(f.$2,
+                Expanded(child: Text(zh ? f.$3 : f.$2,
                   style: const TextStyle(fontSize: 13, color: kText))),
               ]),
             )),
@@ -174,15 +177,15 @@ class _SubScreenState extends State<SubScreen> {
               padding: const EdgeInsets.all(4),
               child: Row(children: [
                 _PlanTab(
-                  label: 'Monthly',
-                  price: sub.monthlyPriceString != null ? '${sub.monthlyPriceString}/mo' : '—',
+                  label: zh ? '月付' : 'Monthly',
+                  price: sub.monthlyPriceString != null ? '${sub.monthlyPriceString}${zh ? '/月' : '/mo'}' : '—',
                   badge: null,
                   selected: !_yearly,
                   onTap: () => setState(() => _yearly = false),
                 ),
                 _PlanTab(
-                  label: 'Yearly',
-                  price: sub.yearlyPriceString != null ? '${sub.yearlyPriceString}/yr' : '—',
+                  label: zh ? '年付' : 'Yearly',
+                  price: sub.yearlyPriceString != null ? '${sub.yearlyPriceString}${zh ? '/年' : '/yr'}' : '—',
                   badge: sub.yearlySavingsLabel,
                   selected: _yearly,
                   onTap: () => setState(() => _yearly = true),
@@ -211,12 +214,16 @@ class _SubScreenState extends State<SubScreen> {
                           color: Colors.white, strokeWidth: 2.5))
                     : Text(
                         _yearly
-                            ? (sub.yearlyPriceString != null
-                                ? 'Subscribe Yearly – ${sub.yearlyPriceString}'
-                                : 'Subscribe Yearly')
-                            : (sub.monthlyPriceString != null
-                                ? 'Subscribe Monthly – ${sub.monthlyPriceString}'
-                                : 'Subscribe Monthly'),
+                            ? (zh
+                                ? '年付订阅${sub.yearlyPriceString != null ? ' – ${sub.yearlyPriceString}' : ''}'
+                                : (sub.yearlyPriceString != null
+                                    ? 'Subscribe Yearly – ${sub.yearlyPriceString}'
+                                    : 'Subscribe Yearly'))
+                            : (zh
+                                ? '月付订阅${sub.monthlyPriceString != null ? ' – ${sub.monthlyPriceString}' : ''}'
+                                : (sub.monthlyPriceString != null
+                                    ? 'Subscribe Monthly – ${sub.monthlyPriceString}'
+                                    : 'Subscribe Monthly')),
                         style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w800)),
               ),
@@ -231,17 +238,18 @@ class _SubScreenState extends State<SubScreen> {
                     ? const SizedBox(
                         width: 18, height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Restore Purchases',
-                        style: TextStyle(color: kMuted, fontSize: 13)),
+                    : Text(zh ? '恢复购买' : 'Restore Purchases',
+                        style: const TextStyle(color: kMuted, fontSize: 13)),
               ),
             ),
 
             // ── Legal note ────────────────────────────────────────────
-            const Center(
+            Center(
               child: Text(
-                'Subscription auto-renews. Cancel anytime in Google Play.',
+                zh ? '订阅到期自动续费，可随时在 Google Play 取消。'
+                   : 'Subscription auto-renews. Cancel anytime in Google Play.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10, color: kMuted),
+                style: const TextStyle(fontSize: 10, color: kMuted),
               ),
             ),
           ],

@@ -521,15 +521,18 @@ class L10n {
     : 'SST threshold: RM 500k/year · e-Invoice above RM 1M';
 
   static const features = [
-    ('♾️', 'Unlimited transactions',           '无限记录笔数'),
-    ('💱', '17 currencies + live FX rates',    '17种货币 + 实时汇率'),
-    ('✏️', 'Edit & search transactions',       '编辑和搜索记录'),
-    ('📊', 'SST report + monthly filters',     'SST报表 + 月份筛选'),
-    ('🧾', 'Malaysia Tax Invoice + signature', '马来西亚税务发票 + 签名'),
-    ('💼', 'Payroll + payslip generator',      '薪资单生成器'),
-    ('👥', 'Customer & employee database',     '客户和员工数据库'),
-    ('MY', 'EPF / SOCSO / EIS calculator',     'EPF / SOCSO / EIS 计算'),
-    ('☁️', 'Cloud backup (Supabase)',          '云端备份'),
-    ('📥', 'Excel & JSON export',              'Excel / JSON 导出'),
+    ('🚫', 'No ads — ever',                     '永久去除所有广告'),
+    ('♾️', 'Unlimited transactions',            '无限记录笔数'),
+    ('🧾', 'Tax invoices + quotations',         '税务发票 + 报价单'),
+    ('🚚', 'Delivery orders',                   '送货单'),
+    ('↩️', 'Credit notes (auto-adjust AR)',     '信用备注（自动冲减应收）'),
+    ('📈', 'Customer spending analytics',       '顾客消费分析'),
+    ('💼', 'Payroll + payslip generator',       '薪资 + 工资单生成'),
+    ('🇲🇾', 'CP39 · EPF/SOCSO/EIS · EA reports', 'CP39 · EPF/SOCSO/EIS · EA 报表'),
+    ('🏖️', 'Leave management',                  '请假管理'),
+    ('📦', 'Inventory + purchase orders',       '库存 + 采购单'),
+    ('📊', 'SST report + monthly filters',      'SST 报表 + 月份筛选'),
+    ('💱', '17 currencies + live FX rates',     '17 种货币 + 实时汇率'),
+    ('☁️', 'Cloud backup + Excel/JSON export',  '云端备份 + Excel/JSON 导出'),
   ];
 }
