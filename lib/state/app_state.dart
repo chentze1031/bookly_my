@@ -687,6 +687,24 @@ class AppState extends ChangeNotifier {
     if (_loggedIn) _pushPayrollsCloud(list);
   }
 
+  // ── Warehouses / stores (Phase 4 #25) ─────────────────────────────────────────
+  // Self-contained local store so the synced inventory model is untouched.
+  // Shape: { "list": [ {id, name} ], "assign": { "<itemId>": <warehouseId> } }
+  Future<Map<String, dynamic>> loadWarehouseStore() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(StorageKeys.warehouses);
+    if (raw == null) return {'list': <dynamic>[], 'assign': <String, dynamic>{}};
+    final m = Map<String, dynamic>.from(jsonDecode(raw));
+    m['list']   = (m['list'] as List? ?? []);
+    m['assign'] = Map<String, dynamic>.from(m['assign'] ?? {});
+    return m;
+  }
+
+  Future<void> saveWarehouseStore(Map<String, dynamic> store) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(StorageKeys.warehouses, jsonEncode(store));
+  }
+
   // ── Budgets (Phase 4 #20): { catId: monthlyLimit } ────────────────────────────
   Future<Map<String, double>> loadBudgets() async {
     final prefs = await SharedPreferences.getInstance();

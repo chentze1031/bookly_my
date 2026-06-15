@@ -13,6 +13,7 @@ import '../services/low_stock_reminder.dart';
 import '../state/app_state.dart';
 import '../state/sub_state.dart';
 import 'purchase_order_screen.dart';
+import 'warehouse_screen.dart';
 import 'sub_screen.dart' show showSubSheet;
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -110,6 +111,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
   String _query  = '';
   String _filter = 'all'; // all | low | out
   int    _tab    = 0;     // 0 products | 1 reports
+  int?   _whId;          // warehouse filter (null = all) — Phase 4 #25
+  Map<String, dynamic> _wh = {'list': [], 'assign': {}};
 
   @override
   void initState() {
@@ -117,6 +120,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final inv = context.read<InventoryState>();
       await inv.load();
+      await _loadWarehouses();
       // Task 17: low-stock system reminder after data is loaded.
       if (!mounted) return;
       LowStockReminder.checkAndNotify(
@@ -124,6 +128,34 @@ class _InventoryScreenState extends State<InventoryScreen> {
         context.read<AppState>().settings.lang);
     });
   }
+
+  Future<void> _loadWarehouses() async {
+    final s = await context.read<AppState>().loadWarehouseStore();
+    if (mounted) setState(() => _wh = s);
+  }
+
+  List<Map<String, dynamic>> get _warehouses =>
+      ((_wh['list'] as List?) ?? []).map((e) => Map<String, dynamic>.from(e)).toList();
+  Map<String, dynamic> get _whAssign => Map<String, dynamic>.from(_wh['assign'] ?? {});
+
+  Widget _whChip(String label, bool selected, VoidCallback onTap) => Padding(
+    padding: const EdgeInsets.only(right: 8),
+    child: GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? kDark : kSurface,
+          border: Border.all(color: selected ? kDark : kBorder),
+          borderRadius: BorderRadius.circular(99),
+        ),
+        child: Text(label, style: TextStyle(
+          fontSize: 12, fontWeight: FontWeight.w600,
+          color: selected ? Colors.white : kMuted)),
+      ),
+    ),
+  );
 
   @override
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
@@ -164,6 +196,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     List<InventoryItem> display = inv.search(_query);
     if (_filter == 'low') display = display.where((i) => i.isLowStock && !i.isOutOfStock).toList();
     if (_filter == 'out') display = display.where((i) => i.isOutOfStock).toList();
+    if (_whId != null) {
+      final assign = _whAssign;
+      display = display.where((i) => assign['${i.id}'] == _whId).toList();
+    }
 
     return Scaffold(
       backgroundColor: kBg,
@@ -278,6 +314,36 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   ),
                 ),
             ]),
+          ),
+
+          // ── Warehouse filter (Phase 4 #25) ─────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(children: [
+                _whChip(t.zh ? '全部仓库' : 'All', _whId == null, () => setState(() => _whId = null)),
+                for (final w in _warehouses)
+                  _whChip('🏬 ${w['name']}', _whId == w['id'], () => setState(() => _whId = w['id'] as int)),
+                GestureDetector(
+                  onTap: () async {
+                    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                    await Navigator.push(context, MaterialPageRoute(builder: (_) => const WarehouseScreen()));
+                    await _loadWarehouses();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: kSurface, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(99)),
+                    child: Row(children: [
+                      const Icon(Icons.settings_outlined, size: 13, color: kMuted),
+                      const SizedBox(width: 3),
+                      Text(t.zh ? '管理仓库' : 'Manage', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kMuted)),
+                      if (!context.read<SubState>().isPro) const Padding(padding: EdgeInsets.only(left: 3), child: Icon(Icons.lock_outline, size: 12, color: kPro)),
+                    ]),
+                  ),
+                ),
+              ]),
+            ),
           ),
           const SizedBox(height: 10),
 
