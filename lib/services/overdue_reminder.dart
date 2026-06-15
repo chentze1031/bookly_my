@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants.dart';
 import '../state/accounting_state.dart';
 import '../utils.dart';
 
@@ -43,11 +44,11 @@ class OverdueReminder {
 
       await _init();
 
-      final zh = lang == 'zh';
-      final title = zh ? '逾期收款提醒' : 'Overdue receivables';
-      final body  = zh
-          ? '$count 张发票逾期，共 ${fmtMYR(total)} 待催收'
-          : '$count invoice(s) overdue · ${fmtMYR(total)} to collect';
+      final title = tr(lang, 'Overdue receivables', '逾期收款提醒', 'Akaun belum terima tertunggak');
+      final body  = tr(lang,
+          '$count invoice(s) overdue · ${fmtMYR(total)} to collect',
+          '$count 张发票逾期，共 ${fmtMYR(total)} 待催收',
+          '$count invois tertunggak · ${fmtMYR(total)} perlu dikutip');
 
       const details = NotificationDetails(
         android: AndroidNotificationDetails(

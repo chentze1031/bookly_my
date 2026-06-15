@@ -470,7 +470,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                           ]),
                         ),
-                        Text(app.settings.lang == 'zh' ? '付款状态' : 'Payment Status',
+                        Text(tr(app.settings.lang, 'Payment Status', '付款状态', 'Status Bayaran'),
                           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted, letterSpacing: 0.5)),
                         const SizedBox(height: 8),
                         for (final ps in [

@@ -125,14 +125,14 @@ class _SettingsState extends State<SettingsScreen> {
               : const Text('🏢', style: TextStyle(fontSize: 28)),
             title: Text(
               s.companyName.isNotEmpty ? s.companyName
-                : (t.isZh ? '未设置' : 'Not set'),
+                : (tr(t.lang, 'Not set', '未设置', 'Tidak ditetapkan')),
               style: TextStyle(
                 fontWeight: FontWeight.w600, fontSize: 14,
                 color: s.companyName.isNotEmpty ? kText : kMuted),
             ),
             subtitle: Text(
               s.coPhone.isNotEmpty ? s.coPhone
-                : (t.isZh ? '点击编辑公司资料' : 'Tap to edit company info'),
+                : (tr(t.lang, 'Tap to edit company info', '点击编辑公司资料', 'Ketik untuk sunting maklumat syarikat')),
               style: const TextStyle(fontSize: 12, color: kMuted),
             ),
             trailing: const Icon(Icons.chevron_right, color: kMuted),
@@ -143,16 +143,16 @@ class _SettingsState extends State<SettingsScreen> {
 
         // ── SST-02 Report ────────────────────────────────────────────────
         SectionCard(
-          title: '🧾 ${t.isZh ? "SST-02 申报摘要" : "SST-02 Tax Summary"}',
+          title: '🧾 ${tr(t.lang, "SST-02 Tax Summary", "SST-02 申报摘要", "Ringkasan Cukai SST-02")}',
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             leading: const Text('📊', style: TextStyle(fontSize: 28)),
             title: Text(
-              t.isZh ? 'SST-02 双月申报摘要' : 'Bi-Monthly SST-02 Summary',
+              tr(t.lang, 'Bi-Monthly SST-02 Summary', 'SST-02 双月申报摘要', 'Ringkasan SST-02 Dwi-Bulan'),
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText),
             ),
             subtitle: Text(
-              t.isZh ? '按税率汇总应税销售额与 SST' : 'Taxable sales & SST grouped by rate',
+              tr(t.lang, 'Taxable sales & SST grouped by rate', '按税率汇总应税销售额与 SST', 'Jualan bercukai & SST mengikut kadar'),
               style: const TextStyle(fontSize: 12, color: kMuted),
             ),
             trailing: const Icon(Icons.chevron_right, color: kMuted),
@@ -163,16 +163,16 @@ class _SettingsState extends State<SettingsScreen> {
 
         // ── Recurring transactions (Phase 4 #21, Pro) ────────────────────
         SectionCard(
-          title: '🔁 ${t.isZh ? "定期记账" : "Recurring"}',
+          title: '🔁 ${tr(t.lang, "Recurring", "定期记账", "Berulang")}',
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             leading: const Text('🔁', style: TextStyle(fontSize: 28)),
             title: Text(
-              t.isZh ? '定期自动记账' : 'Recurring Transactions',
+              tr(t.lang, 'Recurring Transactions', '定期自动记账', 'Transaksi Berulang'),
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText),
             ),
             subtitle: Text(
-              t.isZh ? '租金、订阅等按月/周自动生成' : 'Auto-create rent, subscriptions monthly/weekly',
+              tr(t.lang, 'Auto-create rent, subscriptions monthly/weekly', '租金、订阅等按月/周自动生成', 'Auto-jana sewa, langganan bulanan/mingguan'),
               style: const TextStyle(fontSize: 12, color: kMuted),
             ),
             trailing: sub.isPro
@@ -311,7 +311,7 @@ class _LoggedInTile extends StatelessWidget {
       ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14),
         leading: const Icon(Icons.logout, color: kRed, size: 20),
-        title: Text(t.isZh ? '登出' : 'Sign Out',
+        title: Text(tr(t.lang, 'Sign Out', '登出', 'Log Keluar'),
           style: const TextStyle(color: kRed, fontWeight: FontWeight.w600, fontSize: 14)),
         onTap: () => _confirmSignOut(context),
       ),
@@ -324,19 +324,20 @@ class _LoggedInTile extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: Text(t.isZh ? '确认登出？' : 'Sign Out?'),
-        content: Text(t.isZh
-          ? '登出后本地数据将被清除。\n云端数据仍然保留。'
-          : 'Local data will be cleared after signing out.\nYour cloud data remains safe.'),
+        title: Text(tr(t.lang, 'Sign Out?', '确认登出？', 'Log Keluar?')),
+        content: Text(tr(t.lang,
+          'Local data will be cleared after signing out.\nYour cloud data remains safe.',
+          '登出后本地数据将被清除。\n云端数据仍然保留。',
+          'Data tempatan akan dipadam selepas log keluar.\nData awan anda kekal selamat.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx, false),
-            child: Text(t.isZh ? '取消' : 'Cancel'),
+            child: Text(tr(t.lang, 'Cancel', '取消', 'Batal')),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: kRed, foregroundColor: Colors.white),
             onPressed: () => Navigator.pop(dialogCtx, true),
-            child: Text(t.isZh ? '登出' : 'Sign Out'),
+            child: Text(tr(t.lang, 'Sign Out', '登出', 'Log Keluar')),
           ),
         ],
       ),
@@ -348,9 +349,10 @@ class _LoggedInTile extends StatelessWidget {
       // FIX(数据丢失): 若云端推送失败，本地数据已保留，提示用户。
       if (!pushed && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(t.isZh
-            ? '⚠️ 数据未能上传到云端，已保留在本机。请联网后重新登录同步。'
-            : 'Data could not be synced to cloud; kept on this device. Re-login when online to sync.'),
+          content: Text(tr(t.lang,
+            'Data could not be synced to cloud; kept on this device. Re-login when online to sync.',
+            '⚠️ 数据未能上传到云端，已保留在本机。请联网后重新登录同步。',
+            'Data tidak dapat disegerakkan ke awan; disimpan pada peranti ini. Log masuk semula bila dalam talian.')),
           duration: const Duration(seconds: 4),
         ));
       }
@@ -372,9 +374,9 @@ class _GuestTile extends StatelessWidget {
         leading: const CircleAvatar(
           backgroundColor: kBorder,
           child: Icon(Icons.person_outline, color: kMuted)),
-        title: Text(t.isZh ? '访客模式' : 'Guest Mode',
+        title: Text(tr(t.lang, 'Guest Mode', '访客模式', 'Mod Tetamu'),
           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-        subtitle: Text(t.isZh ? '数据仅保存在本设备' : 'Data saved on this device only',
+        subtitle: Text(tr(t.lang, 'Data saved on this device only', '数据仅保存在本设备', 'Data disimpan pada peranti ini sahaja'),
           style: const TextStyle(fontSize: 12, color: kMuted)),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -400,7 +402,7 @@ class _GuestTile extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             icon: const Text('G', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
-            label: Text(t.isZh ? '登录并同步数据' : 'Sign in & Sync Data',
+            label: Text(tr(t.lang, 'Sign in & Sync Data', '登录并同步数据', 'Log masuk & Segerak Data'),
               style: const TextStyle(fontWeight: FontWeight.w700)),
             onPressed: () => _signInAndMigrate(context),
           ),
@@ -413,20 +415,21 @@ class _GuestTile extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: Text(t.isZh ? '登录 Google？' : 'Sign in with Google?'),
-        content: Text(t.isZh
-          ? '登录后，您的本地数据将自动上传到云端，可在多设备使用。'
-          : 'Your local data will be uploaded to the cloud so you can access it on any device.'),
+        title: Text(tr(t.lang, 'Sign in with Google?', '登录 Google？', 'Log masuk dengan Google?')),
+        content: Text(tr(t.lang,
+          'Your local data will be uploaded to the cloud so you can access it on any device.',
+          '登录后，您的本地数据将自动上传到云端，可在多设备使用。',
+          'Data tempatan anda akan dimuat naik ke awan supaya boleh diakses pada mana-mana peranti.')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx, false),
-            child: Text(t.isZh ? '取消' : 'Cancel'),
+            child: Text(tr(t.lang, 'Cancel', '取消', 'Batal')),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: kDark, foregroundColor: Colors.white),
             onPressed: () => Navigator.pop(dialogCtx, true),
-            child: Text(t.isZh ? '继续' : 'Continue'),
+            child: Text(tr(t.lang, 'Continue', '继续', 'Teruskan')),
           ),
         ],
       ),
@@ -463,7 +466,7 @@ class _ProBlock extends StatelessWidget {
       ]),
       if (sub.proExpires != null) ...[
         const SizedBox(height: 8),
-        Text('${t.isZh ? '到期时间' : 'Expires'}: ${sub.proExpires}',
+        Text('${tr(t.lang, 'Expires', '到期时间', 'Tamat Tempoh')}: ${sub.proExpires}',
             style: const TextStyle(fontSize: 11, color: Color(0x80FFFFFF))),
       ],
       const SizedBox(height: 10),

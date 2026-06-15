@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../constants.dart';
 import 'inventory_service.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -39,14 +40,14 @@ class LowStockReminder {
 
       await _init();
 
-      final zh    = lang == 'zh';
       final count = lowOrOut.length;
       final names = lowOrOut.take(3).map((i) => i.name).join('、');
-      final more  = count > 3 ? (zh ? ' 等' : '…') : '';
-      final title = zh ? '库存不足提醒' : 'Low stock alert';
-      final body  = zh
-          ? '$count 项库存偏低：$names$more'
-          : '$count item(s) running low: $names$more';
+      final more  = count > 3 ? tr(lang, '…', ' 等', '…') : '';
+      final title = tr(lang, 'Low stock alert', '库存不足提醒', 'Amaran stok rendah');
+      final body  = tr(lang,
+          '$count item(s) running low: $names$more',
+          '$count 项库存偏低：$names$more',
+          '$count item stok rendah: $names$more');
 
       const details = NotificationDetails(
         android: AndroidNotificationDetails(

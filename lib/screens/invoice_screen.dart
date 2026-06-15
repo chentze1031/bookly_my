@@ -742,7 +742,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
             const SizedBox(width: 8),
             // ── Share button (same size as Save, no icon) ─────────────
             SmBtn(
-              label: _sharing ? (t.isZh ? '分享中…' : 'Sharing…') : t.sharePrint,
+              label: _sharing ? (tr(t.lang, 'Sharing…', '分享中…', 'Berkongsi…')) : t.sharePrint,
               color: kDark,
               borderColor: kDark,
               textColor: Colors.white,
@@ -1171,7 +1171,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                             child: CircularProgressIndicator(
                                 color: Colors.white, strokeWidth: 2))
                         : const Text('📤', style: TextStyle(fontSize: 16)),
-                    label: Text(_sharing ? '…' : (t.isZh ? '分享' : 'Share'),
+                    label: Text(_sharing ? '…' : (tr(t.lang, 'Share', '分享', 'Kongsi')),
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                     style: ElevatedButton.styleFrom(
                         backgroundColor: kDark,
@@ -1188,7 +1188,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                   child: OutlinedButton.icon(
                     onPressed: _toDeliveryOrder,
                     icon: const Text('🚚', style: TextStyle(fontSize: 15)),
-                    label: Text(t.isZh ? '送货单' : 'D.O.',
+                    label: Text(tr(t.lang, 'D.O.', '送货单', 'Nota Hantar'),
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                     style: OutlinedButton.styleFrom(
                         foregroundColor: kBlue,

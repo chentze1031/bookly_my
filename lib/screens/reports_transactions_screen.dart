@@ -329,23 +329,23 @@ class _ReportsState extends State<ReportsScreen> {
   }
 
   void _showExportMenu() {
-    final zh = context.read<AppState>().settings.lang == 'zh';
+    final lang = context.read<AppState>().settings.lang;
     showModalBottomSheet(context: context, backgroundColor: Colors.transparent, builder: (_) => Container(
       decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 30),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text(zh ? '导出报表' : 'Export', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+        Text(tr(lang, 'Export', '导出报表', 'Eksport'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
         const SizedBox(height: 14),
         ListTile(
           leading: const Text('📄', style: TextStyle(fontSize: 22)),
-          title: Text(zh ? '财务报表 PDF' : 'Financial Statements (PDF)', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          subtitle: Text(zh ? '损益表 + 资产负债表' : 'P&L + Balance Sheet', style: const TextStyle(fontSize: 12, color: kMuted)),
+          title: Text(tr(lang, 'Financial Statements (PDF)', '财务报表 PDF', 'Penyata Kewangan (PDF)'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          subtitle: Text(tr(lang, 'P&L + Balance Sheet', '损益表 + 资产负债表', 'Untung Rugi + Kunci Kira-kira'), style: const TextStyle(fontSize: 12, color: kMuted)),
           onTap: () { Navigator.pop(context); _exportFinancials(); },
         ),
         ListTile(
           leading: const Text('📊', style: TextStyle(fontSize: 22)),
-          title: Text(zh ? '交易明细 CSV（Excel）' : 'Transactions CSV (Excel)', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          subtitle: Text(zh ? '当前期间的全部交易' : 'All transactions in the period', style: const TextStyle(fontSize: 12, color: kMuted)),
+          title: Text(tr(lang, 'Transactions CSV (Excel)', '交易明细 CSV（Excel）', 'CSV Transaksi (Excel)'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          subtitle: Text(tr(lang, 'All transactions in the period', '当前期间的全部交易', 'Semua transaksi dalam tempoh'), style: const TextStyle(fontSize: 12, color: kMuted)),
           onTap: () { Navigator.pop(context); _exportCsv(); },
         ),
       ]),
@@ -451,7 +451,7 @@ class _ReportsState extends State<ReportsScreen> {
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   const Icon(Icons.download_outlined, size: 15, color: kText),
                   const SizedBox(width: 5),
-                  Text(lang == 'zh' ? '导出' : 'Export', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
+                  Text(tr(lang, 'Export', '导出', 'Eksport'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
                   if (!sub.hasAccess) const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 13, color: kPro)),
                 ]),
               ),
@@ -488,8 +488,8 @@ class _ReportsState extends State<ReportsScreen> {
                   child: const Center(child: Text('📅', style: TextStyle(fontSize: 20)))),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(lang == 'zh' ? '月度预算' : 'Monthly Budget', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
-                  Text(lang == 'zh' ? '按分类设上限 · 超支预警' : 'Per-category limits · over-spend alerts', style: const TextStyle(fontSize: 11, color: kMuted)),
+                  Text(tr(lang, 'Monthly Budget', '月度预算', 'Bajet Bulanan'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
+                  Text(tr(lang, 'Per-category limits · over-spend alerts', '按分类设上限 · 超支预警', 'Had setiap kategori · amaran lebih belanja'), style: const TextStyle(fontSize: 11, color: kMuted)),
                 ])),
                 sub.hasAccess ? const Icon(Icons.chevron_right, color: kMuted) : const Icon(Icons.lock_outline, size: 18, color: kPro),
               ]),
@@ -518,9 +518,9 @@ class _ReportsState extends State<ReportsScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(lang == 'zh' ? '顾客消费分析' : 'Customer Analytics',
+                  Text(tr(lang, 'Customer Analytics', '顾客消费分析', 'Analitik Pelanggan'),
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
-                  Text(lang == 'zh' ? '客户排行 · 客单 · 常买项目' : 'Top customers · spend · top items',
+                  Text(tr(lang, 'Top customers · spend · top items', '客户排行 · 客单 · 常买项目', 'Pelanggan teratas · belanja · item teratas'),
                       style: const TextStyle(fontSize: 11, color: kMuted)),
                 ])),
                 if (sub.hasAccess)
