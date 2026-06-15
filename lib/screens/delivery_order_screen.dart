@@ -73,13 +73,13 @@ class _DoHistState extends State<DeliveryOrderHistoryScreen> {
   }
 
   void _confirmDelete(String doNo) {
-    showDialog(context: context, builder: (_) => AlertDialog(
+    showDialog(context: context, builder: (dctx) => AlertDialog(
       title: const Text('Delete Delivery Order?'),
       content: Text('Delete $doNo? This cannot be undone.'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
         TextButton(
-          onPressed: () { Navigator.pop(context); _delete(doNo); },
+          onPressed: () { Navigator.pop(dctx); _delete(doNo); },
           child: const Text('Delete', style: TextStyle(color: kRed)),
         ),
       ],

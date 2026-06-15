@@ -40,13 +40,14 @@ class _WarehouseState extends State<WarehouseScreen> {
   Future<void> _addOrRename({Map<String, dynamic>? wh}) async {
     final ctrl = TextEditingController(text: wh?['name'] ?? '');
     final zh = context.read<AppState>().settings.lang == 'zh';
-    final name = await showDialog<String>(context: context, builder: (_) => AlertDialog(
+    final name = await showDialog<String>(context: context, builder: (dctx) => AlertDialog(
       title: Text(wh == null ? (zh ? '新增仓库/门店' : 'New Warehouse') : (zh ? '重命名' : 'Rename')),
       content: TextField(controller: ctrl, autofocus: true,
+        onSubmitted: (v) => Navigator.pop(dctx, v.trim()),
         decoration: InputDecoration(hintText: zh ? '名称' : 'Name')),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text(zh ? '取消' : 'Cancel')),
-        TextButton(onPressed: () => Navigator.pop(context, ctrl.text.trim()), child: Text(zh ? '保存' : 'Save')),
+        TextButton(onPressed: () => Navigator.pop(dctx), child: Text(zh ? '取消' : 'Cancel')),
+        TextButton(onPressed: () => Navigator.pop(dctx, ctrl.text.trim()), child: Text(zh ? '保存' : 'Save')),
       ],
     ));
     if (name == null || name.isEmpty) return;

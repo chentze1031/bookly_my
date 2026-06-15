@@ -86,13 +86,13 @@ class _CnHistState extends State<CreditNoteHistoryScreen> {
   }
 
   void _confirmDelete(String cnNo) {
-    showDialog(context: context, builder: (_) => AlertDialog(
+    showDialog(context: context, builder: (dctx) => AlertDialog(
       title: const Text('Delete Credit Note?'),
       content: Text('Delete $cnNo? This also reverses the AR adjustment.'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
         TextButton(
-          onPressed: () { Navigator.pop(context); _delete(cnNo); },
+          onPressed: () { Navigator.pop(dctx); _delete(cnNo); },
           child: const Text('Delete', style: TextStyle(color: kRed)),
         ),
       ],

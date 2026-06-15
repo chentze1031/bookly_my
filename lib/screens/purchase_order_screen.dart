@@ -96,12 +96,12 @@ class _PoHistState extends State<PurchaseOrderHistoryScreen> {
   }
 
   void _confirmDelete(String poNo) {
-    showDialog(context: context, builder: (_) => AlertDialog(
+    showDialog(context: context, builder: (dctx) => AlertDialog(
       title: const Text('Delete Purchase Order?'),
       content: Text('Delete $poNo? (Received stock is not reversed.)'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-        TextButton(onPressed: () { Navigator.pop(context); _delete(poNo); },
+        TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
+        TextButton(onPressed: () { Navigator.pop(dctx); _delete(poNo); },
           child: const Text('Delete', style: TextStyle(color: kRed))),
       ],
     ));
