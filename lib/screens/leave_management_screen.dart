@@ -86,8 +86,11 @@ class _LeaveState extends State<LeaveManagementScreen> {
       firstDate: DateTime(2000), lastDate: DateTime.now(),
     );
     if (picked == null) return;
-    _hireDates[empId] = picked.toIso8601String().substring(0, 10);
-    _store['hireDates'] = _hireDates;
+    // NOTE: _hireDates is a getter returning a fresh copy each call, so mutate a
+    // captured local and assign it back — otherwise the change is lost.
+    final hd = Map<String, dynamic>.from(_store['hireDates'] ?? {});
+    hd[empId] = picked.toIso8601String().substring(0, 10);
+    _store['hireDates'] = hd;
     await _persist();
   }
 

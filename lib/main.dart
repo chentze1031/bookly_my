@@ -181,12 +181,6 @@ class _AppShellState extends State<_AppShell> {
         actions: [if (sub.isPro) const Padding(padding: EdgeInsets.only(right: 14), child: ProBadge())],
       ),
       body: widget.child,
-      floatingActionButton: (idx < 3) ? FloatingActionButton(
-        onPressed: () => _showAddTx(),
-        backgroundColor: kDark,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add, size: 28),
-      ) : null,
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
