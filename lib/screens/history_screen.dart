@@ -127,7 +127,7 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(lang == 'zh' ? '发票记录' : 'Invoice History'),
+        title: Text(tr(lang, 'Invoice History', '发票记录', 'Sejarah Invois')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
       ),
       body: _loading
@@ -527,7 +527,7 @@ class _PayrollHistoryState extends State<PayrollHistoryScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(lang == 'zh' ? '薪资记录' : 'Payroll History'),
+        title: Text(tr(lang, 'Payroll History', '薪资记录', 'Sejarah Gaji')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
       ),
       body: _loading
@@ -565,16 +565,15 @@ class _PayrollHistoryState extends State<PayrollHistoryScreen> {
 
   // ── HR & compliance hub (Phase 3 #11-14, Pro) ───────────────────────────────
   Widget _hrHub(BuildContext context, String lang) {
-    final zh = lang == 'zh';
     void open(Widget screen) {
       if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
       Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
     }
     final items = [
-      ('🧾', zh ? 'CP39 扣税' : 'CP39 (PCB)',      const Cp39ReportScreen()),
+      ('🧾', tr(lang, 'CP39 (PCB)', 'CP39 扣税', 'CP39 (PCB)'),  const Cp39ReportScreen()),
       ('🏦', 'EPF/SOCSO/EIS',                       const StatutoryReportScreen()),
-      ('📑', zh ? 'EA 表格' : 'Form EA',            const EaFormScreen()),
-      ('🏖️', zh ? '请假管理' : 'Leave',             const LeaveManagementScreen()),
+      ('📑', tr(lang, 'Form EA', 'EA 表格', 'Borang EA'),        const EaFormScreen()),
+      ('🏖️', tr(lang, 'Leave', '请假管理', 'Cuti'),             const LeaveManagementScreen()),
     ];
     return Container(
       color: kSurface,

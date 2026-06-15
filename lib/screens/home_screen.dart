@@ -65,7 +65,7 @@ class HomeScreen extends StatelessWidget {
 
     final co = app.settings.companyName.isNotEmpty
       ? app.settings.companyName
-      : (lang == 'zh' ? '我的公司' : 'My Company');
+      : tr(lang, 'My Company', '我的公司', 'Syarikat Saya');
 
     return Column(
       children: [
@@ -193,7 +193,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: _HistoryBtn(
                           icon: '🧾',
-                          label: lang == 'zh' ? '发票记录' : 'Invoice History',
+                          label: tr(lang, 'Invoice History', '发票记录', 'Sejarah Invois'),
                           onTap: () => Navigator.push(context,
                             MaterialPageRoute(builder: (_) => const InvoiceHistoryScreen())),
                         ),
@@ -202,7 +202,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: _HistoryBtn(
                           icon: '📋',
-                          label: lang == 'zh' ? '报价单记录' : 'Quotation History',
+                          label: tr(lang, 'Quotation History', '报价单记录', 'Sejarah Sebut Harga'),
                           onTap: () {
                             if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
                             Navigator.push(context,
@@ -216,7 +216,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: _HistoryBtn(
                           icon: '💼',
-                          label: lang == 'zh' ? '薪资记录' : 'Payroll History',
+                          label: tr(lang, 'Payroll History', '薪资记录', 'Sejarah Gaji'),
                           onTap: () => Navigator.push(context,
                             MaterialPageRoute(builder: (_) => const PayrollHistoryScreen())),
                         ),
@@ -225,7 +225,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: _HistoryBtn(
                           icon: '🚚',
-                          label: lang == 'zh' ? '送货单记录' : 'Delivery Orders',
+                          label: tr(lang, 'Delivery Orders', '送货单记录', 'Nota Penghantaran'),
                           onTap: () {
                             if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
                             Navigator.push(context,
@@ -239,7 +239,7 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: _HistoryBtn(
                           icon: '🧾',
-                          label: lang == 'zh' ? '信用备注记录' : 'Credit Notes',
+                          label: tr(lang, 'Credit Notes', '信用备注记录', 'Nota Kredit'),
                           onTap: () {
                             if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
                             Navigator.push(context,
@@ -499,10 +499,10 @@ class _OverdueBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = lang == 'zh' ? '$count 张发票逾期' : '$count invoice${count == 1 ? '' : 's'} overdue';
-    final sub   = lang == 'zh'
-        ? '共 ${fmtMYR(total)} 待催收'
-        : '${fmtMYR(total)} to collect';
+    final title = tr(lang, '$count invoice${count == 1 ? '' : 's'} overdue',
+        '$count 张发票逾期', '$count invois tertunggak');
+    final sub   = tr(lang, '${fmtMYR(total)} to collect',
+        '共 ${fmtMYR(total)} 待催收', '${fmtMYR(total)} perlu dikutip');
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -538,7 +538,7 @@ class _OverdueBanner extends StatelessWidget {
               borderRadius: BorderRadius.circular(9),
             ),
             child: Row(children: [
-              Text(lang == 'zh' ? '查看' : 'View',
+              Text(tr(lang, 'View', '查看', 'Lihat'),
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
               const Icon(Icons.chevron_right, size: 16, color: Colors.white),
             ]),

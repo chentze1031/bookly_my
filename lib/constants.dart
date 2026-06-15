@@ -258,6 +258,11 @@ abstract class StorageKeys {
   static const fxCached    = 'bly_fx_cache';
   static const fxTimestamp = 'bly_fx_ts';
 }
+/// Inline trilingual helper for one-off strings outside the [L10n] class.
+/// Usage: tr(lang, 'English', '中文', 'Bahasa Melayu').
+String tr(String lang, String en, String zh, String ms) =>
+    lang == 'zh' ? zh : lang == 'ms' ? ms : en;
+
 class L10n {
   final String lang;
   const L10n(this.lang);

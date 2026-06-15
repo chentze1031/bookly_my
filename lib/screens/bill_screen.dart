@@ -34,9 +34,9 @@ enum _PayStatus { unpaid, cash, bank }
 
 extension _PayStatusExt on _PayStatus {
   String label(String lang) => switch (this) {
-    _PayStatus.unpaid => lang == 'zh' ? '未付款'       : 'Unpaid',
-    _PayStatus.cash   => lang == 'zh' ? '已付（现金）' : 'Paid (Cash)',
-    _PayStatus.bank   => lang == 'zh' ? '已付（银行）' : 'Paid (Bank)',
+    _PayStatus.unpaid => tr(lang, 'Unpaid', '未付款', 'Belum Bayar'),
+    _PayStatus.cash   => tr(lang, 'Paid (Cash)', '已付（现金）', 'Dibayar (Tunai)'),
+    _PayStatus.bank   => tr(lang, 'Paid (Bank)', '已付（银行）', 'Dibayar (Bank)'),
   };
   String get icon => switch (this) {
     _PayStatus.unpaid => '⏳',
@@ -158,7 +158,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
               decoration: BoxDecoration(color: kBorder, borderRadius: BorderRadius.circular(99)))),
             const SizedBox(height: 10),
             Row(children: [
-              Text(lang == 'zh' ? '📄 添加账单' : '📄 Add Bill',
+              Text(tr(lang, '📄 Add Bill', '📄 添加账单', '📄 Tambah Bil'),
                 style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
               const Spacer(),
               TextButton(onPressed: () => Navigator.pop(context),
@@ -174,26 +174,26 @@ class _BillFormSheetState extends State<BillFormSheet> {
 
             // Bill No + Date
             Row(children: [
-              Expanded(child: _field(lang == 'zh' ? '账单号' : 'Bill No.', TextField(
+              Expanded(child: _field(tr(lang, 'Bill No.', '账单号', 'No. Bil'), TextField(
                 controller: TextEditingController(text: _billNo),
                 onChanged: (v) => _billNo = v,
                 style: const TextStyle(fontSize: 14, color: kText),
                 decoration: _dec('BILL-001'),
               ))),
               const SizedBox(width: 12),
-              Expanded(child: _field(lang == 'zh' ? '日期' : 'Date',
+              Expanded(child: _field(tr(lang, 'Date', '日期', 'Tarikh'),
                 _datebtn(_date, (d) => setState(() => _date = d), context))),
             ]),
 
             // Supplier
-            _field(lang == 'zh' ? '供应商名称 *' : 'Supplier Name *', TextField(
+            _field(tr(lang, 'Supplier Name *', '供应商名称 *', 'Nama Pembekal *'), TextField(
               controller: _supplierCtrl,
               style: const TextStyle(fontSize: 14, color: kText),
-              decoration: _dec(lang == 'zh' ? '供应商名称' : 'Supplier name'),
+              decoration: _dec(tr(lang, 'Supplier name', '供应商名称', 'Nama pembekal')),
             )),
 
             // Amount
-            _field(lang == 'zh' ? '金额 (MYR) *' : 'Amount (MYR) *', TextField(
+            _field(tr(lang, 'Amount (MYR) *', '金额 (MYR) *', 'Jumlah (MYR) *'), TextField(
               controller: _amtCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               onChanged: (_) => setState(() {}),
@@ -202,7 +202,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
             )),
 
             // Expense Type
-            _field(lang == 'zh' ? '费用类型 *' : 'Expense Type *',
+            _field(tr(lang, 'Expense Type *', '费用类型 *', 'Jenis Perbelanjaan *'),
               Wrap(spacing: 8, runSpacing: 8, children: _billTypes.map((bt) {
                 final sel = _type.id == bt.id;
                 return GestureDetector(
@@ -224,7 +224,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
             ),
 
             // Payment Status
-            _field(lang == 'zh' ? '付款状态 *' : 'Payment Status *',
+            _field(tr(lang, 'Payment Status *', '付款状态 *', 'Status Bayaran *'),
               Row(children: [
                 for (int i = 0; i < _PayStatus.values.length; i++) ...[
                   if (i > 0) const SizedBox(width: 8),
@@ -258,15 +258,15 @@ class _BillFormSheetState extends State<BillFormSheet> {
 
             // Due Date (unpaid only)
             if (_payStatus == _PayStatus.unpaid)
-              _field(lang == 'zh' ? '到期日' : 'Due Date',
+              _field(tr(lang, 'Due Date', '到期日', 'Tarikh Akhir'),
                 _datebtn(_dueDate, (d) => setState(() => _dueDate = d), context)),
 
             // Notes
-            _field(lang == 'zh' ? '备注（可选）' : 'Notes (optional)', TextField(
+            _field(tr(lang, 'Notes (optional)', '备注（可选）', 'Nota (pilihan)'), TextField(
               controller: _notesCtrl,
               maxLines: 2,
               style: const TextStyle(fontSize: 14, color: kText),
-              decoration: _dec(lang == 'zh' ? '可选备注' : 'Optional notes'),
+              decoration: _dec(tr(lang, 'Optional notes', '可选备注', 'Nota pilihan')),
             )),
 
             // GL Preview
@@ -294,7 +294,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
                 ),
                 child: _saving
                   ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(lang == 'zh' ? '保存账单' : 'Save Bill',
+                  : Text(tr(lang, 'Save Bill', '保存账单', 'Simpan Bil'),
                       style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
               )),
           ]),
