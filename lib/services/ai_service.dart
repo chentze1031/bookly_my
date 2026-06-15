@@ -133,6 +133,55 @@ If not a bank statement, return: []
     return (jsonDecode(clean) as List).cast<Map<String, dynamic>>();
   }
 
+  // ── 4. Scan receipt photo → expense fields (Phase 4 #19) ─────────────────
+  static Future<ReceiptScan> scanReceipt({
+    required String base64Image,
+    required String mimeType,
+    required String catList,
+  }) async {
+    final prompt = '''
+You are a Malaysia receipt/invoice scanner. Extract the expense from this photo.
+
+Expense categories to choose from:
+$catList
+
+Rules:
+- merchant: the shop/business name (short, as printed)
+- amount: the GRAND TOTAL actually paid, MYR, number only (include tax)
+- date: YYYY-MM-DD from the receipt (use today if not visible)
+- catId: the best-matching category id from the list above (else "other")
+
+Respond ONLY with valid JSON, no markdown, no explanation:
+{ "merchant":"<name>", "amount":0.00, "date":"YYYY-MM-DD", "catId":"<id>", "confidence":0.0 }
+
+If the image is not a receipt/invoice, return:
+{ "merchant":"", "amount":0, "date":"", "catId":"other", "confidence":0 }
+''';
+    if (_apiKey.isEmpty) throw Exception('GEMINI_KEY not set. Build with --dart-define=GEMINI_KEY=your_key');
+    final res = await http.post(
+      Uri.parse(_endpoint),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'contents': [{
+          'parts': [
+            { 'inline_data': { 'mime_type': mimeType, 'data': base64Image } },
+            { 'text': prompt },
+          ],
+        }],
+        'generationConfig': { 'temperature': 0.1, 'maxOutputTokens': 1024 },
+      }),
+    );
+    if (res.statusCode != 200) throw Exception('Gemini error ${res.statusCode}: ${res.body}');
+    final json = _parseJson(_extractText(res.body));
+    return ReceiptScan(
+      merchant:   (json['merchant'] ?? '').toString(),
+      amount:     (json['amount'] as num?)?.toDouble() ?? 0,
+      date:       (json['date'] ?? '').toString(),
+      catId:      (json['catId'] ?? 'other').toString(),
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
   // ── Internal: text-only prompt ───────────────────────────────────────────
   static Future<String> _call(String prompt) async {
     if (_apiKey.isEmpty) throw Exception('GEMINI_KEY not set. Build with --dart-define=GEMINI_KEY=your_key');
@@ -167,6 +216,13 @@ class AutoCatResult {
   final String catId, reason;
   final double confidence;
   const AutoCatResult({required this.catId, required this.confidence, required this.reason});
+}
+
+class ReceiptScan {
+  final String merchant, date, catId;
+  final double amount, confidence;
+  const ReceiptScan({required this.merchant, required this.amount,
+    required this.date, required this.catId, required this.confidence});
 }
 
 class MonthSummary {

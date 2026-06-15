@@ -22,6 +22,7 @@ import 'screens/payroll_screen.dart';
 import 'screens/sub_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/inventory_screen.dart';
+import 'services/ai_service.dart';
 import 'services/supabase_service.dart';
 import 'services/inventory_service.dart';
 import 'services/overdue_reminder.dart';
@@ -293,6 +294,53 @@ class _AddTxSheetState extends State<AddTxSheet> {
   bool _confirmDel = false;
   bool _saving = false; // FIX: prevents double-tap during async save
   String? _payMode; // expense payment status: unpaid | cash | bank (null = income/edit)
+  bool _scanning = false; // receipt OCR in progress (Phase 4 #19)
+
+  // ── Receipt OCR (Phase 4 #19, Pro) ──────────────────────────────────────
+  // Snap/pick a receipt → Gemini Vision extracts merchant/amount/date/category
+  // → prefills an expense and jumps to the confirm step. Pure-Dart (no native).
+  Future<void> _scanReceipt(BuildContext ctx) async {
+    if (!ctx.read<SubState>().isPro) { showSubSheet(ctx); return; }
+    final lang = ctx.read<AppState>().settings.lang;
+    final src = await showModalBottomSheet<ImageSource>(
+      context: ctx,
+      builder: (sctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        ListTile(leading: const Icon(Icons.photo_camera_outlined),
+          title: Text(tr(lang, 'Camera', '拍照', 'Kamera')),
+          onTap: () => Navigator.pop(sctx, ImageSource.camera)),
+        ListTile(leading: const Icon(Icons.photo_library_outlined),
+          title: Text(tr(lang, 'Gallery', '相册', 'Galeri')),
+          onTap: () => Navigator.pop(sctx, ImageSource.gallery)),
+      ])),
+    );
+    if (src == null) return;
+    final XFile? img = await ImagePicker().pickImage(source: src, maxWidth: 1600, imageQuality: 70);
+    if (img == null || !mounted) return;
+    setState(() => _scanning = true);
+    try {
+      final b64  = base64Encode(await img.readAsBytes());
+      final cats = userExpenseCategories;
+      final catList = cats.map((c) => '- ${c.id}: ${c.enLabel}').join('\n');
+      final r = await AiService.scanReceipt(
+        base64Image: b64, mimeType: img.mimeType ?? 'image/jpeg', catList: catList);
+      if (!mounted) return;
+      setState(() {
+        _scanning = false;
+        _type = 'expense';
+        _cat  = cats.firstWhere((c) => c.id == r.catId, orElse: () => cats.first);
+        if (r.amount > 0) _amtCtrl.text = r.amount.toStringAsFixed(2);
+        if (r.merchant.isNotEmpty) _descCtrl.text = r.merchant;
+        if (RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(r.date)) _date = r.date;
+        _payMode = 'cash'; // a receipt is normally already paid
+        _step = 3;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _scanning = false);
+      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+        content: Text(tr(lang, 'Scan failed: $e', '扫描失败：$e', 'Imbas gagal: $e'))));
+    }
+  }
 
   @override
   void initState() {
@@ -434,12 +482,40 @@ class _AddTxSheetState extends State<AddTxSheet> {
                 child: Column(
                   children: [
                     // STEP 1 — type
-                    if (_step == 1)
+                    if (_step == 1) ...[
                       Row(children: [
                         _TypeCard(icon: '📥', label: t.moneyIn, color: kGreen, bg: kGreenBg, bd: kGreenBd, onTap: () => setState(() { _type='income'; _step=2; })),
                         const SizedBox(width: 12),
                         _TypeCard(icon: '📤', label: t.moneyOut, color: kRed, bg: kRedBg, bd: kRedBd, onTap: () => setState(() { _type='expense'; _step=2; })),
                       ]),
+                      const SizedBox(height: 14),
+                      // Receipt OCR shortcut (Pro) — snap a receipt to auto-fill an expense.
+                      GestureDetector(
+                        onTap: _scanning ? null : () => _scanReceipt(context),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: kBg, border: Border.all(color: kBorder, width: 1.5),
+                            borderRadius: BorderRadius.circular(13)),
+                          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            if (_scanning)
+                              SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: kText))
+                            else
+                              const Text('📷', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Text(_scanning
+                                ? tr(app.settings.lang, 'Scanning…', '识别中…', 'Mengimbas…')
+                                : tr(app.settings.lang, 'Scan receipt', '扫描收据', 'Imbas resit'),
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                            const SizedBox(width: 6),
+                            const Text('✨', style: TextStyle(fontSize: 13)),
+                            if (!context.watch<SubState>().isPro)
+                              const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 14, color: kPro)),
+                          ]),
+                        ),
+                      ),
+                    ],
 
                     // STEP 2 — category
                     if (_step == 2) ...[
