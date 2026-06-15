@@ -161,15 +161,32 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
   void _showForm({InventoryItem? item}) {
+    // Default the form's warehouse to: the item's current warehouse (edit) or
+    // the active warehouse filter (add inside a warehouse) — Phase 4 #25.
+    final int? initialWh = item != null ? (_whAssign['${item.id}'] as int?) : _whId;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => ChangeNotifierProvider.value(
         value: context.read<InventoryState>(),
-        child: _ItemFormSheet(item: item),
+        child: _ItemFormSheet(
+          item: item,
+          warehouses: _warehouses,
+          initialWhId: initialWh,
+          onWarehouse: _assignWarehouse,
+        ),
       ),
     );
+  }
+
+  /// Assign (or clear, when [whId] is null) an item to a warehouse, then persist.
+  Future<void> _assignWarehouse(int itemId, int? whId) async {
+    final assign = _whAssign;
+    if (whId == null) { assign.remove('$itemId'); } else { assign['$itemId'] = whId; }
+    _wh['assign'] = assign;
+    await context.read<AppState>().saveWarehouseStore(_wh);
+    if (mounted) setState(() {});
   }
 
   void _showDetail(InventoryItem item) {
@@ -818,7 +835,10 @@ class _DetailRow extends StatelessWidget {
 // ── Add/Edit form sheet (with photo) ──────────────────────────────────────────
 class _ItemFormSheet extends StatefulWidget {
   final InventoryItem? item;
-  const _ItemFormSheet({this.item});
+  final List<Map<String, dynamic>> warehouses;        // Phase 4 #25
+  final int? initialWhId;                              // pre-selected warehouse
+  final Future<void> Function(int itemId, int? whId)? onWarehouse;
+  const _ItemFormSheet({this.item, this.warehouses = const [], this.initialWhId, this.onWarehouse});
   @override State<_ItemFormSheet> createState() => _ItemFormSheetState();
 }
 
@@ -832,6 +852,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
   final _notes    = TextEditingController();
   String  _unit   = 'pcs';
   String? _category;
+  int?    _whId;          // selected warehouse (Phase 4 #25)
   bool    _saving = false;
   String? _saveError;
   XFile?  _pickedImage;     // new photo waiting to upload
@@ -844,6 +865,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
   @override
   void initState() {
     super.initState();
+    _whId = widget.initialWhId;
     final e = widget.item;
     if (e != null) {
       _name.text     = e.name;
@@ -901,8 +923,10 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
     );
 
     try {
+      int savedId;
       if (widget.item == null) {
-        await inv.addItem(item, image: _pickedImage);
+        final created = await inv.addItem(item, image: _pickedImage);
+        savedId = created.id;
       } else {
         // qty edits in the form are recorded as 'adjust' movements
         final oldQty = widget.item!.qty;
@@ -910,7 +934,10 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
         if (item.qty != oldQty) {
           await inv.setQty(item.id, item.qty, note: 'Edited in form / 表单修改');
         }
+        savedId = widget.item!.id;
       }
+      // Phase 4 #25: persist the chosen warehouse assignment.
+      if (widget.onWarehouse != null) await widget.onWarehouse!(savedId, _whId);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) setState(() {
@@ -1010,6 +1037,25 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                   const SizedBox(width: 12),
                   Expanded(child: _Field(label: t.lowLabel, child: _tf(_lowStock, '5', isNum: true))),
                 ]),
+                // Warehouse / store assignment (Phase 4 #25) — only when warehouses exist.
+                if (widget.warehouses.isNotEmpty)
+                  _Field(label: t.zh ? '仓库 / 门店' : 'WAREHOUSE / STORE', child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(12)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int?>(
+                        value: _whId,
+                        isExpanded: true,
+                        style: const TextStyle(fontSize: 14, color: kText),
+                        items: [
+                          DropdownMenuItem<int?>(value: null, child: Text(t.zh ? '未分配' : 'Unassigned', style: const TextStyle(color: kMuted))),
+                          for (final w in widget.warehouses)
+                            DropdownMenuItem<int?>(value: w['id'] as int, child: Text('🏬 ${w['name']}')),
+                        ],
+                        onChanged: (v) => setState(() => _whId = v),
+                      ),
+                    ),
+                  )),
                 _Field(label: t.notesLabel, child: _tf(_notes, '...', maxLines: 2)),
                 const SizedBox(height: 20),
 

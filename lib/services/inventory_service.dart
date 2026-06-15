@@ -257,7 +257,7 @@ class InventoryState extends ChangeNotifier {
   }
 
   // ── Create ────────────────────────────────────────────────────────────────
-  Future<void> addItem(InventoryItem item, {XFile? image}) async {
+  Future<InventoryItem> addItem(InventoryItem item, {XFile? image}) async {
     try {
       String? imageUrl = item.imageUrl;
       if (image != null) imageUrl = await uploadImage(image);
@@ -278,6 +278,7 @@ class InventoryState extends ChangeNotifier {
         await _insertMovement(newItem.id, 'purchase', newItem.qty, 0, newItem.qty,
             note: 'Opening stock / 期初库存');
       }
+      return newItem;
     } catch (e) {
       final msg = e.toString();
       if (msg.contains('relation "inventory" does not exist')) {
