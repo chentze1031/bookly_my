@@ -263,282 +263,287 @@ class L10n {
   const L10n(this.lang);
 
   bool get isZh => lang == 'zh';
+  bool get isMs => lang == 'ms';
+  // Trilingual picker: English / 中文 / Bahasa Melayu.
+  String _t(String en, String zh, String ms) =>
+      lang == 'zh' ? zh : lang == 'ms' ? ms : en;
 
   // Navigation
-  String get appName    => isZh ? '账本 MY' : 'Bookly MY';
-  String get home       => isZh ? '首页' : 'Home';
-  String get records    => isZh ? '记录' : 'Records';
-  String get reports    => isZh ? '报表' : 'Reports';
-  String get accounting => isZh ? '账务' : 'Accounting';
+  String get appName    => 'Bookly MY';
+  String get home       => _t('Home', '首页', 'Utama');
+  String get records    => _t('Records', '记录', 'Rekod');
+  String get reports    => _t('Reports', '报表', 'Laporan');
+  String get accounting => _t('Accounting', '账务', 'Perakaunan');
 
   // Accounting module
-  String get receivable     => isZh ? '应收账款' : 'Receivable';
-  String get payable        => isZh ? '应付账款' : 'Payable';
-  String get trialBalance   => isZh ? '试算表' : 'Trial Balance';
-  String get generalLedger  => isZh ? '总账' : 'General Ledger';
-  String get newInvoice     => isZh ? '新增发票' : 'New Invoice';
-  String get newBill        => isZh ? '新增账单' : 'New Bill';
-  String get bill           => isZh ? '账单' : 'Bill';
-  String get billType       => isZh ? '费用类型' : 'Expense Type';
-  String get payStatus      => isZh ? '付款状态' : 'Payment Status';
-  String get unpaid         => isZh ? '未付款' : 'Unpaid';
-  String get paidCash       => isZh ? '已付（现金）' : 'Paid (Cash)';
-  String get paidBank       => isZh ? '已付（银行）' : 'Paid (Bank)';
-  String get supplierName   => isZh ? '供应商名称' : 'Supplier Name';
-  String get billNo         => isZh ? '账单号' : 'Bill No.';
-  String get transport      => isZh ? '交通/油费' : 'Transport / Fuel';
-  String get addBill        => isZh ? '添加账单' : 'Add Bill';
-  String get invIssued      => isZh ? '开发票' : 'Invoice Issued';
-  String get invCollected   => isZh ? '收款' : 'Invoice Collected';
-  String get billReceived   => isZh ? '收到账单' : 'Bill Received';
-  String get apPayment      => isZh ? '付款出账' : 'AP Payment';
-  String get totalAr        => isZh ? '应收总额' : 'Total AR';
-  String get totalAp        => isZh ? '应付总额' : 'Total AP';
-  String get overdue        => isZh ? '逾期' : 'Overdue';
-  String get current        => isZh ? '未逾期' : 'Current';
-  String get daysOverdue    => isZh ? '天逾期' : 'days overdue';
-  String get recordPayment  => isZh ? '记录付款' : 'Record Payment';
-  String get amtReceived    => isZh ? '收到金额' : 'Amount received';
-  String get amtPaid        => isZh ? '付出金额' : 'Amount paid';
-  String get record         => isZh ? '记录' : 'Record';
-  String get pay            => isZh ? '付款' : 'Pay';
-  String get issueDate      => isZh ? '开单日期' : 'Issue Date';
-  String get dueDate2       => isZh ? '到期日' : 'Due Date';
-  String get supplier       => isZh ? '供应商' : 'Supplier';
-  String get suppliers      => isZh ? '供应商管理' : 'Suppliers';
-  String get newSupplier    => isZh ? '新增供应商' : 'New Supplier';
-  String get booksBalanced  => isZh ? '账目平衡' : 'Books are balanced';
-  String get booksNotBal    => isZh ? '账目不平衡' : 'Books are NOT balanced';
-  String get agingAnalysis  => isZh ? '账龄分析' : 'Aging Analysis';
-  String get selectAccount  => isZh ? '← 选择科目' : '← Select an account';
-  String get noEntries      => isZh ? '暂无记录' : 'No entries';
-  String get accounts2      => isZh ? '科目' : 'Accounts';
-  String get draft          => isZh ? '草稿' : 'Draft';
-  String get sent           => isZh ? '已发送' : 'Sent';
-  String get partial        => isZh ? '部分收款' : 'Partial';
-  String get paid           => isZh ? '已付清' : 'Paid';
-  String get void_          => isZh ? '已作废' : 'Void';
-  String get balance        => isZh ? '余额' : 'Balance';
-  String get subtotal2      => isZh ? '小计' : 'Subtotal';
-  String get sstAmt         => isZh ? 'SST 金额' : 'SST';
-  String get items          => isZh ? '项目' : 'Items';
-  String get addLine        => isZh ? '+ 添加项目' : 'Add Line';
-  String get description2   => isZh ? '描述' : 'Description';
-  String get qty            => isZh ? '数量' : 'Qty';
-  String get unitPrice      => isZh ? '单价' : 'Unit Price';
-  String get settings   => isZh ? '设置' : 'Settings';
+  String get receivable     => _t('Receivable', '应收账款', 'Belum Terima');
+  String get payable        => _t('Payable', '应付账款', 'Belum Bayar');
+  String get trialBalance   => _t('Trial Balance', '试算表', 'Imbangan Duga');
+  String get generalLedger  => _t('General Ledger', '总账', 'Lejar Am');
+  String get newInvoice     => _t('New Invoice', '新增发票', 'Invois Baharu');
+  String get newBill        => _t('New Bill', '新增账单', 'Bil Baharu');
+  String get bill           => _t('Bill', '账单', 'Bil');
+  String get billType       => _t('Expense Type', '费用类型', 'Jenis Perbelanjaan');
+  String get payStatus      => _t('Payment Status', '付款状态', 'Status Bayaran');
+  String get unpaid         => _t('Unpaid', '未付款', 'Belum Bayar');
+  String get paidCash       => _t('Paid (Cash)', '已付（现金）', 'Dibayar (Tunai)');
+  String get paidBank       => _t('Paid (Bank)', '已付（银行）', 'Dibayar (Bank)');
+  String get supplierName   => _t('Supplier Name', '供应商名称', 'Nama Pembekal');
+  String get billNo         => _t('Bill No.', '账单号', 'No. Bil');
+  String get transport      => _t('Transport / Fuel', '交通/油费', 'Pengangkutan / Minyak');
+  String get addBill        => _t('Add Bill', '添加账单', 'Tambah Bil');
+  String get invIssued      => _t('Invoice Issued', '开发票', 'Invois Dikeluarkan');
+  String get invCollected   => _t('Invoice Collected', '收款', 'Bayaran Diterima');
+  String get billReceived   => _t('Bill Received', '收到账单', 'Bil Diterima');
+  String get apPayment      => _t('AP Payment', '付款出账', 'Bayaran Belum Bayar');
+  String get totalAr        => _t('Total AR', '应收总额', 'Jumlah Belum Terima');
+  String get totalAp        => _t('Total AP', '应付总额', 'Jumlah Belum Bayar');
+  String get overdue        => _t('Overdue', '逾期', 'Tertunggak');
+  String get current        => _t('Current', '未逾期', 'Semasa');
+  String get daysOverdue    => _t('days overdue', '天逾期', 'hari tertunggak');
+  String get recordPayment  => _t('Record Payment', '记录付款', 'Rekod Bayaran');
+  String get amtReceived    => _t('Amount received', '收到金额', 'Jumlah diterima');
+  String get amtPaid        => _t('Amount paid', '付出金额', 'Jumlah dibayar');
+  String get record         => _t('Record', '记录', 'Rekod');
+  String get pay            => _t('Pay', '付款', 'Bayar');
+  String get issueDate      => _t('Issue Date', '开单日期', 'Tarikh Keluar');
+  String get dueDate2       => _t('Due Date', '到期日', 'Tarikh Akhir');
+  String get supplier       => _t('Supplier', '供应商', 'Pembekal');
+  String get suppliers      => _t('Suppliers', '供应商管理', 'Pembekal');
+  String get newSupplier    => _t('New Supplier', '新增供应商', 'Pembekal Baharu');
+  String get booksBalanced  => _t('Books are balanced', '账目平衡', 'Akaun seimbang');
+  String get booksNotBal    => _t('Books are NOT balanced', '账目不平衡', 'Akaun TIDAK seimbang');
+  String get agingAnalysis  => _t('Aging Analysis', '账龄分析', 'Analisis Penuaan');
+  String get selectAccount  => _t('← Select an account', '← 选择科目', '← Pilih akaun');
+  String get noEntries      => _t('No entries', '暂无记录', 'Tiada rekod');
+  String get accounts2      => _t('Accounts', '科目', 'Akaun');
+  String get draft          => _t('Draft', '草稿', 'Draf');
+  String get sent           => _t('Sent', '已发送', 'Dihantar');
+  String get partial        => _t('Partial', '部分收款', 'Separa');
+  String get paid           => _t('Paid', '已付清', 'Dibayar');
+  String get void_          => _t('Void', '已作废', 'Batal');
+  String get balance        => _t('Balance', '余额', 'Baki');
+  String get subtotal2      => _t('Subtotal', '小计', 'Jumlah Kecil');
+  String get sstAmt         => _t('SST', 'SST 金额', 'SST');
+  String get items          => _t('Items', '项目', 'Item');
+  String get addLine        => _t('Add Line', '+ 添加项目', '+ Tambah Baris');
+  String get description2   => _t('Description', '描述', 'Penerangan');
+  String get qty            => _t('Qty', '数量', 'Kuantiti');
+  String get unitPrice      => _t('Unit Price', '单价', 'Harga Seunit');
+  String get settings   => _t('Settings', '设置', 'Tetapan');
 
 
   // Home
-  String get netProfit  => isZh ? '净利润' : 'Net Profit';
-  String get income     => isZh ? '收入' : 'Income';
-  String get expenses   => isZh ? '支出' : 'Expenses';
-  String get addIncome  => isZh ? '添加收入' : 'Add Income';
-  String get addExpense => isZh ? '添加支出' : 'Add Expense';
-  String get topSpend   => isZh ? '主要支出' : 'Top Spending';
-  String get recent     => isZh ? '最近记录' : 'Recent';
+  String get netProfit  => _t('Net Profit', '净利润', 'Untung Bersih');
+  String get income     => _t('Income', '收入', 'Pendapatan');
+  String get expenses   => _t('Expenses', '支出', 'Perbelanjaan');
+  String get addIncome  => _t('Add Income', '添加收入', 'Tambah Pendapatan');
+  String get addExpense => _t('Add Expense', '添加支出', 'Tambah Perbelanjaan');
+  String get topSpend   => _t('Top Spending', '主要支出', 'Perbelanjaan Utama');
+  String get recent     => _t('Recent', '最近记录', 'Terkini');
 
   // List/filter
-  String get all        => isZh ? '全部' : 'All';
-  String get noTx       => isZh ? '暂无记录' : 'No transactions';
-  String get search     => isZh ? '搜索…' : 'Search…';
-  String get allTime    => isZh ? '全部时间' : 'All time';
+  String get all        => _t('All', '全部', 'Semua');
+  String get noTx       => _t('No transactions', '暂无记录', 'Tiada transaksi');
+  String get search     => _t('Search…', '搜索…', 'Cari…');
+  String get allTime    => _t('All time', '全部时间', 'Semua masa');
 
   // Reports
-  String get pl         => isZh ? '损益表' : 'Profit & Loss';
-  String get bs         => isZh ? '资产负债表' : 'Balance Sheet';
-  String get sstRep     => isZh ? 'SST 报告' : 'SST Report';
-  String get revenue    => isZh ? '收入' : 'Revenue';
-  String get cogs       => isZh ? '商品成本' : 'Cost of Goods';
-  String get grossP     => isZh ? '毛利润' : 'Gross Profit';
-  String get opex       => isZh ? '运营费用' : 'Operating Expenses';
-  String get totalEx    => isZh ? '总支出' : 'Total Expenses';
-  String get totalRev   => isZh ? '总收入' : 'Total Revenue';
-  String get assets     => isZh ? '资产' : 'Assets';
-  String get liab       => isZh ? '负债' : 'Liabilities';
-  String get equity     => isZh ? '净资产' : 'Net Worth';
-  String get cashBank   => isZh ? '银行存款' : 'Cash in Bank';
-  String get ar         => isZh ? '应收账款' : 'Accounts Receivable';
-  String get inventory  => isZh ? '库存' : 'Inventory';
-  String get ap         => isZh ? '应付账款' : 'Accounts Payable';
+  String get pl         => _t('Profit & Loss', '损益表', 'Untung & Rugi');
+  String get bs         => _t('Balance Sheet', '资产负债表', 'Kunci Kira-kira');
+  String get sstRep     => _t('SST Report', 'SST 报告', 'Laporan SST');
+  String get revenue    => _t('Revenue', '收入', 'Hasil');
+  String get cogs       => _t('Cost of Goods', '商品成本', 'Kos Barang');
+  String get grossP     => _t('Gross Profit', '毛利润', 'Untung Kasar');
+  String get opex       => _t('Operating Expenses', '运营费用', 'Perbelanjaan Operasi');
+  String get totalEx    => _t('Total Expenses', '总支出', 'Jumlah Perbelanjaan');
+  String get totalRev   => _t('Total Revenue', '总收入', 'Jumlah Hasil');
+  String get assets     => _t('Assets', '资产', 'Aset');
+  String get liab       => _t('Liabilities', '负债', 'Liabiliti');
+  String get equity     => _t('Net Worth', '净资产', 'Nilai Bersih');
+  String get cashBank   => _t('Cash in Bank', '银行存款', 'Tunai di Bank');
+  String get ar         => _t('Accounts Receivable', '应收账款', 'Akaun Belum Terima');
+  String get inventory  => _t('Inventory', '库存', 'Inventori');
+  String get ap         => _t('Accounts Payable', '应付账款', 'Akaun Belum Bayar');
 
   // SST report
-  String get sstCollected => isZh ? '已收 SST' : 'SST Collected';
-  String get sstPaid      => isZh ? '已付 SST' : 'SST Paid';
-  String get sstNet       => isZh ? '净 SST' : 'Net SST';
+  String get sstCollected => _t('SST Collected', '已收 SST', 'SST Dikutip');
+  String get sstPaid      => _t('SST Paid', '已付 SST', 'SST Dibayar');
+  String get sstNet       => _t('Net SST', '净 SST', 'SST Bersih');
 
   // Add Tx form
-  String get moneyIn    => isZh ? '收款' : 'Money In';
-  String get moneyOut   => isZh ? '付款' : 'Money Out';
-  String get description=> isZh ? '备注（可选）' : 'Description (optional)';
-  String get date       => isZh ? '日期' : 'Date';
-  String get currency   => isZh ? '货币' : 'Currency';
-  String get sstLabel   => isZh ? 'SST / 税率' : 'SST / Tax';
-  String get back       => isZh ? '返回' : 'Back';
-  String get change     => isZh ? '更改' : 'Change';
-  String get save       => isZh ? '保存' : 'Save';
-  String get edit       => isZh ? '编辑记录' : 'Edit Transaction';
-  String get newTx      => isZh ? '新增记录' : 'New Transaction';
-  String get autoLbl    => isZh ? '自动计入账目' : 'Auto-recorded as';
-  String get fxRate     => isZh ? '汇率' : 'Rate';
-  String get del        => isZh ? '删除' : 'Delete';
-  String get keep       => isZh ? '保留' : 'Keep';
+  String get moneyIn    => _t('Money In', '收款', 'Wang Masuk');
+  String get moneyOut   => _t('Money Out', '付款', 'Wang Keluar');
+  String get description=> _t('Description (optional)', '备注（可选）', 'Penerangan (pilihan)');
+  String get date       => _t('Date', '日期', 'Tarikh');
+  String get currency   => _t('Currency', '货币', 'Mata Wang');
+  String get sstLabel   => _t('SST / Tax', 'SST / 税率', 'SST / Cukai');
+  String get back       => _t('Back', '返回', 'Kembali');
+  String get change     => _t('Change', '更改', 'Tukar');
+  String get save       => _t('Save', '保存', 'Simpan');
+  String get edit       => _t('Edit Transaction', '编辑记录', 'Sunting Transaksi');
+  String get newTx      => _t('New Transaction', '新增记录', 'Transaksi Baharu');
+  String get autoLbl    => _t('Auto-recorded as', '自动计入账目', 'Auto-direkod sebagai');
+  String get fxRate     => _t('Rate', '汇率', 'Kadar');
+  String get del        => _t('Delete', '删除', 'Padam');
+  String get keep       => _t('Keep', '保留', 'Simpan');
 
   // FX
-  String get fxLive     => isZh ? '实时汇率' : 'Live rates';
-  String get fxReset    => isZh ? '恢复默认' : 'Reset to defaults';
+  String get fxLive     => _t('Live rates', '实时汇率', 'Kadar langsung');
+  String get fxReset    => _t('Reset to defaults', '恢复默认', 'Set semula');
 
   // Settings
-  String get settTitle  => isZh ? '设置' : 'Settings';
-  String get coName     => isZh ? '公司名称' : 'Company Name';
-  String get coReg      => isZh ? '公司注册号' : 'Company Reg No.';
-  String get sstReg     => isZh ? 'SST 注册号' : 'SST Reg. No.';
-  String get coAddr     => isZh ? '地址' : 'Address';
-  String get coPhone    => isZh ? '电话' : 'Phone';
-  String get coEmail    => isZh ? '邮箱' : 'Email';
-  String get langLabel  => isZh ? '语言' : 'Language';
+  String get settTitle  => _t('Settings', '设置', 'Tetapan');
+  String get coName     => _t('Company Name', '公司名称', 'Nama Syarikat');
+  String get coReg      => _t('Company Reg No.', '公司注册号', 'No. Pendaftaran Syarikat');
+  String get sstReg     => _t('SST Reg. No.', 'SST 注册号', 'No. Pendaftaran SST');
+  String get coAddr     => _t('Address', '地址', 'Alamat');
+  String get coPhone    => _t('Phone', '电话', 'Telefon');
+  String get coEmail    => _t('Email', '邮箱', 'E-mel');
+  String get langLabel  => _t('Language', '语言', 'Bahasa');
 
   // Cloud
-  String get cloudSync  => isZh ? '云端同步' : 'Cloud Sync';
-  String get cloudPull  => isZh ? '从云端加载' : 'Pull from cloud';
-  String get cloudPush  => isZh ? '推送到云端' : 'Push to cloud';
-  String get syncing    => isZh ? '同步中…' : 'Syncing…';
-  String get export     => isZh ? '导出' : 'Export';
-  String get xlsExport  => isZh ? '导出 Excel' : 'Export Excel';
-  String get bakJson    => isZh ? '导出 JSON 备份' : 'Export JSON Backup';
-  String get restJson   => isZh ? '从 JSON 恢复' : 'Restore from JSON';
+  String get cloudSync  => _t('Cloud Sync', '云端同步', 'Penyegerakan Awan');
+  String get cloudPull  => _t('Pull from cloud', '从云端加载', 'Tarik dari awan');
+  String get cloudPush  => _t('Push to cloud', '推送到云端', 'Hantar ke awan');
+  String get syncing    => _t('Syncing…', '同步中…', 'Menyegerak…');
+  String get export     => _t('Export', '导出', 'Eksport');
+  String get xlsExport  => _t('Export Excel', '导出 Excel', 'Eksport Excel');
+  String get bakJson    => _t('Export JSON Backup', '导出 JSON 备份', 'Eksport Sandaran JSON');
+  String get restJson   => _t('Restore from JSON', '从 JSON 恢复', 'Pulih dari JSON');
 
   // Invoice payment status (non-duplicate aliases)
-  String get invUnpaid    => isZh ? '客户未付款' : 'Unpaid (AR)';
-  String get invCash      => isZh ? '现金收款' : 'Paid - Cash';
-  String get invBank      => isZh ? '银行转账收款' : 'Paid - Bank';
-  String get billSaved    => isZh ? '账单已保存' : 'Bill saved';
-  String get cashPay      => isZh ? '现金' : 'Cash';
-  String get bankPay      => isZh ? '银行转账' : 'Bank Transfer';
+  String get invUnpaid    => _t('Unpaid (AR)', '客户未付款', 'Belum Bayar (AR)');
+  String get invCash      => _t('Paid - Cash', '现金收款', 'Dibayar - Tunai');
+  String get invBank      => _t('Paid - Bank', '银行转账收款', 'Dibayar - Bank');
+  String get billSaved    => _t('Bill saved', '账单已保存', 'Bil disimpan');
+  String get cashPay      => _t('Cash', '现金', 'Tunai');
+  String get bankPay      => _t('Bank Transfer', '银行转账', 'Pindahan Bank');
 
   // Invoice
-  String get invoice    => isZh ? '发票管理' : 'Invoice Manager';
-  String get invNo      => isZh ? '发票号码' : 'Invoice No.';
-  String get invDate    => isZh ? '发票日期' : 'Invoice Date';
-  String get dueDate    => isZh ? '到期日' : 'Due Date';
-  String get billTo     => isZh ? '客户' : 'Bill To';
-  String get subTotal   => isZh ? '小计' : 'Subtotal';
-  String get grandTotal => isZh ? '总计' : 'TOTAL DUE';
-  String get bankName   => isZh ? '银行' : 'Bank Name';
-  String get bankAcct   => isZh ? '账号' : 'Account No.';
-  String get notes      => isZh ? '备注' : 'Notes';
-  String get terms      => isZh ? '条款' : 'Terms & Conditions';
-  String get sharePrint => isZh ? '分享 / 打印' : 'Share / Print';
-  String get logo       => isZh ? '公司 Logo' : 'Company Logo';
-  String get sig        => isZh ? '电子签名' : 'E-Signature';
-  String get drawSig    => isZh ? '手写签名' : 'Draw';
-  String get clearSig   => isZh ? '清除' : 'Clear';
-  String get saveSig    => isZh ? '保存签名' : 'Save Signature';
+  String get invoice    => _t('Invoice Manager', '发票管理', 'Pengurus Invois');
+  String get invNo      => _t('Invoice No.', '发票号码', 'No. Invois');
+  String get invDate    => _t('Invoice Date', '发票日期', 'Tarikh Invois');
+  String get dueDate    => _t('Due Date', '到期日', 'Tarikh Akhir');
+  String get billTo     => _t('Bill To', '客户', 'Bil Kepada');
+  String get subTotal   => _t('Subtotal', '小计', 'Jumlah Kecil');
+  String get grandTotal => _t('TOTAL DUE', '总计', 'JUMLAH PERLU BAYAR');
+  String get bankName   => _t('Bank Name', '银行', 'Nama Bank');
+  String get bankAcct   => _t('Account No.', '账号', 'No. Akaun');
+  String get notes      => _t('Notes', '备注', 'Nota');
+  String get terms      => _t('Terms & Conditions', '条款', 'Terma & Syarat');
+  String get sharePrint => _t('Share / Print', '分享 / 打印', 'Kongsi / Cetak');
+  String get logo       => _t('Company Logo', '公司 Logo', 'Logo Syarikat');
+  String get sig        => _t('E-Signature', '电子签名', 'E-Tandatangan');
+  String get drawSig    => _t('Draw', '手写签名', 'Lukis');
+  String get clearSig   => _t('Clear', '清除', 'Kosongkan');
+  String get saveSig    => _t('Save Signature', '保存签名', 'Simpan Tandatangan');
 
   // Quotation
-  String get quotation    => isZh ? '报价单管理' : 'Quotation Manager';
-  String get newQuotation => isZh ? '新增报价单' : 'New Quotation';
-  String get quotHistory  => isZh ? '报价单记录' : 'Quotation History';
-  String get quotNo       => isZh ? '报价单号' : 'Quotation No.';
-  String get quotDate     => isZh ? '报价日期' : 'Quotation Date';
-  String get validUntil   => isZh ? '有效期至' : 'Valid Until';
-  String get convertToInv => isZh ? '转为发票' : 'Convert to Invoice';
-  String get accepted     => isZh ? '已接受' : 'Accepted';
-  String get rejected     => isZh ? '已拒绝' : 'Rejected';
-  String get converted    => isZh ? '已转发票' : 'Converted';
+  String get quotation    => _t('Quotation Manager', '报价单管理', 'Pengurus Sebut Harga');
+  String get newQuotation => _t('New Quotation', '新增报价单', 'Sebut Harga Baharu');
+  String get quotHistory  => _t('Quotation History', '报价单记录', 'Sejarah Sebut Harga');
+  String get quotNo       => _t('Quotation No.', '报价单号', 'No. Sebut Harga');
+  String get quotDate     => _t('Quotation Date', '报价日期', 'Tarikh Sebut Harga');
+  String get validUntil   => _t('Valid Until', '有效期至', 'Sah Sehingga');
+  String get convertToInv => _t('Convert to Invoice', '转为发票', 'Tukar ke Invois');
+  String get accepted     => _t('Accepted', '已接受', 'Diterima');
+  String get rejected     => _t('Rejected', '已拒绝', 'Ditolak');
+  String get converted    => _t('Converted', '已转发票', 'Ditukar');
 
   // Delivery Order
-  String get deliveryOrder   => isZh ? '送货单管理' : 'Delivery Order';
-  String get newDeliveryOrder=> isZh ? '新增送货单' : 'New Delivery Order';
-  String get doHistory       => isZh ? '送货单记录' : 'Delivery Order History';
-  String get doNo            => isZh ? '送货单号' : 'D.O. No.';
-  String get doDate          => isZh ? '送货日期' : 'Delivery Date';
-  String get deliverTo       => isZh ? '送货至' : 'Deliver To';
-  String get refInvoice      => isZh ? '关联发票' : 'Ref. Invoice';
-  String get convertToDo     => isZh ? '转送货单' : 'To D.O.';
-  String get receivedBy      => isZh ? '收货人签名' : 'Received By';
-  String get delivered       => isZh ? '已送达' : 'Delivered';
-  String get deliveryDriver  => isZh ? '送货员（可选）' : 'Delivery Driver (optional)';
-  String get selectInvoice   => isZh ? '选择发票' : 'Select Invoice';
-  String get noInvoices      => isZh ? '暂无发票' : 'No invoices yet';
+  String get deliveryOrder   => _t('Delivery Order', '送货单管理', 'Nota Penghantaran');
+  String get newDeliveryOrder=> _t('New Delivery Order', '新增送货单', 'Nota Penghantaran Baharu');
+  String get doHistory       => _t('Delivery Order History', '送货单记录', 'Sejarah Nota Penghantaran');
+  String get doNo            => _t('D.O. No.', '送货单号', 'No. D.O.');
+  String get doDate          => _t('Delivery Date', '送货日期', 'Tarikh Penghantaran');
+  String get deliverTo       => _t('Deliver To', '送货至', 'Hantar Kepada');
+  String get refInvoice      => _t('Ref. Invoice', '关联发票', 'Invois Rujukan');
+  String get convertToDo     => _t('To D.O.', '转送货单', 'Ke D.O.');
+  String get receivedBy      => _t('Received By', '收货人签名', 'Diterima Oleh');
+  String get delivered       => _t('Delivered', '已送达', 'Dihantar');
+  String get deliveryDriver  => _t('Delivery Driver (optional)', '送货员（可选）', 'Pemandu Penghantaran (pilihan)');
+  String get selectInvoice   => _t('Select Invoice', '选择发票', 'Pilih Invois');
+  String get noInvoices      => _t('No invoices yet', '暂无发票', 'Tiada invois lagi');
 
   // Purchase Order
-  String get purchaseOrder    => isZh ? '采购单管理' : 'Purchase Order';
-  String get newPurchaseOrder => isZh ? '新增采购单' : 'New Purchase Order';
-  String get poHistory        => isZh ? '采购单记录' : 'Purchase Orders';
-  String get poNo             => isZh ? '采购单号' : 'P.O. No.';
-  String get poDate           => isZh ? '采购日期' : 'Order Date';
-  String get receiveStock     => isZh ? '收货入库' : 'Receive';
-  String get poReceived       => isZh ? '已收货' : 'Received';
-  String get poOrdered        => isZh ? '已下单' : 'Ordered';
+  String get purchaseOrder    => _t('Purchase Order', '采购单管理', 'Pesanan Belian');
+  String get newPurchaseOrder => _t('New Purchase Order', '新增采购单', 'Pesanan Belian Baharu');
+  String get poHistory        => _t('Purchase Orders', '采购单记录', 'Pesanan Belian');
+  String get poNo             => _t('P.O. No.', '采购单号', 'No. P.O.');
+  String get poDate           => _t('Order Date', '采购日期', 'Tarikh Pesanan');
+  String get receiveStock     => _t('Receive', '收货入库', 'Terima');
+  String get poReceived       => _t('Received', '已收货', 'Diterima');
+  String get poOrdered        => _t('Ordered', '已下单', 'Dipesan');
 
   // Credit Note
-  String get creditNote     => isZh ? '信用备注管理' : 'Credit Note';
-  String get newCreditNote  => isZh ? '新增信用备注' : 'New Credit Note';
-  String get cnHistory      => isZh ? '信用备注记录' : 'Credit Notes';
-  String get cnNo           => isZh ? '信用备注号' : 'Credit Note No.';
-  String get cnDate         => isZh ? '日期' : 'Date';
-  String get creditReason   => isZh ? '退款/调整原因' : 'Reason';
-  String get convertToCn    => isZh ? '转信用备注' : 'To C/N';
-  String get totalCredit    => isZh ? '信用总额' : 'TOTAL CREDIT';
-  String get arReduced      => isZh ? '应收已冲减' : 'AR reduced';
+  String get creditNote     => _t('Credit Note', '信用备注管理', 'Nota Kredit');
+  String get newCreditNote  => _t('New Credit Note', '新增信用备注', 'Nota Kredit Baharu');
+  String get cnHistory      => _t('Credit Notes', '信用备注记录', 'Nota Kredit');
+  String get cnNo           => _t('Credit Note No.', '信用备注号', 'No. Nota Kredit');
+  String get cnDate         => _t('Date', '日期', 'Tarikh');
+  String get creditReason   => _t('Reason', '退款/调整原因', 'Sebab');
+  String get convertToCn    => _t('To C/N', '转信用备注', 'Ke C/N');
+  String get totalCredit    => _t('TOTAL CREDIT', '信用总额', 'JUMLAH KREDIT');
+  String get arReduced      => _t('AR reduced', '应收已冲减', 'AR dikurangkan');
 
   // Customer
-  String get customers  => isZh ? '客户管理' : 'Customers';
-  String get newCust    => isZh ? '新增客户' : 'New Customer';
-  String get custName   => isZh ? '公司 / 名称' : 'Company / Name';
-  String get custReg    => isZh ? '注册号' : 'Reg No.';
-  String get custSST    => isZh ? 'SST 注册号' : 'SST Reg No.';
-  String get custAddr   => isZh ? '地址' : 'Address';
-  String get custPhone  => isZh ? '电话' : 'Phone';
-  String get custEmail  => isZh ? '邮箱' : 'Email';
+  String get customers  => _t('Customers', '客户管理', 'Pelanggan');
+  String get newCust    => _t('New Customer', '新增客户', 'Pelanggan Baharu');
+  String get custName   => _t('Company / Name', '公司 / 名称', 'Syarikat / Nama');
+  String get custReg    => _t('Reg No.', '注册号', 'No. Pendaftaran');
+  String get custSST    => _t('SST Reg No.', 'SST 注册号', 'No. Pendaftaran SST');
+  String get custAddr   => _t('Address', '地址', 'Alamat');
+  String get custPhone  => _t('Phone', '电话', 'Telefon');
+  String get custEmail  => _t('Email', '邮箱', 'E-mel');
 
   // Employee
-  String get employees  => isZh ? '员工管理' : 'Employees';
-  String get newEmp     => isZh ? '新增员工' : 'Add Employee';
-  String get empName    => isZh ? '姓名' : 'Full Name';
-  String get empIC      => isZh ? 'IC 号码' : 'IC No.';
-  String get empPos     => isZh ? '职位' : 'Position';
-  String get empDept    => isZh ? '部门' : 'Department';
-  String get empBasic   => isZh ? '基本薪资 (MYR)' : 'Basic Salary (MYR)';
+  String get employees  => _t('Employees', '员工管理', 'Pekerja');
+  String get newEmp     => _t('Add Employee', '新增员工', 'Tambah Pekerja');
+  String get empName    => _t('Full Name', '姓名', 'Nama Penuh');
+  String get empIC      => _t('IC No.', 'IC 号码', 'No. IC');
+  String get empPos     => _t('Position', '职位', 'Jawatan');
+  String get empDept    => _t('Department', '部门', 'Jabatan');
+  String get empBasic   => _t('Basic Salary (MYR)', '基本薪资 (MYR)', 'Gaji Pokok (MYR)');
   String get empEPF     => 'EPF No.';
   String get empSOCSO   => 'SOCSO No.';
-  String get empBank    => isZh ? '银行' : 'Bank';
-  String get empAcct    => isZh ? '账号' : 'Account No.';
+  String get empBank    => _t('Bank', '银行', 'Bank');
+  String get empAcct    => _t('Account No.', '账号', 'No. Akaun');
 
   // Payroll
-  String get payroll    => isZh ? '薪资管理' : 'Payroll';
-  String get payEmp     => isZh ? '员工' : 'Employee';
-  String get selEmp     => isZh ? '选择员工' : 'Select Employee';
-  String get payPeriod  => isZh ? '薪资期间' : 'Pay Period';
-  String get earnings   => isZh ? '收入项目' : 'Earnings';
-  String get statutory  => isZh ? '法定缴款' : 'Statutory';
-  String get otherDed   => isZh ? '其他扣款' : 'Other Deductions';
-  String get grossPay   => isZh ? '总薪资' : 'Gross Pay';
-  String get netPay     => isZh ? '实发薪资' : 'Net Pay';
-  String get totalDed   => isZh ? '总扣款' : 'Total Deductions';
-  String get totalCost  => isZh ? '雇主总成本' : 'Total Employer Cost';
+  String get payroll    => _t('Payroll', '薪资管理', 'Gaji');
+  String get payEmp     => _t('Employee', '员工', 'Pekerja');
+  String get selEmp     => _t('Select Employee', '选择员工', 'Pilih Pekerja');
+  String get payPeriod  => _t('Pay Period', '薪资期间', 'Tempoh Gaji');
+  String get earnings   => _t('Earnings', '收入项目', 'Pendapatan');
+  String get statutory  => _t('Statutory', '法定缴款', 'Caruman Berkanun');
+  String get otherDed   => _t('Other Deductions', '其他扣款', 'Potongan Lain');
+  String get grossPay   => _t('Gross Pay', '总薪资', 'Gaji Kasar');
+  String get netPay     => _t('Net Pay', '实发薪资', 'Gaji Bersih');
+  String get totalDed   => _t('Total Deductions', '总扣款', 'Jumlah Potongan');
+  String get totalCost  => _t('Total Employer Cost', '雇主总成本', 'Jumlah Kos Majikan');
 
   // Subscription
   String get proTitle   => 'Bookly PRO';
-  String get proSub     => isZh ? '解锁所有高级功能' : 'Unlock all features';
-  String get monthly    => isZh ? '按月订阅' : 'Monthly';
-  String get yearly     => isZh ? '按年订阅' : 'Yearly';
-  String get restore    => isZh ? '恢复购买' : 'Restore Purchases';
-  String get watchAd    => isZh ? '看广告' : 'Watch Ad';
-  String get adPass     => isZh ? '免费日通行证' : 'Free Day Pass';
-  String get adDesc     => isZh ? '观看3个广告，解锁24小时' : 'Watch 3 ads to unlock 24 hours';
-  String get proLocked  => isZh ? 'Pro 专属功能' : 'Pro Feature';
-  String get proUnlock  => isZh ? '升级 Pro 解锁' : 'Upgrade to unlock';
-  String get freePlan   => isZh ? '免费版' : 'Free Plan';
-  String get proExpires => isZh ? '到期时间' : 'Expires';
-  String get manageSub  => isZh ? '管理订阅' : 'Manage Subscription';
-  String get dayActive  => isZh ? '📺 日通行证有效至' : '📺 Day Pass active until';
+  String get proSub     => _t('Unlock all features', '解锁所有高级功能', 'Buka semua ciri');
+  String get monthly    => _t('Monthly', '按月订阅', 'Bulanan');
+  String get yearly     => _t('Yearly', '按年订阅', 'Tahunan');
+  String get restore    => _t('Restore Purchases', '恢复购买', 'Pulih Pembelian');
+  String get watchAd    => _t('Watch Ad', '看广告', 'Tonton Iklan');
+  String get adPass     => _t('Free Day Pass', '免费日通行证', 'Pas Harian Percuma');
+  String get adDesc     => _t('Watch 3 ads to unlock 24 hours', '观看3个广告，解锁24小时', 'Tonton 3 iklan untuk buka 24 jam');
+  String get proLocked  => _t('Pro Feature', 'Pro 专属功能', 'Ciri Pro');
+  String get proUnlock  => _t('Upgrade to unlock', '升级 Pro 解锁', 'Naik taraf untuk buka');
+  String get freePlan   => _t('Free Plan', '免费版', 'Pelan Percuma');
+  String get proExpires => _t('Expires', '到期时间', 'Tamat Tempoh');
+  String get manageSub  => _t('Manage Subscription', '管理订阅', 'Urus Langganan');
+  String get dayActive  => _t('📺 Day Pass active until', '📺 日通行证有效至', '📺 Pas Harian sah sehingga');
 
   // Misc
-  String get reminder   => isZh
-    ? 'SST 门槛：年营业额 RM50万 · 超 RM100万须电子发票'
-    : 'SST threshold: RM 500k/year · e-Invoice above RM 1M';
+  String get reminder   => _t(
+    'SST threshold: RM 500k/year · e-Invoice above RM 1M',
+    'SST 门槛：年营业额 RM50万 · 超 RM100万须电子发票',
+    'Ambang SST: RM500k/tahun · e-Invois melebihi RM1J');
 
   static const features = [
     ('🚫', 'No ads — ever',                     '永久去除所有广告'),

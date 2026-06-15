@@ -186,11 +186,11 @@ class _SettingsState extends State<SettingsScreen> {
 
         // ── Language ────────────────────────────────────────────────────
         SectionCard(
-          title: '🌐 ${t.lang}',
+          title: '🌐 ${t.langLabel}',
           child: Padding(
             padding: const EdgeInsets.all(13),
             child: Row(children: [
-              for (final lng in [('en','EN'), ('zh','中文')])
+              for (final lng in [('en','EN'), ('zh','中文'), ('ms','BM')])
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: GestureDetector(
