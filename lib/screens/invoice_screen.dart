@@ -17,6 +17,7 @@ import '../accounting_models.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import '../services/inventory_service.dart';
+import '../services/low_stock_reminder.dart';
 import '../screens/inventory_screen.dart' show showInventoryPicker;
 import 'delivery_order_screen.dart' show DeliveryOrderSheet;
 import 'sub_screen.dart' show showSubSheet;
@@ -540,7 +541,12 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
 
       // ── Auto-deduct inventory for linked line items ──────────────────────
       try {
-        await context.read<InventoryState>().deductForInvoice(_items, _invNo);
+        final invState = context.read<InventoryState>();
+        await invState.deductForInvoice(_items, _invNo);
+        // Task 17: low-stock system reminder once stock has dropped.
+        LowStockReminder.checkAndNotify(
+          [...invState.outOfStock, ...invState.lowStock],
+          context.read<AppState>().settings.lang);
       } catch (_) {}
       // ─────────────────────────────────────────────────────────────────
       if (mounted) {

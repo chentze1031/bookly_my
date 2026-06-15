@@ -232,6 +232,7 @@ abstract class StorageKeys {
   static const deliveryOrders = 'bly_delivery_orders';
   static const creditNotes = 'bly_credit_notes';
   static const leave       = 'bly_leave';
+  static const purchaseOrders = 'bly_purchase_orders';
   static const apBills     = 'bly_ap_bills';
   static const suppliers   = 'bly_suppliers';
   static const fxCached    = 'bly_fx_cache';
@@ -440,6 +441,16 @@ class L10n {
   String get deliveryDriver  => isZh ? '送货员（可选）' : 'Delivery Driver (optional)';
   String get selectInvoice   => isZh ? '选择发票' : 'Select Invoice';
   String get noInvoices      => isZh ? '暂无发票' : 'No invoices yet';
+
+  // Purchase Order
+  String get purchaseOrder    => isZh ? '采购单管理' : 'Purchase Order';
+  String get newPurchaseOrder => isZh ? '新增采购单' : 'New Purchase Order';
+  String get poHistory        => isZh ? '采购单记录' : 'Purchase Orders';
+  String get poNo             => isZh ? '采购单号' : 'P.O. No.';
+  String get poDate           => isZh ? '采购日期' : 'Order Date';
+  String get receiveStock     => isZh ? '收货入库' : 'Receive';
+  String get poReceived       => isZh ? '已收货' : 'Received';
+  String get poOrdered        => isZh ? '已下单' : 'Ordered';
 
   // Credit Note
   String get creditNote     => isZh ? '信用备注管理' : 'Credit Note';

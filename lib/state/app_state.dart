@@ -687,6 +687,47 @@ class AppState extends ChangeNotifier {
     if (_loggedIn) _pushPayrollsCloud(list);
   }
 
+  // ── Purchase Order CRUD (Phase 3 Task #18) ────────────────────────────────────
+  Future<void> savePurchaseOrder({
+    required String poNo, required String poDate,
+    required Map<String, dynamic> supplier,
+    required List<Map<String, String>> items,
+    required String notes, String status = 'ordered',
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list  = (jsonDecode(prefs.getString(StorageKeys.purchaseOrders) ?? '[]') as List)
+        .cast<Map<String, dynamic>>();
+    final record = {
+      'poNo': poNo, 'poDate': poDate, 'supplier': supplier, 'items': items,
+      'notes': notes, 'status': status, 'savedAt': DateTime.now().toIso8601String(),
+    };
+    final idx = list.indexWhere((e) => e['poNo'] == poNo);
+    if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
+    await prefs.setString(StorageKeys.purchaseOrders, jsonEncode(list));
+  }
+
+  Future<List<Map<String, dynamic>>> loadPurchaseOrders() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (jsonDecode(prefs.getString(StorageKeys.purchaseOrders) ?? '[]') as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<void> deletePurchaseOrder(String poNo) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.purchaseOrders) ?? '[]') as List).cast<Map<String, dynamic>>();
+    list.removeWhere((e) => e['poNo'] == poNo);
+    await prefs.setString(StorageKeys.purchaseOrders, jsonEncode(list));
+  }
+
+  Future<void> markPurchaseOrderStatus(String poNo, String status) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.purchaseOrders) ?? '[]') as List).cast<Map<String, dynamic>>();
+    final idx = list.indexWhere((e) => e['poNo'] == poNo);
+    if (idx >= 0) {
+      list[idx] = Map<String, dynamic>.from(list[idx])..['status'] = status;
+      await prefs.setString(StorageKeys.purchaseOrders, jsonEncode(list));
+    }
+  }
+
   // ── Leave store (Phase 3 Task #14) ────────────────────────────────────────────
   // Self-contained local store so we don't touch the Employee schema / cloud sync.
   // Shape: { "hireDates": { "<empId>": "yyyy-MM-dd" }, "records": [ {...} ] }

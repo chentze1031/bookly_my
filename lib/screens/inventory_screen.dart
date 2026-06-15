@@ -9,7 +9,11 @@ import 'package:provider/provider.dart';
 
 import '../constants.dart';
 import '../services/inventory_service.dart';
+import '../services/low_stock_reminder.dart';
 import '../state/app_state.dart';
+import '../state/sub_state.dart';
+import 'purchase_order_screen.dart';
+import 'sub_screen.dart' show showSubSheet;
 
 // ════════════════════════════════════════════════════════════════════════════
 // INVENTORY L10N (follows app-wide lang setting)
@@ -110,8 +114,15 @@ class _InventoryScreenState extends State<InventoryScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) =>
-      context.read<InventoryState>().load());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final inv = context.read<InventoryState>();
+      await inv.load();
+      // Task 17: low-stock system reminder after data is loaded.
+      if (!mounted) return;
+      LowStockReminder.checkAndNotify(
+        [...inv.outOfStock, ...inv.lowStock],
+        context.read<AppState>().settings.lang);
+    });
   }
 
   @override
@@ -185,6 +196,23 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     color: _tab == i ? Colors.white : kMuted)),
                 ),
               )),
+            const SizedBox(width: 8),
+            // Purchase Order entry (Task 18, Pro)
+            GestureDetector(
+              onTap: () {
+                if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PurchaseOrderHistoryScreen()));
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(10)),
+                child: Row(children: [
+                  const Text('📦', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 4),
+                  Text(t.zh ? '采购单' : 'PO', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
+                ]),
+              ),
+            ),
           ]),
         ),
 
