@@ -14,33 +14,38 @@ class _SubScreenState extends State<SubScreen> {
   bool _yearly  = true;
   bool _loading = false;
   bool _restore = false;
+  String? _msg; // inline feedback (snackbars hide behind the bottom sheet)
 
   Future<void> _purchase(SubState sub) async {
     final zh = context.read<AppState>().settings.lang == 'zh';
-    setState(() => _loading = true);
+
+    // No store prices loaded → Google Play Billing isn't available here
+    // (e.g. sideloaded/CI build). Tell the user clearly instead of failing silently.
+    if (sub.monthlyPriceString == null && sub.yearlyPriceString == null) {
+      setState(() => _msg = zh
+        ? '订阅服务暂不可用。请使用从 Google Play 安装的版本进行订阅。'
+        : 'Subscriptions are unavailable here. Use the build installed from Google Play.');
+      return;
+    }
+
+    setState(() { _loading = true; _msg = null; });
     final ok = await sub.purchasePlan(_yearly);
-    if (mounted) {
-      setState(() => _loading = false);
-      if (ok) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(zh ? '🎉 欢迎升级 Bookly PRO！' : '🎉 Welcome to Bookly PRO!'),
-            backgroundColor: kPro,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(zh ? '购买失败，请重试。' : 'Purchase failed. Please try again.'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-      }
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (ok) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(zh ? '🎉 欢迎升级 Bookly PRO！' : '🎉 Welcome to Bookly PRO!'),
+          backgroundColor: kPro,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    } else {
+      setState(() => _msg = zh
+        ? '购买未完成。请确认已登录 Google Play 并重试。'
+        : 'Purchase did not complete. Check your Google Play sign-in and retry.');
     }
   }
 
@@ -193,6 +198,20 @@ class _SubScreenState extends State<SubScreen> {
               ]),
             ),
             const SizedBox(height: 16),
+
+            // ── Inline feedback (visible above the bottom sheet) ──────
+            if (_msg != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: kRedBg, border: Border.all(color: kRedBd),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(_msg!, style: const TextStyle(fontSize: 12, color: kRed, fontWeight: FontWeight.w600)),
+              ),
+              const SizedBox(height: 12),
+            ],
 
             // ── Subscribe button ──────────────────────────────────────
             SizedBox(
