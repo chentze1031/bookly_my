@@ -146,8 +146,8 @@ class _LeaveState extends State<LeaveManagementScreen> {
                   decoration: InputDecoration(
                     filled: true, fillColor: kBg, isDense: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
                   ),
                 ),
               ),
@@ -236,7 +236,7 @@ class _LeaveState extends State<LeaveManagementScreen> {
       const SizedBox(height: 16),
 
       Text(tr(lang, 'Leave Records (this year)', '请假记录（本年）', 'Rekod Cuti (tahun ini)'),
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
       const SizedBox(height: 8),
       if (recs.isEmpty)
         Padding(padding: const EdgeInsets.symmetric(vertical: 20),
@@ -260,12 +260,12 @@ class _LeaveState extends State<LeaveManagementScreen> {
             ),
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('${r['from']} → ${r['to']}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
+              Text('${r['from']} → ${r['to']}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
               if ((r['reason'] ?? '').toString().isNotEmpty)
                 Text(r['reason'], style: const TextStyle(fontSize: 11, color: kMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
             ])),
             Text('${(r['days'] as num?)?.toString() ?? '0'} ${tr(lang, 'd', '天', 'h')}',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
             const SizedBox(width: 6),
             GestureDetector(onTap: () => _deleteLeave(r['id']),
               child: const Icon(Icons.close, size: 16, color: kMuted)),
@@ -309,14 +309,14 @@ class _AddLeaveSheetState extends State<_AddLeaveSheet> {
   Widget build(BuildContext context) {
     final lang = context.read<AppState>().settings.lang;
     return Container(
-      decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Text(tr(lang, 'Add Leave · ${widget.empName}', '添加请假 · ${widget.empName}', 'Tambah Cuti · ${widget.empName}'),
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
             const Spacer(),
             GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: kMuted)),
           ]),
@@ -356,8 +356,8 @@ class _AddLeaveSheetState extends State<_AddLeaveSheet> {
               labelText: tr(lang, 'Reason (optional)', '原因（可选）', 'Sebab (pilihan)'),
               labelStyle: const TextStyle(fontSize: 12, color: kMuted),
               filled: true, fillColor: kBg, isDense: true,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
             ),
           ),
           const SizedBox(height: 16),
@@ -386,7 +386,7 @@ class _AddLeaveSheetState extends State<_AddLeaveSheet> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label, style: const TextStyle(fontSize: 10, color: kMuted, fontWeight: FontWeight.w700)),
         const SizedBox(height: 2),
-        Text(value, style: const TextStyle(fontSize: 14, color: kText, fontWeight: FontWeight.w600)),
+        Text(value, style: TextStyle(fontSize: 14, color: kText, fontWeight: FontWeight.w600)),
       ]),
     ),
   );

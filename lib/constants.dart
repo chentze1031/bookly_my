@@ -1,11 +1,19 @@
 ﻿import 'package:flutter/material.dart';
 import 'models.dart';
 
-// ─── Design ───────────────────────────────────────────────────────────────────
-const kBg      = Color(0xFFF5F4F0);
-const kSurface = Color(0xFFFFFFFF);
-const kBorder  = Color(0xFFE8E4DE);
-const kText    = Color(0xFF18160F);
+// ─── Design / Theme (Phase 4 #23) ───────────────────────────────────────────
+// Dark mode swaps the NEUTRAL palette only (bg / surface / border / ink /
+// primary). Accent colours (green/red/gold/blue/pro + their bg/bd tints) stay
+// identical in both themes — on a dark background they read as coloured badges.
+// `kDarkMode` is set from AppSettings.dark at startup and whenever it changes;
+// the colours below are getters so every rebuild picks up the active theme.
+bool kDarkMode = false;
+void applyDarkMode(bool dark) => kDarkMode = dark;
+
+Color get kBg      => kDarkMode ? const Color(0xFF121212) : const Color(0xFFF5F4F0);
+Color get kSurface => kDarkMode ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF);
+Color get kBorder  => kDarkMode ? const Color(0xFF333333) : const Color(0xFFE8E4DE);
+Color get kText    => kDarkMode ? const Color(0xFFECEAE4) : const Color(0xFF18160F);
 const kMuted   = Color(0xFF9B9084);
 
 const kGreen   = Color(0xFF15803D);
@@ -28,7 +36,7 @@ const kPro     = Color(0xFF7C3AED);
 const kProBg   = Color(0xFFFAF5FF);
 const kProBd   = Color(0xFFC4B5FD);
 
-const kDark    = Color(0xFF18160F);
+Color get kDark => kDarkMode ? const Color(0xFF2C2C2E) : const Color(0xFF18160F);
 
 // ─── Malaysia SST ─────────────────────────────────────────────────────────────
 class SstRate {

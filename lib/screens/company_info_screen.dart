@@ -126,10 +126,10 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
         elevation: 0,
         title: Text(
           tr(lang, '🏢 Company Info', '🏢 公司信息', '🏢 Maklumat Syarikat'),
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText),
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kText),
+          icon: Icon(Icons.arrow_back, color: kText),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -137,12 +137,12 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
             TextButton(
               onPressed: _saving ? null : _save,
               child: _saving
-                ? const SizedBox(width: 18, height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: kDark))
+                ? SizedBox(width: 18, height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: kText))
                 : Text(
                     tr(lang, 'Save', '保存', 'Simpan'),
-                    style: const TextStyle(
-                      color: kDark, fontWeight: FontWeight.w800, fontSize: 14),
+                    style: TextStyle(
+                      color: kText, fontWeight: FontWeight.w800, fontSize: 14),
                   ),
             ),
           const SizedBox(width: 8),
@@ -177,40 +177,40 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
 
           _field(tr(lang, 'COMPANY NAME', 'COMPANY NAME 公司名称', 'NAMA SYARIKAT'),
             TextField(controller: _nameCtrl,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec(tr(lang, 'e.g. ABC Sdn Bhd', '公司名称', 'cth. ABC Sdn Bhd')))),
 
           _field('TIN (MyTax No.)',
             TextField(controller: _tinCtrl,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. C12345678900'))),
 
           _field('SST REG. NO.',
             TextField(controller: _sstCtrl,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. W10-1234-56789012'))),
 
           _field('COMPANY REG NO.',
             TextField(controller: _coRegCtrl,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. 202301012345'))),
 
           _field('PHONE',
             TextField(controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. 0123456789'))),
 
           _field('EMAIL',
             TextField(controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. hello@company.com'))),
 
           _field(tr(lang, 'ADDRESS', 'ADDRESS 地址', 'ALAMAT'),
             TextField(controller: _addrCtrl,
               maxLines: 3,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. No. 1, Jalan ABC, 50000 Kuala Lumpur'))),
 
           const SizedBox(height: 8),
@@ -220,13 +220,13 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
 
           _field(tr(lang, 'BANK NAME', 'BANK NAME 银行名称', 'NAMA BANK'),
             TextField(controller: _bankNmCtrl,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. Maybank / CIMB / Public Bank'))),
 
           _field(tr(lang, 'ACCOUNT NO.', 'ACCOUNT NO. 账号', 'NO. AKAUN'),
             TextField(controller: _bankAcCtrl,
               keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. 1234567890'))),
 
           const SizedBox(height: 24),
@@ -280,13 +280,13 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
     filled: true, fillColor: kSurface,
     border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBorder)),
+        borderSide: BorderSide(color: kBorder)),
     enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBorder)),
+        borderSide: BorderSide(color: kBorder)),
     focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kDark, width: 1.5)),
+        borderSide: BorderSide(color: kDark, width: 1.5)),
     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
   );
 }

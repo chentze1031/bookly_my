@@ -209,7 +209,7 @@ class _InvoiceCard extends StatelessWidget {
                 Text(inv['invDate'] ?? '', style: const TextStyle(fontSize: 11, color: kMuted)),
               ])),
               Text(fmtMYR(total),
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
             ]),
           ),
           // Body
@@ -220,7 +220,7 @@ class _InvoiceCard extends StatelessWidget {
                 Row(children: [
                   const Text('👤 ', style: TextStyle(fontSize: 13)),
                   Text(customer['name'] ?? '',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
                 ]),
               const SizedBox(height: 4),
               Text('${items.length} item${items.length == 1 ? '' : 's'}',
@@ -249,7 +249,7 @@ class _InvoiceCard extends StatelessWidget {
                     icon: const Text('📤', style: TextStyle(fontSize: 13)),
                     label: const Text('PDF'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: kText, side: const BorderSide(color: kBorder),
+                      foregroundColor: kText, side: BorderSide(color: kBorder),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                   ),
@@ -367,7 +367,7 @@ class _InvoiceDetailScreen extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-                decoration: const BoxDecoration(color: kBg,
+                decoration: BoxDecoration(color: kBg,
                     borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                     border: Border(bottom: BorderSide(color: kBorder))),
                 child: const Text('ITEMS',
@@ -380,13 +380,13 @@ class _InvoiceDetailScreen extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
                   decoration: BoxDecoration(
-                      border: idx > 0 ? const Border(top: BorderSide(color: kBorder)) : null),
+                      border: idx > 0 ? Border(top: BorderSide(color: kBorder)) : null),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(children: [
                       Expanded(child: Text(r['desc'] ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: kText))),
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: kText))),
                       Text(fmtMYR(row.total),
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
                     ]),
                     if ((r['note'] ?? '').isNotEmpty)
                       Text(r['note'] ?? '', style: const TextStyle(fontSize: 11, color: kMuted)),
@@ -403,25 +403,25 @@ class _InvoiceDetailScreen extends StatelessWidget {
               // Totals
               Container(
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                     border: Border(top: BorderSide(color: kBorder, width: 1.5))),
                 child: Column(children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     const Text('Subtotal', style: TextStyle(fontSize: 13, color: kMuted)),
-                    Text(fmtMYR(subtotal), style: const TextStyle(fontSize: 13, color: kText)),
+                    Text(fmtMYR(subtotal), style: TextStyle(fontSize: 13, color: kText)),
                   ]),
                   if (totalSST > 0) ...[
                     const SizedBox(height: 3),
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                       const Text('SST', style: TextStyle(fontSize: 13, color: kMuted)),
-                      Text(fmtMYR(totalSST), style: const TextStyle(fontSize: 13, color: kText)),
+                      Text(fmtMYR(totalSST), style: TextStyle(fontSize: 13, color: kText)),
                     ]),
                   ],
                   const SizedBox(height: 6),
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     const Text('TOTAL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
                     Text(fmtMYR(grand),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kText)),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kText)),
                   ]),
                 ]),
               ),
@@ -592,7 +592,7 @@ class _PayrollHistoryState extends State<PayrollHistoryScreen> {
                 Text(it.$1, style: const TextStyle(fontSize: 22)),
                 const SizedBox(height: 6),
                 Text(it.$2, textAlign: TextAlign.center, maxLines: 2,
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kText)),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kText)),
               ]),
             ),
           ),
@@ -704,7 +704,7 @@ class _PayrollCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(fmtMYR(calc.netPay),
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
             ]),
           ),
           // Body
@@ -713,12 +713,12 @@ class _PayrollCard extends StatelessWidget {
             child: Column(children: [
               Row(children: [
                 Container(width: 36, height: 36,
-                    decoration: const BoxDecoration(color: kDark, shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: kDark, shape: BoxShape.circle),
                     child: Center(child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)))),
                 const SizedBox(width: 10),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                  Text(name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                   Text('Gross ${fmtMYR(calc.gross)} · Net ${fmtMYR(calc.netPay)}',
                       style: const TextStyle(fontSize: 11, color: kMuted)),
                 ])),
@@ -744,7 +744,7 @@ class _PayrollCard extends StatelessWidget {
                   icon: const Icon(Icons.edit_outlined, size: 15),
                   label: const Text('Edit'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: kText, side: const BorderSide(color: kBorder),
+                    foregroundColor: kText, side: BorderSide(color: kBorder),
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                 ),

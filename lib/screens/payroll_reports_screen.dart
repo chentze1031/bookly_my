@@ -107,8 +107,8 @@ class _PeriodBar extends StatelessWidget {
       decoration: InputDecoration(
         filled: true, fillColor: kBg, isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
       ),
     );
 }
@@ -296,7 +296,7 @@ class _StatutoryState extends State<StatutoryReportScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: kSurface, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(14)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(l.empName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
+                  Text(l.empName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
                   const SizedBox(height: 8),
                   _kv('EPF', l.eeEPF, l.erEPF, lang),
                   _kv('SOCSO', l.eeSSO, l.erSSO, lang),
@@ -312,9 +312,9 @@ class _StatutoryState extends State<StatutoryReportScreen> {
     padding: const EdgeInsets.symmetric(vertical: 2),
     child: Row(children: [
       SizedBox(width: 56, child: Text(fund, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kMuted))),
-      Expanded(child: Text('${tr(lang, 'EE', '员工', 'Pekerja')} ${fmtMYR(ee)}', style: const TextStyle(fontSize: 12, color: kText))),
-      Expanded(child: Text('${tr(lang, 'ER', '雇主', 'Majikan')} ${fmtMYR(er)}', style: const TextStyle(fontSize: 12, color: kText))),
-      Text(fmtMYR(ee + er), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
+      Expanded(child: Text('${tr(lang, 'EE', '员工', 'Pekerja')} ${fmtMYR(ee)}', style: TextStyle(fontSize: 12, color: kText))),
+      Expanded(child: Text('${tr(lang, 'ER', '雇主', 'Majikan')} ${fmtMYR(er)}', style: TextStyle(fontSize: 12, color: kText))),
+      Text(fmtMYR(ee + er), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
     ]),
   );
 }
@@ -428,7 +428,7 @@ class _EaState extends State<EaFormScreen> {
                 _eaRow(tr(lang, 'Employee EPF (G)', '雇员 EPF (G)', 'EPF Pekerja (G)'), epf),
                 _eaRow(tr(lang, 'PCB/MTD deducted (F)', 'PCB/MTD 已扣 (F)', 'PCB/MTD ditolak (F)'), pcb),
                 _eaRow(tr(lang, 'Months paid', '发薪月数', 'Bulan dibayar'), lines.length.toDouble(), isCount: true),
-                const Divider(color: kBorder, height: 24),
+                Divider(color: kBorder, height: 24),
                 _eaRow(tr(lang, 'Net of EPF & PCB', '扣 EPF 及 PCB 后', 'Bersih selepas EPF & PCB'), gross - epf - pcb, bold: true),
               ])),
       ]),
@@ -438,8 +438,8 @@ class _EaState extends State<EaFormScreen> {
   InputDecoration _dec() => InputDecoration(
     filled: true, fillColor: kBg, isDense: true,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
   );
 
   Widget _eaRow(String label, double v, {bool bold = false, bool isCount = false}) => Padding(
@@ -476,7 +476,7 @@ class _MiniTotal extends StatelessWidget {
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label, style: const TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w600)),
       const SizedBox(height: 4),
-      Text(fmtMYR(value), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: kText)),
+      Text(fmtMYR(value), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: kText)),
     ]),
   );
 }
@@ -491,11 +491,11 @@ class _ReportRow extends StatelessWidget {
     decoration: BoxDecoration(color: kSurface, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(14)),
     child: Row(children: [
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
+        Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
         const SizedBox(height: 2),
         Text(subtitle, style: const TextStyle(fontSize: 11, color: kMuted)),
       ])),
-      Text(fmtMYR(amount), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
+      Text(fmtMYR(amount), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
     ]),
   );
 }

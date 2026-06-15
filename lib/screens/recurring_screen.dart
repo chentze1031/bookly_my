@@ -57,7 +57,7 @@ class _RecurringState extends State<RecurringScreen> {
       appBar: AppBar(
         title: Text(tr(lang, '🔁 Recurring', '🔁 定期记账', '🔁 Berulang')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
-        actions: [IconButton(icon: const Icon(Icons.add, color: kText), onPressed: () => _edit())],
+        actions: [IconButton(icon: Icon(Icons.add, color: kText), onPressed: () => _edit())],
       ),
       body: _loading ? const Center(child: CircularProgressIndicator())
         : _list.isEmpty
@@ -150,13 +150,13 @@ class _RecurringSheetState extends State<_RecurringSheet> {
     if (_catId != null && !_cats.any((c) => c.id == _catId)) _catId = null;
 
     return Container(
-      decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text(tr(lang, 'Recurring Entry', '定期记账', 'Catatan Berulang'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+            Text(tr(lang, 'Recurring Entry', '定期记账', 'Catatan Berulang'), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
             const Spacer(),
             GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: kMuted)),
           ]),
@@ -229,7 +229,7 @@ class _RecurringSheetState extends State<_RecurringSheet> {
               child: Row(children: [
                 const Icon(Icons.event, size: 18, color: kBlue), const SizedBox(width: 10),
                 Text('${tr(lang, 'Start / next date', '开始/下次日期', 'Tarikh mula / seterusnya')}: ${_start.toIso8601String().substring(0, 10)}',
-                  style: const TextStyle(fontSize: 14, color: kText, fontWeight: FontWeight.w600)),
+                  style: TextStyle(fontSize: 14, color: kText, fontWeight: FontWeight.w600)),
               ]),
             ),
           ),
@@ -260,7 +260,7 @@ class _RecurringSheetState extends State<_RecurringSheet> {
     labelText: label, labelStyle: const TextStyle(fontSize: 12, color: kMuted),
     filled: true, fillColor: kBg, isDense: true,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
   );
 }

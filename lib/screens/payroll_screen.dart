@@ -45,7 +45,7 @@ class _EmpMgrState extends State<EmployeeManagerScreen> {
     }
 
     return Container(
-      decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
       child: Column(
         children: [
@@ -89,13 +89,13 @@ class _EmpCard extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
     child: Row(children: [
       Container(
-        width: 40, height: 40, decoration: const BoxDecoration(color: kDark, shape: BoxShape.circle),
+        width: 40, height: 40, decoration: BoxDecoration(color: kDark, shape: BoxShape.circle),
         child: Center(child: Text(emp.name.isNotEmpty ? emp.name[0].toUpperCase() : '?',
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16))),
       ),
       const SizedBox(width: 11),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(emp.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+        Text(emp.name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
         if (emp.position.isNotEmpty)
           Text('${emp.position}${emp.department.isNotEmpty ? " · ${emp.department}" : ""}',
             style: const TextStyle(fontSize: 11, color: kMuted)),
@@ -137,7 +137,7 @@ class _EmpEditFormState extends State<_EmpEditForm> {
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardH),
       child: Container(
-      decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.96),
       child: Column(
         children: [
@@ -886,17 +886,17 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardH),
       child: Container(
-      decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       height: MediaQuery.of(context).size.height * 0.96 - keyboardH,
       child: Column(
         children: [
           // Top bar
           Container(
             padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
-            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: kBorder))),
+            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: kBorder))),
             child: Row(children: [
               const Text('💼 ', style: TextStyle(fontSize: 20)),
-              Text(t.payroll, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+              Text(t.payroll, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
               const Spacer(),
               // ── Save button ──────────────────────────────────────
               SmBtn(
@@ -920,7 +920,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
               ),
               const SizedBox(width: 8),
               GestureDetector(onTap: () => Navigator.pop(context),
-                child: Container(width: 32, height: 32, decoration: const BoxDecoration(color: kBg, shape: BoxShape.circle),
+                child: Container(width: 32, height: 32, decoration: BoxDecoration(color: kBg, shape: BoxShape.circle),
                   child: const Icon(Icons.close, size: 18, color: kMuted))),
             ]),
           ),
@@ -940,11 +940,11 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                       decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder, width: 1.5), borderRadius: BorderRadius.circular(12)),
                       child: Row(children: [
-                        Container(width: 40, height: 40, decoration: const BoxDecoration(color: kDark, shape: BoxShape.circle),
+                        Container(width: 40, height: 40, decoration: BoxDecoration(color: kDark, shape: BoxShape.circle),
                           child: Center(child: Text(_emp!.name[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16)))),
                         const SizedBox(width: 11),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(_emp!.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                          Text(_emp!.name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                           if (_emp!.position.isNotEmpty)
                             Text(_emp!.position, style: const TextStyle(fontSize: 11, color: kMuted)),
                         ])),
@@ -1027,7 +1027,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                       padding: const EdgeInsets.only(top: 10),
                       decoration: const BoxDecoration(border: Border(top: BorderSide(color: kGreenBd))),
                       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                        Text(t.grossPay, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
+                        Text(t.grossPay, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
                         Text(fmtMYR(_gross), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kGreen)),
                       ]),
                     ),
@@ -1231,10 +1231,10 @@ class _EarnRow extends StatelessWidget {
             hintText: type == 'earn' ? 'Earnings item' : 'Deduction item',
             filled: true, fillColor: kSurface,
             contentPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(9), borderSide: const BorderSide(color: kBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(9), borderSide: const BorderSide(color: kBorder)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(9), borderSide: BorderSide(color: kBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(9), borderSide: BorderSide(color: kBorder)),
           ),
-          style: const TextStyle(fontSize: 12, color: kText),
+          style: TextStyle(fontSize: 12, color: kText),
         ),
       ),
       const SizedBox(width: 8),
@@ -1247,10 +1247,10 @@ class _EarnRow extends StatelessWidget {
             hintText: '0.00',
             filled: true, fillColor: kSurface,
             contentPadding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(9), borderSide: const BorderSide(color: kBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(9), borderSide: const BorderSide(color: kBorder)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(9), borderSide: BorderSide(color: kBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(9), borderSide: BorderSide(color: kBorder)),
           ),
-          style: const TextStyle(fontSize: 12, color: kText, fontFamily: 'monospace'),
+          style: TextStyle(fontSize: 12, color: kText, fontFamily: 'monospace'),
         ),
       ),
     ]),

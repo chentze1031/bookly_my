@@ -111,7 +111,7 @@ class _BudgetState extends State<BudgetScreen> {
                     Text(c.icon, style: const TextStyle(fontSize: 20)),
                     const SizedBox(width: 10),
                     Expanded(child: Text(c.label(app.settings.lang),
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText))),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText))),
                     SizedBox(
                       width: 96,
                       child: TextFormField(
@@ -119,13 +119,13 @@ class _BudgetState extends State<BudgetScreen> {
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         textAlign: TextAlign.right,
                         onChanged: (v) => _budgets[c.id] = double.tryParse(v) ?? 0,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText),
                         decoration: InputDecoration(
                           prefixText: 'RM ', hintText: '0',
                           isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                           filled: true, fillColor: kBg,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: kBorder)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: kBorder)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: kBorder)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: kBorder)),
                         ),
                       ),
                     ),

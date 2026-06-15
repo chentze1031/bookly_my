@@ -351,7 +351,8 @@ class AppState extends ChangeNotifier {
 
       // ── Settings ──────────────────────────────────────────────────────────
       final remoteS = await SupabaseService.loadSettings();
-      if (remoteS != null) settings = AppSettings.fromMap(remoteS);
+      // Keep dark mode (device-local) — the cloud map doesn't carry it.
+      if (remoteS != null) settings = AppSettings.fromMap(remoteS).copyWith(dark: settings.dark);
 
       syncStatus = SyncStatus.done;
       notifyListeners();

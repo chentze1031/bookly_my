@@ -113,15 +113,22 @@ GoRouter _buildRouter() => GoRouter(
 // ════════════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ════════════════════════════════════════════════════════════════════════════
-class BooklyApp extends StatelessWidget {
+class BooklyApp extends StatefulWidget {
   const BooklyApp({super.key});
+  @override State<BooklyApp> createState() => _BooklyAppState();
+}
+
+class _BooklyAppState extends State<BooklyApp> {
+  late final _router = _buildRouter(); // build once; theme rebuilds are cheap
   @override
   Widget build(BuildContext context) {
+    // Apply the active theme before building; rebuild only when `dark` flips.
+    applyDarkMode(context.select<AppState, bool>((s) => s.settings.dark));
     return MaterialApp.router(
-      routerConfig: _buildRouter(),
+      routerConfig: _router,
       title: 'Bookly MY',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: AppTheme.theme,
     );
   }
 }
@@ -186,7 +193,7 @@ class _AppShellState extends State<_AppShell> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Divider(height: 1, color: kBorder),
+          Divider(height: 1, color: kBorder),
           BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             currentIndex: idx,
@@ -388,7 +395,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
       maxChildSize: 0.96,
       minChildSize: 0.5,
       builder: (_, scroll) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -401,7 +408,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                 Container(width: 40, height: 4, decoration: BoxDecoration(color: kBorder, borderRadius: BorderRadius.circular(99))),
                 const SizedBox(height: 10),
                 Text(isEd ? t.edit : t.newTx,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
                 const SizedBox(height: 8),
                 // Step dots
                 if (!isEd)
@@ -450,7 +457,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                                 Text(cat.icon, style: const TextStyle(fontSize: 22)),
                                 const SizedBox(width: 10),
                                 Expanded(child: Text(cat.label(app.settings.lang),
-                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText))),
+                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText))),
                               ]),
                             ),
                           )).toList(),
@@ -467,7 +474,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                             Text(_cat!.icon, style: const TextStyle(fontSize: 22)),
                             const SizedBox(width: 10),
                             Text(_cat!.label(app.settings.lang),
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                           ]),
                         ),
                         Text(tr(app.settings.lang, 'Payment Status', '付款状态', 'Status Bayaran'),
@@ -488,7 +495,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                               Text(ps.$2, style: const TextStyle(fontSize: 22)),
                               const SizedBox(width: 12),
                               Text(app.settings.lang == 'zh' ? ps.$4 : ps.$3,
-                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                             ]),
                           ),
                         ),
@@ -510,7 +517,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                                   Text(cat.icon, style: const TextStyle(fontSize: 22)),
                                   const SizedBox(width: 10),
                                   Expanded(child: Text(cat.label(app.settings.lang),
-                                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText))),
+                                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText))),
                                 ]),
                               ),
                             )).toList(),
@@ -532,7 +539,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                             child: Center(child: Text(_cat!.icon, style: const TextStyle(fontSize: 20)))),
                           const SizedBox(width: 10),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(_cat!.label(app.settings.lang), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
+                            Text(_cat!.label(app.settings.lang), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
                             Text(_type == 'income' ? t.moneyIn : t.moneyOut, style: const TextStyle(fontSize: 11, color: kMuted)),
                           ])),
                           if (!isEd)
@@ -557,7 +564,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                               ),
                               child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                                 Text('${currencyFlags[_currency] ?? ""} $_currency',
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
                                 const Icon(Icons.expand_more, color: kMuted, size: 20),
                               ]),
                             ),
@@ -576,7 +583,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                                       decoration: BoxDecoration(
                                         color: _currency == cc ? kBlueBg : Colors.transparent,
-                                        border: const Border(bottom: BorderSide(color: kBorder)),
+                                        border: Border(bottom: BorderSide(color: kBorder)),
                                       ),
                                       child: Row(children: [
                                         Text('${currencyFlags[cc]??''} ', style: const TextStyle(fontSize: 18)),
@@ -669,8 +676,8 @@ class _AddTxSheetState extends State<AddTxSheet> {
                           decoration: InputDecoration(
                             hintText: _cat!.label(app.settings.lang),
                             filled: true, fillColor: kBg,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder, width: 1.5)),
-                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder, width: 1.5)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder, width: 1.5)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder, width: 1.5)),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -692,7 +699,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                             decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder, width: 1.5), borderRadius: BorderRadius.circular(12)),
                             child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                              Text(_date, style: const TextStyle(fontSize: 14, color: kText)),
+                              Text(_date, style: TextStyle(fontSize: 14, color: kText)),
                               const Icon(Icons.calendar_today, size: 16, color: kMuted),
                             ]),
                           ),
@@ -807,7 +814,7 @@ class _BackBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) => OutlinedButton(
     onPressed: onTap,
-    style: OutlinedButton.styleFrom(foregroundColor: kMuted, side: const BorderSide(color: kBorder),
+    style: OutlinedButton.styleFrom(foregroundColor: kMuted, side: BorderSide(color: kBorder),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14)),
     child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
   );

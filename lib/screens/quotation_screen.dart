@@ -123,7 +123,7 @@ class _QuotHistState extends State<QuotationHistoryScreen> {
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: kText),
+            icon: Icon(Icons.add, color: kText),
             onPressed: () async {
               await Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const QuotationSheet()));
@@ -226,12 +226,12 @@ class _QuotCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: kBg,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-            border: const Border(bottom: BorderSide(color: kBorder)),
+            border: Border(bottom: BorderSide(color: kBorder)),
           ),
           child: Row(children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(q['quotNo'] ?? '—',
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kText)),
               Text(q['quotDate'] ?? '', style: const TextStyle(fontSize: 11, color: kMuted)),
             ])),
             Container(
@@ -246,7 +246,7 @@ class _QuotCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(fmtMYR(total),
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
           ]),
         ),
         // Body
@@ -257,7 +257,7 @@ class _QuotCard extends StatelessWidget {
               Row(children: [
                 const Text('👤 ', style: TextStyle(fontSize: 13)),
                 Text(customer['name'] ?? '',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
               ]),
             const SizedBox(height: 4),
             Text('${items.length} item${items.length == 1 ? '' : 's'}',
@@ -274,7 +274,7 @@ class _QuotCard extends StatelessWidget {
                   icon: const Icon(Icons.edit_outlined, size: 14),
                   label: Text(tr(lang, 'Edit', '编辑', 'Sunting')),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: kText, side: const BorderSide(color: kBorder),
+                    foregroundColor: kText, side: BorderSide(color: kBorder),
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                 ),
@@ -313,7 +313,7 @@ class _QuotCard extends StatelessWidget {
                     icon: const Icon(Icons.check_circle_outline, size: 14),
                     label: Text(tr(lang, 'Converted', '已转换', 'Ditukar')),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: kMuted, side: const BorderSide(color: kBorder),
+                      foregroundColor: kMuted, side: BorderSide(color: kBorder),
                       padding: const EdgeInsets.symmetric(vertical: 7),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                   ),
@@ -496,7 +496,7 @@ class _QuotSheetState extends State<QuotationSheet> {
         title: Row(children: [
           const Text('📋 ', style: TextStyle(fontSize: 20)),
           Text(t.quotation,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
         ]),
         actions: [
           SmBtn(
@@ -574,7 +574,7 @@ class _QuotSheetState extends State<QuotationSheet> {
                     child: Row(children: [
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(_customer.name,
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                         if (_customer.phone.isNotEmpty)
                           Text(_customer.phone, style: const TextStyle(fontSize: 11, color: kMuted)),
                         if (_customer.address.isNotEmpty)
@@ -620,7 +620,7 @@ class _QuotSheetState extends State<QuotationSheet> {
                 // Totals
                 _TotalsRow(label: t.subTotal,   value: _subtotal),
                 if (_totalSST > 0) _TotalsRow(label: t.sstAmt, value: _totalSST),
-                const Divider(color: kBorder, height: 20),
+                Divider(color: kBorder, height: 20),
                 _TotalsRow(label: t.grandTotal, value: _grand, bold: true),
               ]),
             ),
@@ -721,9 +721,9 @@ class _ItemRow extends StatelessWidget {
             filled: true, fillColor: kSurface,
             isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: kBorder)),
+                borderSide: BorderSide(color: kBorder)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: kBorder)),
+                borderSide: BorderSide(color: kBorder)),
           ),
         ),
       ]),

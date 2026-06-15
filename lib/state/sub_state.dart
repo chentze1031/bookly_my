@@ -25,7 +25,9 @@ const _prodYearly        = 'bookly_pro_yearly';
 // ══════════════════════════════
 // 🔧 DEBUG: 设为 true 关闭所有付费限制（仅限开发测试）
 // FIX #8: release 模式下 assert 防止误提交为 true
-const _debugProMode = false;
+//
+// ⚠️ 本地试用专用，请勿提交/推送。测试完改回 false。
+const _debugProMode = true;
 // ══════════════════════════════
 // ── Ad trigger settings ───────────────────────────────────────────────────────
 // 每隔多少分钟可以触发一次广告（保存/分享动作）

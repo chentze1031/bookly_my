@@ -75,10 +75,10 @@ class _TxScreenState extends State<TransactionsScreen> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: kBorder, width: 1.5)),
+                    borderSide: BorderSide(color: kBorder, width: 1.5)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: kBorder, width: 1.5)),
+                    borderSide: BorderSide(color: kBorder, width: 1.5)),
                 ),
               ),
             ),
@@ -163,7 +163,7 @@ class _TxScreenState extends State<TransactionsScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                                 decoration: BoxDecoration(
-                                  border: e2.key > 0 ? const Border(top: BorderSide(color: kBorder)) : null),
+                                  border: e2.key > 0 ? Border(top: BorderSide(color: kBorder)) : null),
                                 child: Row(children: [
                                   Container(
                                     width: 40, height: 40,
@@ -178,7 +178,7 @@ class _TxScreenState extends State<TransactionsScreen> {
                                     children: [
                                       Text(lang == 'zh' ? tx.descZH : tx.descEN,
                                         maxLines: 1, overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(fontSize: 13,
+                                        style: TextStyle(fontSize: 13,
                                           fontWeight: FontWeight.w600, color: kText)),
                                       Row(children: [
                                         Text(cat?.label(lang) ?? tx.catId,
@@ -214,16 +214,16 @@ class _TxScreenState extends State<TransactionsScreen> {
 class _FilterChip extends StatelessWidget {
   final String label, value, current;
   final VoidCallback onTap;
-  final Color activeColor;
+  final Color? activeColor;
   const _FilterChip({required this.label, required this.value,
-    required this.current, required this.onTap, this.activeColor = kDark});
+    required this.current, required this.onTap, this.activeColor});
   @override
   Widget build(BuildContext context) => GestureDetector(
     onTap: onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: current == value ? activeColor : const Color(0xFFF5F4F0),
+        color: current == value ? (activeColor ?? kDark) : kBg,
         borderRadius: BorderRadius.circular(99)),
       child: Text(label, style: TextStyle(
         color: current == value ? Colors.white : kMuted,
@@ -331,10 +331,10 @@ class _ReportsState extends State<ReportsScreen> {
   void _showExportMenu() {
     final lang = context.read<AppState>().settings.lang;
     showModalBottomSheet(context: context, backgroundColor: Colors.transparent, builder: (_) => Container(
-      decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 30),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text(tr(lang, 'Export', '导出报表', 'Eksport'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+        Text(tr(lang, 'Export', '导出报表', 'Eksport'), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
         const SizedBox(height: 14),
         ListTile(
           leading: const Text('📄', style: TextStyle(fontSize: 22)),
@@ -449,9 +449,9 @@ class _ReportsState extends State<ReportsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(color: kSurface, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(9)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.download_outlined, size: 15, color: kText),
+                  Icon(Icons.download_outlined, size: 15, color: kText),
                   const SizedBox(width: 5),
-                  Text(tr(lang, 'Export', '导出', 'Eksport'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
+                  Text(tr(lang, 'Export', '导出', 'Eksport'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
                   if (!sub.hasAccess) const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 13, color: kPro)),
                 ]),
               ),
@@ -488,7 +488,7 @@ class _ReportsState extends State<ReportsScreen> {
                   child: const Center(child: Text('📅', style: TextStyle(fontSize: 20)))),
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(tr(lang, 'Monthly Budget', '月度预算', 'Bajet Bulanan'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
+                  Text(tr(lang, 'Monthly Budget', '月度预算', 'Bajet Bulanan'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
                   Text(tr(lang, 'Per-category limits · over-spend alerts', '按分类设上限 · 超支预警', 'Had setiap kategori · amaran lebih belanja'), style: const TextStyle(fontSize: 11, color: kMuted)),
                 ])),
                 sub.hasAccess ? const Icon(Icons.chevron_right, color: kMuted) : const Icon(Icons.lock_outline, size: 18, color: kPro),
@@ -519,7 +519,7 @@ class _ReportsState extends State<ReportsScreen> {
                 const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(tr(lang, 'Customer Analytics', '顾客消费分析', 'Analitik Pelanggan'),
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
                   Text(tr(lang, 'Top customers · spend · top items', '客户排行 · 客单 · 常买项目', 'Pelanggan teratas · belanja · item teratas'),
                       style: const TextStyle(fontSize: 11, color: kMuted)),
                 ])),
@@ -595,7 +595,7 @@ class _PLCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           color: netInc >= 0 ? kGreenBg : kRedBg,
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(t.netProfit, style: const TextStyle(fontWeight: FontWeight.w900,
+            Text(t.netProfit, style: TextStyle(fontWeight: FontWeight.w900,
               fontSize: 14, color: kText)),
             Text('${netInc >= 0 ? '+' : '-'}${fmtMYR(netInc.abs())}',
               style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22,
@@ -658,7 +658,7 @@ class _BSBlock extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(26, 8, 14, 8),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text(item.$1, style: const TextStyle(fontSize: 12, color: kMuted)),
-          Text(fmtMYR(item.$2), style: const TextStyle(fontSize: 12, fontFamily: 'Georgia', color: kText)),
+          Text(fmtMYR(item.$2), style: TextStyle(fontSize: 12, fontFamily: 'Georgia', color: kText)),
         ]),
       )),
     ]),
@@ -729,7 +729,7 @@ class _Row extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: EdgeInsets.fromLTRB(indent ? 26 : 14, indent ? 8 : 10, 14, indent ? 8 : 10),
     decoration: BoxDecoration(
-      border: top ? const Border(top: BorderSide(color: kBorder, width: 2)) : null,
+      border: top ? Border(top: BorderSide(color: kBorder, width: 2)) : null,
       color: bold ? kBg : Colors.transparent),
     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: TextStyle(fontSize: indent ? 12 : 14,
@@ -749,7 +749,7 @@ class _SecHdr extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     color: kBg, width: double.infinity,
-    child: Text(label, style: const TextStyle(fontWeight: FontWeight.w800,
+    child: Text(label, style: TextStyle(fontWeight: FontWeight.w800,
       fontSize: 14, color: kText)),
   );
 }

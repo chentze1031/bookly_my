@@ -97,7 +97,7 @@ class _DoHistState extends State<DeliveryOrderHistoryScreen> {
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: kText),
+            icon: Icon(Icons.add, color: kText),
             onPressed: () async {
               await Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const DeliveryOrderSheet()));
@@ -180,7 +180,7 @@ class _DoCard extends StatelessWidget {
         // Header
         Container(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: kBg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
             border: Border(bottom: BorderSide(color: kBorder)),
@@ -188,12 +188,12 @@ class _DoCard extends StatelessWidget {
           child: Row(children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(d['doNo'] ?? '—',
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kText)),
               Text(d['doDate'] ?? '', style: const TextStyle(fontSize: 11, color: kMuted)),
             ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Text('${tr(lang, 'Total Qty', '总数量', 'Jumlah Kuantiti')}: $qtyStr',
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kText)),
               if ((d['refInvNo'] ?? '').isNotEmpty)
                 Text('← ${d['refInvNo']}', style: const TextStyle(fontSize: 10, color: kBlue)),
             ]),
@@ -207,7 +207,7 @@ class _DoCard extends StatelessWidget {
               Row(children: [
                 const Text('🚚 ', style: TextStyle(fontSize: 13)),
                 Text(customer['name'] ?? '',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
               ]),
             const SizedBox(height: 4),
             Text('${items.length} item${items.length == 1 ? '' : 's'}',
@@ -220,7 +220,7 @@ class _DoCard extends StatelessWidget {
                   icon: const Icon(Icons.edit_outlined, size: 14),
                   label: Text(tr(lang, 'Edit', '编辑', 'Sunting')),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: kText, side: const BorderSide(color: kBorder),
+                    foregroundColor: kText, side: BorderSide(color: kBorder),
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                 ),
@@ -350,7 +350,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -361,7 +361,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
             padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
             child: Row(children: [
               Text(L10n(lang).selectInvoice,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
               const Spacer(),
               GestureDetector(
                 onTap: () => Navigator.pop(ctx),
@@ -369,18 +369,18 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
               ),
             ]),
           ),
-          const Divider(height: 1, color: kBorder),
+          Divider(height: 1, color: kBorder),
           Flexible(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: 4),
               itemCount: invoices.length,
-              separatorBuilder: (_, __) => const Divider(height: 1, color: kBorder),
+              separatorBuilder: (_, __) => Divider(height: 1, color: kBorder),
               itemBuilder: (_, i) {
                 final inv  = invoices[i];
                 final cust = inv['customer'] as Map? ?? {};
                 return ListTile(
                   title: Text(inv['invNo'] ?? '—',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                   subtitle: Text(
                     '${cust['name'] ?? ''}${(inv['invDate'] ?? '').isNotEmpty ? ' · ${inv['invDate']}' : ''}',
                     style: const TextStyle(fontSize: 12, color: kMuted)),
@@ -497,7 +497,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
         title: Row(children: [
           const Text('🚚 ', style: TextStyle(fontSize: 20)),
           Text(t.deliveryOrder,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
         ]),
         actions: [
           SmBtn(
@@ -618,7 +618,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
                     child: Row(children: [
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(_customer.name,
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                         if (_customer.phone.isNotEmpty)
                           Text(_customer.phone, style: const TextStyle(fontSize: 11, color: kMuted)),
                         if (_customer.address.isNotEmpty)
@@ -662,10 +662,10 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
                 const SizedBox(height: 16),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Text(tr(lang, 'Total Quantity', '总数量', 'Jumlah Kuantiti'),
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kText)),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kText)),
                   Text(_totalQty == _totalQty.truncate()
                           ? _totalQty.toStringAsFixed(0) : _totalQty.toStringAsFixed(2),
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
                 ]),
               ]),
             ),

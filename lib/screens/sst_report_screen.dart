@@ -98,12 +98,12 @@ class _SstReportScreenState extends State<SstReportScreen> {
         backgroundColor: kSurface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: kText),
+          icon: Icon(Icons.arrow_back, color: kText),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           tr(lang, '🧾 SST-02 Summary', '🧾 SST-02 申报摘要', '🧾 Ringkasan SST-02'),
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText),
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText),
         ),
       ),
       body: Column(
@@ -128,8 +128,8 @@ class _SstReportScreenState extends State<SstReportScreen> {
                 onChanged: (v) { if (v != null) setState(() => _period = v); },
                 decoration: InputDecoration(
                   filled: true, fillColor: kBg,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 ),
               ),
@@ -262,7 +262,7 @@ class _SstTable extends StatelessWidget {
         // Header
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: kBg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
           ),
@@ -280,34 +280,34 @@ class _SstTable extends StatelessWidget {
         // Rows
         ...groups.map((g) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: const BoxDecoration(border: Border(top: BorderSide(color: kBorder))),
+          decoration: BoxDecoration(border: Border(top: BorderSide(color: kBorder))),
           child: Row(children: [
             Expanded(flex: 3, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(g.label(lang), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
+              Text(g.label(lang), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
               Text('${g.count} tx', style: const TextStyle(fontSize: 10, color: kMuted)),
             ])),
             Expanded(flex: 3, child: Text(fmtAmt(g.taxable),
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 13, color: kText))),
+              style: TextStyle(fontSize: 13, color: kText))),
             Expanded(flex: 3, child: Text(fmtAmt(g.sstTotal),
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText))),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText))),
           ]),
         )),
         // Subtotal
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: kBg,
             border: Border(top: BorderSide(color: kBorder, width: 1.5)),
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(13)),
           ),
           child: Row(children: [
             Expanded(flex: 3, child: Text(tr(lang, 'Subtotal', '小计', 'Jumlah Kecil'),
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kText))),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kText))),
             Expanded(flex: 3, child: Text(fmtAmt(totalTaxable),
               textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText))),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText))),
             Expanded(flex: 3, child: Text(fmtAmt(totalSST),
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kRed))),
@@ -330,7 +330,7 @@ class _EmptyState extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           tr(lang, 'No SST transactions this period', '本期无 SST 交易记录', 'Tiada transaksi SST tempoh ini'),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kText),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kText),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),

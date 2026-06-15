@@ -54,7 +54,7 @@ class _AiScreenState extends State<AiScreen> with SingleTickerProviderStateMixin
           controller: _tabs,
           labelColor: kText,
           unselectedLabelColor: kMuted,
-          indicatorColor: kDark,
+          indicatorColor: kText,
           indicatorWeight: 2.5,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           tabs: const [
@@ -181,8 +181,8 @@ class _AutoCatTabState extends State<_AutoCatTab> {
               hintText: 'e.g. Grab Food delivery, TNB electric bill...',
               hintStyle: const TextStyle(color: kMuted, fontSize: 13),
               filled: true, fillColor: kSurface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kDark, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
@@ -199,10 +199,10 @@ class _AutoCatTabState extends State<_AutoCatTab> {
             decoration: InputDecoration(
               hintText: '0.00',
               prefixText: 'RM ',
-              prefixStyle: const TextStyle(color: kText, fontWeight: FontWeight.w700),
+              prefixStyle: TextStyle(color: kText, fontWeight: FontWeight.w700),
               filled: true, fillColor: kSurface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kDark, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
@@ -271,7 +271,7 @@ class _ResultCard extends StatelessWidget {
         Row(children: [
           const Text('✅', style: TextStyle(fontSize: 18)),
           const SizedBox(width: 8),
-          const Text('AI Suggestion', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kText)),
+          Text('AI Suggestion', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kText)),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -280,7 +280,7 @@ class _ResultCard extends StatelessWidget {
           ),
         ]),
         const SizedBox(height: 14),
-        const Divider(color: kBorder, height: 1),
+        Divider(color: kBorder, height: 1),
         const SizedBox(height: 14),
 
         // Category display
@@ -292,7 +292,7 @@ class _ResultCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(cat.label(lang), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+            Text(cat.label(lang), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
             Text(cat.enLabel, style: const TextStyle(fontSize: 12, color: kMuted)),
           ]),
         ]),
@@ -392,10 +392,10 @@ class _CashflowTabState extends State<_CashflowTab> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: Column(
+      return Center(child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(color: kDark, strokeWidth: 2),
+          CircularProgressIndicator(color: kText, strokeWidth: 2),
           SizedBox(height: 16),
           Text('Gemini AI is analysing your finances...', style: TextStyle(color: kMuted, fontSize: 13)),
         ],
@@ -423,7 +423,7 @@ class _CashflowTabState extends State<_CashflowTab> {
 
     return RefreshIndicator(
       onRefresh: _load,
-      color: kDark,
+      color: kText,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
@@ -597,7 +597,7 @@ class _ForecastRow extends StatelessWidget {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Text('🔮 ${month.label}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
+          Text('🔮 ${month.label}', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -684,7 +684,7 @@ class _InsightTile extends StatelessWidget {
         child: Center(child: Text('$index', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800))),
       ),
       const SizedBox(width: 10),
-      Expanded(child: Text(text, style: const TextStyle(fontSize: 13, color: kText))),
+      Expanded(child: Text(text, style: TextStyle(fontSize: 13, color: kText))),
     ]),
   );
 }
@@ -736,7 +736,7 @@ class _ProGate extends StatelessWidget {
               child: const Center(child: Text('✦', style: TextStyle(fontSize: 36, color: Colors.white))),
             ),
             const SizedBox(height: 24),
-            const Text('Pro Feature', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kText)),
+            Text('Pro Feature', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kText)),
             const SizedBox(height: 10),
             const Text(
               'This feature is available for Pro subscribers.\nUpgrade to unlock AI-powered tools.',

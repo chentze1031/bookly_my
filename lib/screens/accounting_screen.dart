@@ -63,7 +63,7 @@ class _AccountingScreenState extends State<AccountingScreen>
           controller: _tabs,
           labelColor: kText,
           unselectedLabelColor: kMuted,
-          indicatorColor: kDark,
+          indicatorColor: kText,
           indicatorWeight: 2.5,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
           isScrollable: true,
@@ -196,7 +196,7 @@ class _ArInvoiceCard extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Expanded(child: Text(invoice.invNo,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText))),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText))),
             if (invoice.total < 0)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -217,7 +217,7 @@ class _ArInvoiceCard extends StatelessWidget {
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Total', style: TextStyle(fontSize: 10, color: kMuted)),
               Text('RM ${fmt.format(invoice.total)}',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
             ]),
             const SizedBox(width: 24),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -280,7 +280,7 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
     return DraggableScrollableSheet(
       initialChildSize: 0.7, maxChildSize: 0.95, minChildSize: 0.4,
       builder: (_, scroll) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -293,7 +293,7 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
               const SizedBox(height: 14),
               Row(children: [
                 Expanded(child: Text(inv.invNo,
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: kText))),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: kText))),
                 _StatusBadge(status: inv.status),
                 IconButton(onPressed: widget.onEdit,
                   icon: const Icon(Icons.edit_outlined, color: kMuted)),
@@ -307,7 +307,7 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
               Text(inv.customerName, style: const TextStyle(fontSize: 14, color: kMuted)),
             ]),
           ),
-          const Divider(color: kBorder),
+          Divider(color: kBorder),
           Expanded(child: ListView(controller: scroll, padding: const EdgeInsets.all(20), children: [
 
             // Amounts
@@ -340,12 +340,12 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(item.description, style: const TextStyle(fontSize: 13, color: kText)),
+                    Text(item.description, style: TextStyle(fontSize: 13, color: kText)),
                     Text('${item.qty} × RM ${fmt.format(item.unitPrice)}',
                       style: const TextStyle(fontSize: 11, color: kMuted)),
                   ])),
                   Text('RM ${fmt.format(item.amount)}',
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
                 ]),
               )),
             ],
@@ -401,8 +401,8 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
                     hintText: t.amtReceived,
                     prefixText: 'RM ',
                     filled: true, fillColor: kBg,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 )),
@@ -515,7 +515,7 @@ class _ArInvoiceFormState extends State<_ArInvoiceForm> {
     return DraggableScrollableSheet(
       initialChildSize: 0.94, maxChildSize: 0.97, minChildSize: 0.5,
       builder: (_, scroll) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -527,7 +527,7 @@ class _ArInvoiceFormState extends State<_ArInvoiceForm> {
                 decoration: BoxDecoration(color: kBorder, borderRadius: BorderRadius.circular(99))),
               const Spacer(),
               Text(widget.invoice == null ? t.newInvoice : t.newInvoice,
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
               const Spacer(),
               TextButton(onPressed: () => Navigator.pop(context),
                 child: Text(t.back, style: const TextStyle(color: kMuted))),
@@ -563,12 +563,12 @@ class _ArInvoiceFormState extends State<_ArInvoiceForm> {
                 label: Text(t.addLine),
               ),
 
-              const Divider(color: kBorder),
+              Divider(color: kBorder),
               Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Text('Subtotal: RM ${fmt.format(_subtotal)}', style: const TextStyle(fontSize: 13, color: kMuted)),
                   Text('Total: RM ${fmt.format(_total)}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kText)),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kText)),
                 ]),
               ]),
 
@@ -600,12 +600,12 @@ class _ArInvoiceFormState extends State<_ArInvoiceForm> {
   Widget _tf(TextEditingController ctrl, String hint, {int maxLines = 1}) => TextField(
     controller: ctrl,
     maxLines: maxLines,
-    style: const TextStyle(fontSize: 14, color: kText),
+    style: TextStyle(fontSize: 14, color: kText),
     decoration: InputDecoration(
       hintText: hint, hintStyle: const TextStyle(color: kMuted, fontSize: 13),
       filled: true, fillColor: kBg,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
     ),
   );
@@ -668,7 +668,7 @@ class _LineItemRow extends StatelessWidget {
           Expanded(flex: 2, child: _miniField(item.priceCtrl, 'Unit Price', (v) { item.price = v; onChanged(); })),
           const SizedBox(width: 8),
           Text('RM ${fmt.format(item.amount)}',
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
         ]),
       ]),
     );
@@ -682,8 +682,8 @@ class _LineItemRow extends StatelessWidget {
     decoration: InputDecoration(
       hintText: hint,
       filled: true, fillColor: kSurface,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: kBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: kBorder)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: kBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: kBorder)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       isDense: true,
     ),
@@ -784,7 +784,7 @@ class _ApBillCard extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Expanded(child: Text(bill.billNo,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText))),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText))),
             _StatusBadge(status: s),
           ]),
           const SizedBox(height: 4),
@@ -794,7 +794,7 @@ class _ApBillCard extends StatelessWidget {
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Total', style: TextStyle(fontSize: 10, color: kMuted)),
               Text('RM ${fmt.format(bill.total)}',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
             ]),
             const SizedBox(width: 24),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -858,7 +858,7 @@ class _ApDetailSheetState extends State<_ApDetailSheet> {
     return DraggableScrollableSheet(
       initialChildSize: 0.65, maxChildSize: 0.95, minChildSize: 0.4,
       builder: (_, scroll) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         child: Column(children: [
           Padding(
@@ -869,7 +869,7 @@ class _ApDetailSheetState extends State<_ApDetailSheet> {
               const SizedBox(height: 14),
               Row(children: [
                 Expanded(child: Text(bill.billNo,
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: kText))),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: kText))),
                 _StatusBadge(status: bill.status),
                 IconButton(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined, color: kMuted)),
                 IconButton(
@@ -882,7 +882,7 @@ class _ApDetailSheetState extends State<_ApDetailSheet> {
               Text(bill.supplierName, style: const TextStyle(fontSize: 14, color: kMuted)),
             ]),
           ),
-          const Divider(color: kBorder),
+          Divider(color: kBorder),
           Expanded(child: ListView(controller: scroll, padding: const EdgeInsets.all(20), children: [
             Row(children: [
               Expanded(child: _AmountBox(label: 'Total',   value: fmt.format(bill.total),      color: kText)),
@@ -926,8 +926,8 @@ class _ApDetailSheetState extends State<_ApDetailSheet> {
                   decoration: InputDecoration(
                     hintText: t.amtPaid, prefixText: 'RM ',
                     filled: true, fillColor: kBg,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                 )),
@@ -1014,7 +1014,7 @@ class _ApBillFormState extends State<_ApBillForm> {
     return DraggableScrollableSheet(
     initialChildSize: 0.88, maxChildSize: 0.97, minChildSize: 0.5,
     builder: (_, scroll) => Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       child: Column(children: [
           Padding(
@@ -1022,7 +1022,7 @@ class _ApBillFormState extends State<_ApBillForm> {
             child: Row(children: [
               const Spacer(),
               Text(widget.bill == null ? t.newBill : t.newBill,
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
               const Spacer(),
               TextButton(onPressed: () => Navigator.pop(context),
                 child: Text(t.back, style: const TextStyle(color: kMuted))),
@@ -1065,12 +1065,12 @@ class _ApBillFormState extends State<_ApBillForm> {
     TextField(
       controller: ctrl, maxLines: maxLines,
       keyboardType: isNum ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
-      style: const TextStyle(fontSize: 14, color: kText),
+      style: TextStyle(fontSize: 14, color: kText),
       decoration: InputDecoration(
         hintText: hint, hintStyle: const TextStyle(color: kMuted, fontSize: 13),
         filled: true, fillColor: kBg,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
       ),
     );
@@ -1176,7 +1176,7 @@ class _TrialBalanceTab extends StatelessWidget {
                   border: Border.all(color: kBorder)),
                 child: Row(children: [
                   Expanded(flex: 3, child: Text(acc.name,
-                    style: const TextStyle(fontSize: 12, color: kText))),
+                    style: TextStyle(fontSize: 12, color: kText))),
                   Expanded(child: Text(dr > 0 ? fmt.format(dr) : '—',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
                       color: dr > 0 ? kText : kMuted), textAlign: TextAlign.right)),
@@ -1190,18 +1190,18 @@ class _TrialBalanceTab extends StatelessWidget {
         ],
 
         // Totals
-        const Divider(color: kBorder, thickness: 1.5),
+        Divider(color: kBorder, thickness: 1.5),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(color: kBg, borderRadius: BorderRadius.circular(8)),
           child: Row(children: [
-            const Expanded(flex: 3, child: Text('TOTAL',
+            Expanded(flex: 3, child: Text('TOTAL',
               style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: kText))),
             Expanded(child: Text('RM ${fmt.format(totalDr)}',
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kText),
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kText),
               textAlign: TextAlign.right)),
             Expanded(child: Text('RM ${fmt.format(totalCr)}',
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kText),
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kText),
               textAlign: TextAlign.right)),
           ]),
         ),
@@ -1247,7 +1247,7 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
       // Left panel — account list
       Container(
         width: 140,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           border: Border(right: BorderSide(color: kBorder)),
         ),
@@ -1267,10 +1267,10 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(acc.name, style: TextStyle(
                     fontSize: 11, fontWeight: FontWeight.w600,
-                    color: isSelected ? kDark : kText),
+                    color: kText),
                     maxLines: 2, overflow: TextOverflow.ellipsis),
                   Text(fmt.format(e.value.abs()),
-                    style: TextStyle(fontSize: 10, color: isSelected ? kDark : kMuted)),
+                    style: TextStyle(fontSize: 10, color: isSelected ? kText : kMuted)),
                 ]),
               ),
             );
@@ -1286,7 +1286,7 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: kSurface,
               child: Text(accounts[_selectedAcc]?.name ?? '',
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
             ),
             // Column headers
             Container(
@@ -1304,7 +1304,7 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   itemCount: selectedTxs.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1, color: kBorder),
+                  separatorBuilder: (_, __) => Divider(height: 1, color: kBorder),
                   itemBuilder: (_, i) {
                     final gl  = selectedTxs[i];
                     final isDr = gl.entry.dc == 'Dr';
@@ -1314,7 +1314,7 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
                         Expanded(flex: 2, child: Text(gl.tx.date,
                           style: const TextStyle(fontSize: 11, color: kMuted))),
                         Expanded(flex: 3, child: Text(gl.tx.descEN,
-                          style: const TextStyle(fontSize: 11, color: kText),
+                          style: TextStyle(fontSize: 11, color: kText),
                           maxLines: 2, overflow: TextOverflow.ellipsis)),
                         Expanded(child: Text(isDr ? fmt.format(gl.entry.val) : '—',
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
@@ -1434,7 +1434,7 @@ class _AgingCell extends StatelessWidget {
       Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
       const SizedBox(height: 3),
       Text(label, style: const TextStyle(fontSize: 8, color: kMuted)),
-      Text(fmt.format(value), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: kText)),
+      Text(fmt.format(value), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: kText)),
     ]));
   }
 }
@@ -1522,7 +1522,7 @@ class _DetailRow extends StatelessWidget {
     child: Row(children: [
       Text(label, style: const TextStyle(fontSize: 13, color: kMuted)),
       const Spacer(),
-      Text(value,  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
+      Text(value,  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
     ]),
   );
 }
@@ -1565,7 +1565,7 @@ class _DatePicker extends StatelessWidget {
       child: Row(children: [
         const Icon(Icons.calendar_today_outlined, size: 15, color: kMuted),
         const SizedBox(width: 8),
-        Text(value, style: const TextStyle(fontSize: 13, color: kText)),
+        Text(value, style: TextStyle(fontSize: 13, color: kText)),
       ]),
     ),
   );
@@ -1611,7 +1611,7 @@ class _EmptyState extends StatelessWidget {
     return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
       const Text('📄', style: TextStyle(fontSize: 48)),
       const SizedBox(height: 12),
-      Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+      Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
       const SizedBox(height: 20),
       ElevatedButton(
         onPressed: onAdd,

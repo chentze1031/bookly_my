@@ -266,7 +266,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 child: Row(children: [
                   const Text('📦', style: TextStyle(fontSize: 14)),
                   const SizedBox(width: 4),
-                  Text(tr(t.lang, 'PO', '采购单', 'PO'), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
+                  Text(tr(t.lang, 'PO', '采购单', 'PO'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
                 ]),
               ),
             ),
@@ -304,8 +304,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   onPressed: () { _searchCtrl.clear(); setState(() => _query = ''); },
                 ) : null,
                 filled: true, fillColor: kSurface,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               ),
             ),
@@ -370,12 +370,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
           // ── List ───────────────────────────────────────────────────
           Expanded(child: inv.loading
-            ? const Center(child: CircularProgressIndicator(color: kDark, strokeWidth: 2))
+            ? Center(child: CircularProgressIndicator(color: kText, strokeWidth: 2))
             : display.isEmpty
               ? _EmptyState(t: t, hasItems: inv.items.isNotEmpty, onAdd: () => _showForm())
               : RefreshIndicator(
                   onRefresh: inv.load,
-                  color: kDark,
+                  color: kText,
                   child: ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
                     itemCount: display.length,
@@ -459,7 +459,7 @@ class _ItemCard extends StatelessWidget {
           _Thumb(item: item),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(item.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText), maxLines: 1, overflow: TextOverflow.ellipsis),
+            Text(item.name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText), maxLines: 1, overflow: TextOverflow.ellipsis),
             if (item.sku.isNotEmpty)
               Text('SKU: ${item.sku}', style: const TextStyle(fontSize: 11, color: kMuted)),
             const SizedBox(height: 5),
@@ -484,7 +484,7 @@ class _ItemCard extends StatelessWidget {
           ])),
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text('RM ${fmt.format(item.sellPrice)}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
+            Text('RM ${fmt.format(item.sellPrice)}', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
             Text('${t.costPrice}: ${fmt.format(item.costPrice)}', style: const TextStyle(fontSize: 10, color: kMuted)),
             Text('${item.margin.toStringAsFixed(0)}%', style: TextStyle(fontSize: 10,
               color: item.margin >= 20 ? kGreen : Colors.orange, fontWeight: FontWeight.w600)),
@@ -519,7 +519,7 @@ class _ItemDetailSheetState extends State<_ItemDetailSheet> {
     return DraggableScrollableSheet(
       initialChildSize: 0.78, maxChildSize: 0.95, minChildSize: 0.45,
       builder: (_, scroll) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -533,7 +533,7 @@ class _ItemDetailSheetState extends State<_ItemDetailSheet> {
                 _Thumb(item: item, size: 44),
                 const SizedBox(width: 10),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(item.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: kText), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(item.name, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: kText), maxLines: 1, overflow: TextOverflow.ellipsis),
                   if (item.sku.isNotEmpty) Text('SKU: ${item.sku}', style: const TextStyle(fontSize: 11, color: kMuted)),
                 ])),
                 IconButton(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined, color: kMuted)),
@@ -576,7 +576,7 @@ class _ItemDetailSheetState extends State<_ItemDetailSheet> {
             ]),
           ),
           const SizedBox(height: 6),
-          const Divider(color: kBorder, height: 1),
+          Divider(color: kBorder, height: 1),
 
           Expanded(child: _tab == 1
             ? _HistoryList(t: t, item: item, future: _movs!)
@@ -610,7 +610,7 @@ class _HistoryList extends StatelessWidget {
     future: future,
     builder: (_, snap) {
       if (!snap.hasData) {
-        return const Center(child: CircularProgressIndicator(color: kDark, strokeWidth: 2));
+        return Center(child: CircularProgressIndicator(color: kText, strokeWidth: 2));
       }
       final movs = snap.data!;
       if (movs.isEmpty) {
@@ -634,7 +634,7 @@ class _HistoryList extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(t.zh ? '$zh $en' : '$en $zh',
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
                 Text(when, style: const TextStyle(fontSize: 10, color: kMuted)),
                 if (m.invoiceNo?.isNotEmpty == true)
                   Text('${t.invoiceRef}: ${m.invoiceNo}', style: const TextStyle(fontSize: 11, color: kBlue)),
@@ -778,8 +778,8 @@ class _StockAdjustCardState extends State<_StockAdjustCard> {
               hintText: _mode == 'set' ? t.newQty : t.qty,
               suffixText: item.unit,
               filled: true, fillColor: kSurface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           )),
@@ -806,8 +806,8 @@ class _StockAdjustCardState extends State<_StockAdjustCard> {
             hintText: t.noteOpt,
             hintStyle: const TextStyle(fontSize: 12, color: kMuted),
             filled: true, fillColor: kSurface, isDense: true,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
           ),
         ),
@@ -831,7 +831,7 @@ class _DetailRow extends StatelessWidget {
     child: Row(children: [
       Text(label, style: const TextStyle(fontSize: 13, color: kMuted)),
       const Spacer(),
-      Flexible(child: Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText))),
+      Flexible(child: Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText))),
     ]),
   );
 }
@@ -960,7 +960,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
     return DraggableScrollableSheet(
       initialChildSize: 0.92, maxChildSize: 0.96, minChildSize: 0.5,
       builder: (_, scroll) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -970,7 +970,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
             child: Column(children: [
               Container(width: 40, height: 4, decoration: BoxDecoration(color: kBorder, borderRadius: BorderRadius.circular(99))),
               const SizedBox(height: 12),
-              Text(isEdit ? t.editItem : t.newItem, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+              Text(isEdit ? t.editItem : t.newItem, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
             ]),
           ),
           Expanded(
@@ -1050,7 +1050,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                       child: DropdownButton<int?>(
                         value: _whId,
                         isExpanded: true,
-                        style: const TextStyle(fontSize: 14, color: kText),
+                        style: TextStyle(fontSize: 14, color: kText),
                         items: [
                           DropdownMenuItem<int?>(value: null, child: Text(tr(t.lang, 'Unassigned', '未分配', 'Tidak Ditetapkan'), style: const TextStyle(color: kMuted))),
                           for (final w in widget.warehouses)
@@ -1099,12 +1099,12 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
     controller: ctrl,
     keyboardType: isNum ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
     maxLines: maxLines,
-    style: const TextStyle(fontSize: 14, color: kText),
+    style: TextStyle(fontSize: 14, color: kText),
     decoration: InputDecoration(
       hintText: hint, hintStyle: const TextStyle(color: kMuted, fontSize: 13),
       filled: true, fillColor: kBg,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kDark, width: 1.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
     ),
@@ -1163,7 +1163,7 @@ class _ReportsTabState extends State<_ReportsTab> {
       future: _future,
       builder: (_, snap) {
         if (!snap.hasData) {
-          return const Center(child: CircularProgressIndicator(color: kDark, strokeWidth: 2));
+          return Center(child: CircularProgressIndicator(color: kText, strokeWidth: 2));
         }
         final all = snap.data!;
         final cutoff = DateTime.now().subtract(Duration(days: _days)).toIso8601String();
@@ -1174,7 +1174,7 @@ class _ReportsTabState extends State<_ReportsTab> {
         final lowList = [...inv.outOfStock, ...inv.lowStock];
 
         return RefreshIndicator(
-          color: kDark,
+          color: kText,
           onRefresh: () async => setState(() =>
             _future = context.read<InventoryState>().allMovements(days: 90)),
           child: ListView(padding: const EdgeInsets.all(16), children: [
@@ -1252,7 +1252,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800,
                             color: i == 0 ? kGold : kMuted))),
                         Expanded(child: Text(e.item.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))),
                         Text('${qfmt.format(e.sold)} ${e.item.unit} ${t.soldSuffix}',
                           style: const TextStyle(fontSize: 12, color: kGreen, fontWeight: FontWeight.w700)),
                       ]),
@@ -1269,7 +1269,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                       padding: const EdgeInsets.symmetric(vertical: 5),
                       child: Row(children: [
                         Expanded(child: Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))),
                         Text('${qfmt.format(item.qty)} ${item.unit} · RM ${fmt.format(item.stockValue)}',
                           style: const TextStyle(fontSize: 12, color: kMuted)),
                       ]),
@@ -1288,7 +1288,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                         Text(item.isOutOfStock ? '🔴' : '🟠', style: const TextStyle(fontSize: 13)),
                         const SizedBox(width: 8),
                         Expanded(child: Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))),
                         Text('${qfmt.format(item.qty)} ${item.unit}',
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
                             color: item.isOutOfStock ? kRed : Colors.orange)),
@@ -1327,7 +1327,7 @@ class _ReportCard extends StatelessWidget {
       color: kSurface, borderRadius: BorderRadius.circular(14),
       border: Border.all(color: kBorder)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
+      Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
       const SizedBox(height: 10),
       child,
     ]),
@@ -1364,7 +1364,7 @@ class _Dropdown extends StatelessWidget {
       child: DropdownButton<String?>(
         value: value,
         isExpanded: true,
-        style: const TextStyle(fontSize: 14, color: kText),
+        style: TextStyle(fontSize: 14, color: kText),
         items: [
           if (nullable) const DropdownMenuItem(value: null, child: Text('—', style: TextStyle(color: kMuted))),
           ...items.map((i) => DropdownMenuItem(value: i, child: Text(i))),
@@ -1398,7 +1398,7 @@ class _EmptyState extends StatelessWidget {
     child: Column(mainAxisSize: MainAxisSize.min, children: [
       const Text('📦', style: TextStyle(fontSize: 48)),
       const SizedBox(height: 12),
-      Text(hasItems ? t.noResults : t.noInventory, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
+      Text(hasItems ? t.noResults : t.noInventory, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: kText)),
       const SizedBox(height: 6),
       Text(hasItems ? t.trysearch : t.addFirst, style: const TextStyle(fontSize: 13, color: kMuted)),
       if (!hasItems) ...[
@@ -1449,7 +1449,7 @@ class _PickerSheetState extends State<_PickerSheet> {
     return DraggableScrollableSheet(
       initialChildSize: 0.75, maxChildSize: 0.92, minChildSize: 0.4,
       builder: (_, scroll) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         child: Column(children: [
@@ -1458,7 +1458,7 @@ class _PickerSheetState extends State<_PickerSheet> {
             child: Column(children: [
               Container(width: 40, height: 4, decoration: BoxDecoration(color: kBorder, borderRadius: BorderRadius.circular(99))),
               const SizedBox(height: 12),
-              Text('📦 ${t.inventory}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+              Text('📦 ${t.inventory}', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
               const SizedBox(height: 10),
               TextField(
                 onChanged: (v) => setState(() => _q = v),
@@ -1467,15 +1467,15 @@ class _PickerSheetState extends State<_PickerSheet> {
                   hintStyle: const TextStyle(color: kMuted, fontSize: 13),
                   prefixIcon: const Icon(Icons.search, color: kMuted, size: 20),
                   filled: true, fillColor: kBg, isDense: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
               ),
             ]),
           ),
           Expanded(child: inv.loading
-            ? const Center(child: CircularProgressIndicator(color: kDark, strokeWidth: 2))
+            ? Center(child: CircularProgressIndicator(color: kText, strokeWidth: 2))
             : list.isEmpty
               ? Center(child: Text(t.noResults, style: const TextStyle(color: kMuted, fontSize: 13)))
               : ListView.separated(
@@ -1497,14 +1497,14 @@ class _PickerSheetState extends State<_PickerSheet> {
                           const SizedBox(width: 10),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
                             Text('${qfmt.format(item.qty)} ${item.unit}',
                               style: TextStyle(fontSize: 11,
                                 color: item.isOutOfStock ? kRed : kMuted,
                                 fontWeight: item.isOutOfStock ? FontWeight.w700 : FontWeight.w400)),
                           ])),
                           Text('RM ${fmt.format(item.sellPrice)}',
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: kText)),
+                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: kText)),
                         ]),
                       ),
                     );

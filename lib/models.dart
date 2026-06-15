@@ -222,6 +222,7 @@ class AppSettings {
   final String bankAcct;    // Default bank account number
   final String? logoBase64; // Company logo (data:image/png;base64,...)
   final String? sigBase64;  // Authorised signature (data:image/png;base64,...)
+  final bool dark;          // Dark mode (device-local; not cloud-synced)
 
   const AppSettings({
     this.lang = 'en',
@@ -237,6 +238,7 @@ class AppSettings {
     this.bankAcct = '',
     this.logoBase64,
     this.sigBase64,
+    this.dark = false,
   });
 
   AppSettings copyWith({
@@ -244,9 +246,10 @@ class AppSettings {
     String? coReg, String? coAddr, String? coPhone,
     String? coEmail, String? displayCurrency,
     String? coTin, String? bankName, String? bankAcct,
-    String? logoBase64, String? sigBase64,
+    String? logoBase64, String? sigBase64, bool? dark,
     bool clearLogo = false, bool clearSig = false,
   }) => AppSettings(
+    dark: dark ?? this.dark,
     lang: lang ?? this.lang,
     companyName: companyName ?? this.companyName,
     sstRegNo: sstRegNo ?? this.sstRegNo,

@@ -77,7 +77,7 @@ class HomeScreen extends StatelessWidget {
                 // ── Hero ───────────────────────────────────────────────────
                 Container(
                   padding: const EdgeInsets.fromLTRB(24, 28, 24, 26),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: kDark,
                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
                   ),
@@ -264,7 +264,7 @@ class HomeScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(t.topSpend, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
+                          Text(t.topSpend, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
                           const SizedBox(height: 12),
                           ...top.map((e) => Padding(
                             padding: const EdgeInsets.only(bottom: 10),
@@ -272,7 +272,7 @@ class HomeScreen extends StatelessWidget {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('${e.cat.icon} ${e.cat.label(lang)}', style: const TextStyle(fontSize: 13, color: kText)),
+                                  Text('${e.cat.icon} ${e.cat.label(lang)}', style: TextStyle(fontSize: 13, color: kText)),
                                   Text('-${fmtShort(e.total)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kRed)),
                                 ],
                               ),
@@ -305,14 +305,14 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Padding(
                             padding: const EdgeInsets.fromLTRB(14, 13, 14, 8),
-                            child: Text(t.recent, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
+                            child: Text(t.recent, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
                           ),
                           ...recentFew.asMap().entries.map((e) {
                             final tx = e.value;
                             final cat = findCat(tx.catId);
                             return Container(
                               decoration: BoxDecoration(
-                                border: e.key > 0 ? const Border(top: BorderSide(color: kBorder)) : null,
+                                border: e.key > 0 ? Border(top: BorderSide(color: kBorder)) : null,
                               ),
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                               child: Row(children: [
@@ -328,7 +328,7 @@ class HomeScreen extends StatelessWidget {
                                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                   Text(lang == 'zh' ? tx.descZH : tx.descEN,
                                     maxLines: 1, overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
                                   Text(fmtDate(tx.date, lang),
                                     style: const TextStyle(fontSize: 11, color: kMuted)),
                                 ])),
@@ -614,7 +614,7 @@ class _HistoryBtn extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Text(label,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kText),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kText),
             maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
         const Icon(Icons.chevron_right, size: 16, color: kMuted),

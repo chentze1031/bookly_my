@@ -112,7 +112,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                     value: assignedHere,
                     activeColor: kGreen,
                     onChanged: (_) => _toggleAssign(it.id, _managing!),
-                    title: Text(it.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kText)),
+                    title: Text(it.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kText)),
                     subtitle: Text([
                       if (it.sku.isNotEmpty) it.sku,
                       '${tr(lang, 'Qty', '库存', 'Kuantiti')} ${it.qty % 1 == 0 ? it.qty.toInt() : it.qty}',
@@ -131,7 +131,7 @@ class _WarehouseState extends State<WarehouseScreen> {
       appBar: AppBar(
         title: Text(tr(lang, '🏬 Warehouses', '🏬 仓库 / 门店', '🏬 Gudang / Kedai')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
-        actions: [IconButton(icon: const Icon(Icons.add, color: kText), onPressed: () => _addOrRename())],
+        actions: [IconButton(icon: Icon(Icons.add, color: kText), onPressed: () => _addOrRename())],
       ),
       body: _loading ? const Center(child: CircularProgressIndicator())
         : _list.isEmpty
@@ -155,7 +155,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                   const Text('🏬', style: TextStyle(fontSize: 22)),
                   const SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(wh['name'] ?? '', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kText)),
+                    Text(wh['name'] ?? '', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: kText)),
                     Text('$count ${tr(lang, 'items', '件物品', 'item')}', style: const TextStyle(fontSize: 11, color: kMuted)),
                   ])),
                   TextButton(onPressed: () => setState(() => _managing = wh['id'] as int),

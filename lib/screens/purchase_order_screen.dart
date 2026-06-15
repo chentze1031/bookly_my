@@ -116,7 +116,7 @@ class _PoHistState extends State<PurchaseOrderHistoryScreen> {
       appBar: AppBar(
         title: Text(t.poHistory),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
-        actions: [IconButton(icon: const Icon(Icons.add, color: kText), onPressed: () async {
+        actions: [IconButton(icon: Icon(Icons.add, color: kText), onPressed: () async {
           await Navigator.push(context, MaterialPageRoute(builder: (_) => const PurchaseOrderSheet()));
           _load();
         })],
@@ -175,10 +175,10 @@ class _PoCard extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          decoration: const BoxDecoration(color: kBg, borderRadius: BorderRadius.vertical(top: Radius.circular(14)), border: Border(bottom: BorderSide(color: kBorder))),
+          decoration: BoxDecoration(color: kBg, borderRadius: BorderRadius.vertical(top: Radius.circular(14)), border: Border(bottom: BorderSide(color: kBorder))),
           child: Row(children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(po['poNo'] ?? '—', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kText)),
+              Text(po['poNo'] ?? '—', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kText)),
               Text(po['poDate'] ?? '', style: const TextStyle(fontSize: 11, color: kMuted)),
             ])),
             Container(
@@ -192,7 +192,7 @@ class _PoCard extends StatelessWidget {
                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: received ? kGreen : const Color(0xFFD97706))),
             ),
             const SizedBox(width: 10),
-            Text(fmtMYR(total), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
+            Text(fmtMYR(total), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kText)),
           ]),
         ),
         Padding(
@@ -200,7 +200,7 @@ class _PoCard extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             if ((supplier['name'] ?? '').toString().isNotEmpty)
               Row(children: [const Text('🏭 ', style: TextStyle(fontSize: 13)),
-                Text(supplier['name'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))]),
+                Text(supplier['name'], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))]),
             const SizedBox(height: 4),
             Text('${items.length} item${items.length == 1 ? '' : 's'}', style: const TextStyle(fontSize: 12, color: kMuted)),
             const SizedBox(height: 10),
@@ -208,7 +208,7 @@ class _PoCard extends StatelessWidget {
               Expanded(child: OutlinedButton.icon(
                 onPressed: onEdit, icon: const Icon(Icons.edit_outlined, size: 14),
                 label: Text(tr(lang, 'Edit', '编辑', 'Sunting')),
-                style: OutlinedButton.styleFrom(foregroundColor: kText, side: const BorderSide(color: kBorder),
+                style: OutlinedButton.styleFrom(foregroundColor: kText, side: BorderSide(color: kBorder),
                   padding: const EdgeInsets.symmetric(vertical: 7), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))))),
               const SizedBox(width: 8),
               Expanded(child: OutlinedButton.icon(
@@ -361,7 +361,7 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
         backgroundColor: kSurface, elevation: 0,
         leading: IconButton(icon: const Icon(Icons.close, color: kMuted), onPressed: () => Navigator.pop(context)),
         title: Row(children: [const Text('📦 ', style: TextStyle(fontSize: 20)),
-          Text(t.purchaseOrder, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText))]),
+          Text(t.purchaseOrder, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText))]),
         actions: [
           SmBtn(label: _saving ? '…' : '💾 ${t.save}', color: kGreenBg, borderColor: kGreenBd, textColor: kGreen, onTap: _saving ? () {} : _save),
           const SizedBox(width: 8),
@@ -392,7 +392,7 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
                 child: Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text((_supplier['name'] ?? '') as String,
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                     if (((_supplier['phone'] ?? '') as String).isNotEmpty)
                       Text(_supplier['phone'] as String, style: const TextStyle(fontSize: 11, color: kMuted)),
                     if (((_supplier['address'] ?? '') as String).isNotEmpty)
@@ -417,8 +417,8 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
             DashedBtn(label: '+ ${t.addLine}', onTap: () => setState(() => _items.add({'desc': '', 'qty': '1', 'price': '', 'inv_id': ''}))),
             const SizedBox(height: 14),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(tr(lang, 'TOTAL', '总计', 'JUMLAH'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kText)),
-              Text(fmtMYR(_total), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
+              Text(tr(lang, 'TOTAL', '总计', 'JUMLAH'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kText)),
+              Text(fmtMYR(_total), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
             ]),
           ])),
           const SizedBox(height: 12),
@@ -509,7 +509,7 @@ class _SuppMgrState extends State<SupplierManagerScreen> {
     }
 
     return Container(
-      decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88 - MediaQuery.of(context).viewInsets.bottom),
       child: Column(children: [
         SheetHandle(title: tr(lang, 'Suppliers', '供应商管理', 'Pembekal')),
@@ -548,7 +548,7 @@ class _SuppCard extends StatelessWidget {
     padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
     child: Row(children: [
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(supplier.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+        Text(supplier.name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
         if (supplier.regNo.isNotEmpty) Text('Reg: ${supplier.regNo}', style: const TextStyle(fontSize: 11, color: kMuted)),
         if (supplier.phone.isNotEmpty) Text(supplier.phone, style: const TextStyle(fontSize: 11, color: kMuted)),
       ])),
@@ -585,7 +585,7 @@ class _SuppEditFormState extends State<_SuppEditForm> {
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardH),
       child: Container(
-        decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
         child: Column(children: [
           SheetHandle(title: _s.id == 0 ? tr(lang, 'New Supplier', '新增供应商', 'Pembekal Baharu') : tr(lang, 'Supplier', '供应商', 'Pembekal'),

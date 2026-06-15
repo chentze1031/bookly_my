@@ -1,16 +1,19 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'constants.dart';
 
 class AppTheme {
-  static ThemeData get light => ThemeData(
+  // Single dynamic theme — brightness + neutral colours follow `kDarkMode`
+  // (the k* neutrals are getters that swap with the active theme).
+  static ThemeData get theme => ThemeData(
     useMaterial3: true,
     fontFamily: 'Helvetica Neue',
+    brightness: kDarkMode ? Brightness.dark : Brightness.light,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: kDark,
-      brightness: Brightness.light,
+      seedColor: const Color(0xFF18160F),
+      brightness: kDarkMode ? Brightness.dark : Brightness.light,
     ),
     scaffoldBackgroundColor: kBg,
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: kSurface,
       foregroundColor: kText,
       elevation: 0,
@@ -22,12 +25,12 @@ class AppTheme {
         letterSpacing: -0.5,
       ),
     ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: kSurface,
       selectedItemColor: kText,
       unselectedItemColor: kMuted,
-      selectedLabelStyle: TextStyle(fontWeight: FontWeight.w800, fontSize: 10),
-      unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w400, fontSize: 10),
+      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 10),
+      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w400, fontSize: 10),
       elevation: 0,
       type: BottomNavigationBarType.fixed,
     ),
@@ -43,7 +46,7 @@ class AppTheme {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: kMuted,
-        side: const BorderSide(color: kBorder),
+        side: BorderSide(color: kBorder),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -54,15 +57,15 @@ class AppTheme {
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: kBorder),
+        borderSide: BorderSide(color: kBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: kBorder),
+        borderSide: BorderSide(color: kBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: kText, width: 1.5),
+        borderSide: BorderSide(color: kText, width: 1.5),
       ),
     ),
     cardTheme: CardThemeData(
@@ -70,7 +73,7 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: kBorder),
+        side: BorderSide(color: kBorder),
       ),
     ),
   );

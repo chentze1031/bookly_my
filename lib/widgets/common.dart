@@ -38,7 +38,7 @@ class SectionCard extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: kBg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
             border: Border(bottom: BorderSide(color: kBorder)),
@@ -121,11 +121,11 @@ class FieldInput extends StatelessWidget {
           hintText: placeholder,
           filled: true, fillColor: kBg,
           contentPadding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(11), borderSide: const BorderSide(color: kBorder, width: 1.5)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(11), borderSide: const BorderSide(color: kBorder, width: 1.5)),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(11), borderSide: const BorderSide(color: kText, width: 1.5)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(11), borderSide: BorderSide(color: kBorder, width: 1.5)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(11), borderSide: BorderSide(color: kBorder, width: 1.5)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(11), borderSide: BorderSide(color: kText, width: 1.5)),
         ),
-        style: const TextStyle(fontSize: 14, color: kText),
+        style: TextStyle(fontSize: 14, color: kText),
       ),
       const SizedBox(height: 10),
     ],
@@ -158,7 +158,7 @@ class ToggleRow extends StatelessWidget {
       ),
       child: Row(children: [
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
+          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
           if (sublabel != null)
             Text(sublabel!, style: const TextStyle(fontSize: 11, color: kMuted)),
         ])),

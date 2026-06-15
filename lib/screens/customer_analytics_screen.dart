@@ -135,7 +135,7 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
 
                 // ── Ranking ────────────────────────────────────────────────
                 Text(tr(lang, 'Top Customers', '客户排行', 'Pelanggan Teratas'),
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
                 const SizedBox(height: 10),
                 ..._stats.asMap().entries.map((e) => _CustomerRow(
                   rank:  e.key + 1,
@@ -159,7 +159,7 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -169,14 +169,14 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
             padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
             child: Row(children: [
               Expanded(child: Text(s.name,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText))),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText))),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: const Icon(Icons.close, size: 20, color: kMuted),
               ),
             ]),
           ),
-          const Divider(height: 1, color: kBorder),
+          Divider(height: 1, color: kBorder),
           Flexible(
             child: ListView(
               padding: const EdgeInsets.all(20),
@@ -204,7 +204,7 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
                 ],
                 const SizedBox(height: 20),
                 Text(tr(lang, 'Top Items', '常买项目', 'Item Teratas'),
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
                 const SizedBox(height: 8),
                 if (topItems.isEmpty)
                   Text(tr(lang, 'No item details', '无项目明细', 'Tiada butiran item'),
@@ -214,13 +214,13 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(children: [
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(it.key, style: const TextStyle(fontSize: 13, color: kText),
+                        Text(it.key, style: TextStyle(fontSize: 13, color: kText),
                             maxLines: 1, overflow: TextOverflow.ellipsis),
                         Text('${tr(lang, 'Qty', '数量', 'Kuantiti')} ${_fmtQty(s.itemQtys[it.key] ?? 0)}',
                             style: const TextStyle(fontSize: 11, color: kMuted)),
                       ])),
                       Text(fmtMYR(it.value),
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kText)),
                     ]),
                   )),
                 const SizedBox(height: 20),
@@ -304,7 +304,7 @@ class _CustomerRow extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(stat.name,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
               Text('${stat.count} ${tr(lang, 'orders', '单', 'pesanan')}'
                    '${stat.lastDate.isNotEmpty ? ' · ${tr(lang, 'last', '最近', 'akhir')} ${stat.lastDate}' : ''}',
@@ -312,7 +312,7 @@ class _CustomerRow extends StatelessWidget {
             ])),
             const SizedBox(width: 8),
             Text(fmtMYR(stat.total),
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
           ]),
           const SizedBox(height: 8),
           ClipRRect(

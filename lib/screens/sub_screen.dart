@@ -79,7 +79,7 @@ class _SubScreenState extends State<SubScreen> {
     final lang = context.watch<AppState>().settings.lang; final zh = lang == 'zh';
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: kSurface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -105,7 +105,7 @@ class _SubScreenState extends State<SubScreen> {
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   width: 32, height: 32,
-                  decoration: const BoxDecoration(color: kBg, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: kBg, shape: BoxShape.circle),
                   child: const Icon(Icons.close, size: 18, color: kMuted),
                 ),
               ),
@@ -167,7 +167,7 @@ class _SubScreenState extends State<SubScreen> {
                 Text(f.$1, style: const TextStyle(fontSize: 18)),
                 const SizedBox(width: 12),
                 Expanded(child: Text(zh ? f.$3 : f.$2,
-                  style: const TextStyle(fontSize: 13, color: kText))),
+                  style: TextStyle(fontSize: 13, color: kText))),
               ]),
             )),
             const SizedBox(height: 20),

@@ -149,7 +149,7 @@ class _SettingsState extends State<SettingsScreen> {
             leading: const Text('📊', style: TextStyle(fontSize: 28)),
             title: Text(
               tr(t.lang, 'Bi-Monthly SST-02 Summary', 'SST-02 双月申报摘要', 'Ringkasan SST-02 Dwi-Bulan'),
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText),
             ),
             subtitle: Text(
               tr(t.lang, 'Taxable sales & SST grouped by rate', '按税率汇总应税销售额与 SST', 'Jualan bercukai & SST mengikut kadar'),
@@ -169,7 +169,7 @@ class _SettingsState extends State<SettingsScreen> {
             leading: const Text('🔁', style: TextStyle(fontSize: 28)),
             title: Text(
               tr(t.lang, 'Recurring Transactions', '定期自动记账', 'Transaksi Berulang'),
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText),
             ),
             subtitle: Text(
               tr(t.lang, 'Auto-create rent, subscriptions monthly/weekly', '租金、订阅等按月/周自动生成', 'Auto-jana sewa, langganan bulanan/mingguan'),
@@ -212,6 +212,21 @@ class _SettingsState extends State<SettingsScreen> {
           ),
         ),
 
+        // ── Theme (Phase 4 #23) ──────────────────────────────────────────
+        SectionCard(
+          title: '🌗 ${tr(t.lang, 'Theme', '主题', 'Tema')}',
+          child: SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+            value: s.dark,
+            activeColor: kDark,
+            title: Text(tr(t.lang, 'Dark mode', '深色模式', 'Mod Gelap'),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kText)),
+            subtitle: Text(tr(t.lang, 'Easier on the eyes at night', '夜间护眼', 'Lebih selesa pada waktu malam'),
+              style: const TextStyle(fontSize: 12, color: kMuted)),
+            onChanged: (v) => upd(s.copyWith(dark: v)),
+          ),
+        ),
+
         // ── FX Rates ────────────────────────────────────────────────────
         SectionCard(
           title: '💱 ${t.fxLive}',
@@ -237,7 +252,7 @@ class _SettingsState extends State<SettingsScreen> {
                       const SizedBox(width: 4),
                       Expanded(child: Text(
                         (app.fxRates[code] ?? 0).toStringAsFixed(4),
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 11, color: kText, fontFamily: 'monospace'),
                       )),
                     ]),
@@ -257,7 +272,7 @@ class _SettingsState extends State<SettingsScreen> {
         ),
 
         // ── Version ─────────────────────────────────────────────────────
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(vertical: 10),
           child: Column(children: [
             Text('Bookly MY',
@@ -291,7 +306,7 @@ class _LoggedInTile extends StatelessWidget {
         leading: avatar != null
           ? ClipOval(child: Image.network(avatar, width: 42, height: 42, fit: BoxFit.cover,
               errorBuilder: (_,__,___) => const CircleAvatar(child: Icon(Icons.person))))
-          : const CircleAvatar(backgroundColor: kBorder, child: Icon(Icons.person, color: kMuted)),
+          : CircleAvatar(backgroundColor: kBorder, child: Icon(Icons.person, color: kMuted)),
         title: Text(name.toString(),
           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
         subtitle: Text(email,
@@ -306,7 +321,7 @@ class _LoggedInTile extends StatelessWidget {
             style: TextStyle(fontSize: 11, color: kGreen, fontWeight: FontWeight.w700)),
         ),
       ),
-      const Divider(height: 1, color: kBorder, indent: 16),
+      Divider(height: 1, color: kBorder, indent: 16),
       // Sign out button
       ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14),
@@ -371,7 +386,7 @@ class _GuestTile extends StatelessWidget {
     return Column(children: [
       ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        leading: const CircleAvatar(
+        leading: CircleAvatar(
           backgroundColor: kBorder,
           child: Icon(Icons.person_outline, color: kMuted)),
         title: Text(tr(t.lang, 'Guest Mode', '访客模式', 'Mod Tetamu'),
@@ -389,7 +404,7 @@ class _GuestTile extends StatelessWidget {
             style: TextStyle(fontSize: 11, color: Color(0xFF856404), fontWeight: FontWeight.w700)),
         ),
       ),
-      const Divider(height: 1, color: kBorder, indent: 16),
+      Divider(height: 1, color: kBorder, indent: 16),
       // Sign in button
       Padding(
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),

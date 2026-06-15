@@ -221,7 +221,7 @@ class _PickView extends StatelessWidget {
             child: const Center(child: Text('📄', style: TextStyle(fontSize: 48))),
           ),
           const SizedBox(height: 24),
-          const Text('Import Bank Statement', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: kText)),
+          Text('Import Bank Statement', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: kText)),
           const SizedBox(height: 8),
           const Text(
             'Upload your bank statement PDF.\nGemini AI will extract and categorise all transactions automatically.',
@@ -279,7 +279,7 @@ class _PreviewView extends StatelessWidget {
             const Text('📄', style: TextStyle(fontSize: 36)),
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(fileName, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText), maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(fileName, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText), maxLines: 2, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 4),
               const Text('Ready to parse', style: TextStyle(fontSize: 12, color: kMuted)),
             ])),
@@ -288,7 +288,7 @@ class _PreviewView extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         if (parsing) ...[
-          const CircularProgressIndicator(color: kDark, strokeWidth: 2),
+          CircularProgressIndicator(color: kText, strokeWidth: 2),
           const SizedBox(height: 16),
           const Text('Gemini AI is reading your statement...', style: TextStyle(color: kMuted)),
           const SizedBox(height: 6),
@@ -351,9 +351,9 @@ class _ReviewView extends StatelessWidget {
       // Header bar
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: const BoxDecoration(color: kSurface, border: Border(bottom: BorderSide(color: kBorder))),
+        decoration: BoxDecoration(color: kSurface, border: Border(bottom: BorderSide(color: kBorder))),
         child: Row(children: [
-          Text('${parsed.length} transactions found', style: const TextStyle(fontWeight: FontWeight.w700, color: kText)),
+          Text('${parsed.length} transactions found', style: TextStyle(fontWeight: FontWeight.w700, color: kText)),
           const Spacer(),
           GestureDetector(
             onTap: () => onToggleAll(!allSelected),
@@ -367,7 +367,7 @@ class _ReviewView extends StatelessWidget {
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: parsed.length,
-          separatorBuilder: (_, __) => const Divider(height: 1, color: kBorder, indent: 16, endIndent: 16),
+          separatorBuilder: (_, __) => Divider(height: 1, color: kBorder, indent: 16, endIndent: 16),
           itemBuilder: (_, i) {
             final tx  = parsed[i];
             final cat = [...incomeCategories, ...expenseCategories].firstWhere((c) => c.id == tx.catId, orElse: () => expenseCategories.last);
@@ -381,7 +381,7 @@ class _ReviewView extends StatelessWidget {
                 Text(cat.icon, style: const TextStyle(fontSize: 18)),
                 const SizedBox(width: 8),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(tx.description, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(tx.description, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText), maxLines: 1, overflow: TextOverflow.ellipsis),
                   Text('${tx.date}  ·  ${cat.enLabel}', style: const TextStyle(fontSize: 11, color: kMuted)),
                 ])),
               ]),
@@ -409,7 +409,7 @@ class _ReviewView extends StatelessWidget {
       // Bottom bar
       Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-        decoration: const BoxDecoration(color: kSurface, border: Border(top: BorderSide(color: kBorder))),
+        decoration: BoxDecoration(color: kSurface, border: Border(top: BorderSide(color: kBorder))),
         child: SizedBox(
           width: double.infinity, height: 52,
           child: ElevatedButton(
@@ -442,7 +442,7 @@ class _DoneView extends StatelessWidget {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const Text('✅', style: TextStyle(fontSize: 64)),
           const SizedBox(height: 20),
-          Text('$count Transaction${count == 1 ? '' : 's'} Imported!', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kText)),
+          Text('$count Transaction${count == 1 ? '' : 's'} Imported!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kText)),
           const SizedBox(height: 8),
           const Text('All selected transactions have been added to your records.', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: kMuted)),
           const SizedBox(height: 32),
@@ -484,7 +484,7 @@ class _ProGate extends StatelessWidget {
               child: const Center(child: Text('✦', style: TextStyle(fontSize: 36, color: Colors.white))),
             ),
             const SizedBox(height: 24),
-            const Text('Pro Feature', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kText)),
+            Text('Pro Feature', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: kText)),
             const SizedBox(height: 10),
             const Text(
               'This feature is available for Pro subscribers.\nUpgrade to unlock AI-powered tools.',

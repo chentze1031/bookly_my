@@ -32,7 +32,7 @@ class SheetHandle extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: kBorder))),
     child: Column(children: [
       Center(
@@ -45,7 +45,7 @@ class SheetHandle extends StatelessWidget {
       const SizedBox(height: 10),
       Row(children: [
         Text(title,
-            style: const TextStyle(
+            style: TextStyle(
                 fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
         const Spacer(),
         if (trailing != null) trailing!,
@@ -151,7 +151,7 @@ class _CustMgrState extends State<CustomerManagerScreen> {
     }
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(
@@ -223,7 +223,7 @@ class _CustEditFormState extends State<_CustEditForm> {
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardH),
       child: Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(
@@ -329,7 +329,7 @@ class _CustCard extends StatelessWidget {
       Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(customer.name,
-            style: const TextStyle(
+            style: TextStyle(
                 fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
         if (customer.regNo.isNotEmpty)
           Text('Reg: ${customer.regNo}',
@@ -712,7 +712,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardH),
       child: Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       height: MediaQuery.of(context).size.height * 0.96 - keyboardH,
@@ -720,14 +720,14 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
         // Top bar
         Container(
           padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: kBorder))),
           child: Row(children: [
             const Text('🧾 ', style: TextStyle(fontSize: 20)),
             Expanded(
               child: Text(t.invoice,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
             ),
             const SizedBox(width: 8),
@@ -754,7 +754,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                 child: Container(
                     width: 32,
                     height: 32,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                         color: kBg, shape: BoxShape.circle),
                     child: const Icon(Icons.close, size: 18, color: kMuted))),
           ]),
@@ -865,7 +865,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                                   },
                                   style: OutlinedButton.styleFrom(
                                       foregroundColor: kMuted,
-                                      side: const BorderSide(color: kBorder)),
+                                      side: BorderSide(color: kBorder)),
                                   child: Text(t.clearSig))),
                           const SizedBox(width: 10),
                           Expanded(
@@ -1052,7 +1052,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                   Container(
                     margin: const EdgeInsets.only(top: 8),
                     padding: const EdgeInsets.only(top: 10),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                         border: Border(
                             top: BorderSide(color: kBorder, width: 2))),
                     child: Row(
@@ -1062,7 +1062,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                               style: const TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w900)),
                           Text(fmtMYR(_grand),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w900,
                                   color: kText)),
@@ -1318,11 +1318,11 @@ class _InlineField extends StatelessWidget {
             const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(9),
-            borderSide: const BorderSide(color: kBorder)),
+            borderSide: BorderSide(color: kBorder)),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(9),
-            borderSide: const BorderSide(color: kBorder))),
-    style: style ?? const TextStyle(fontSize: 13, color: kText),
+            borderSide: BorderSide(color: kBorder))),
+    style: style ?? TextStyle(fontSize: 13, color: kText),
   );
 }
 
@@ -1359,11 +1359,11 @@ class _MiniField extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: kBorder)),
+                borderSide: BorderSide(color: kBorder)),
             enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: kBorder))),
-        style: const TextStyle(fontSize: 12, color: kText),
+                borderSide: BorderSide(color: kBorder))),
+        style: TextStyle(fontSize: 12, color: kText),
       ),
     ]),
   );
@@ -1470,7 +1470,7 @@ class _TotalRow extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 5),
     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: const TextStyle(fontSize: 13, color: kMuted)),
-      Text(fmtMYR(value), style: const TextStyle(fontSize: 13, color: kText)),
+      Text(fmtMYR(value), style: TextStyle(fontSize: 13, color: kText)),
     ]),
   );
 }
@@ -1509,12 +1509,12 @@ class _TextField extends StatelessWidget {
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(11),
                   borderSide:
-                      const BorderSide(color: kBorder, width: 1.5)),
+                      BorderSide(color: kBorder, width: 1.5)),
               enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(11),
                   borderSide:
-                      const BorderSide(color: kBorder, width: 1.5))),
-          style: const TextStyle(fontSize: 14, color: kText),
+                      BorderSide(color: kBorder, width: 1.5))),
+          style: TextStyle(fontSize: 14, color: kText),
         ),
         const SizedBox(height: 10),
       ]);
@@ -1550,12 +1550,12 @@ class _TextAreaField extends StatelessWidget {
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(11),
                   borderSide:
-                      const BorderSide(color: kBorder, width: 1.5)),
+                      BorderSide(color: kBorder, width: 1.5)),
               enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(11),
                   borderSide:
-                      const BorderSide(color: kBorder, width: 1.5))),
-          style: const TextStyle(fontSize: 13, color: kText),
+                      BorderSide(color: kBorder, width: 1.5))),
+          style: TextStyle(fontSize: 13, color: kText),
         ),
         const SizedBox(height: 10),
       ]);
@@ -1605,7 +1605,7 @@ class _DateField extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(value.isNotEmpty ? value : '—',
-                      style: const TextStyle(fontSize: 14, color: kText)),
+                      style: TextStyle(fontSize: 14, color: kText)),
                   const Icon(Icons.calendar_today, size: 15, color: kMuted),
                 ]),
           ),

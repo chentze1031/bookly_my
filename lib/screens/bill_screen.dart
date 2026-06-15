@@ -143,7 +143,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
     final fmt  = NumberFormat('#,##0.00');
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: kSurface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -152,14 +152,14 @@ class _BillFormSheetState extends State<BillFormSheet> {
         // Header
         Container(
           padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: kBorder))),
+          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: kBorder))),
           child: Column(children: [
             Center(child: Container(width: 40, height: 4,
               decoration: BoxDecoration(color: kBorder, borderRadius: BorderRadius.circular(99)))),
             const SizedBox(height: 10),
             Row(children: [
               Text(tr(lang, '📄 Add Bill', '📄 添加账单', '📄 Tambah Bil'),
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
               const Spacer(),
               TextButton(onPressed: () => Navigator.pop(context),
                 child: const Text('✕', style: TextStyle(color: kMuted, fontSize: 16))),
@@ -177,7 +177,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
               Expanded(child: _field(tr(lang, 'Bill No.', '账单号', 'No. Bil'), TextField(
                 controller: TextEditingController(text: _billNo),
                 onChanged: (v) => _billNo = v,
-                style: const TextStyle(fontSize: 14, color: kText),
+                style: TextStyle(fontSize: 14, color: kText),
                 decoration: _dec('BILL-001'),
               ))),
               const SizedBox(width: 12),
@@ -188,7 +188,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
             // Supplier
             _field(tr(lang, 'Supplier Name *', '供应商名称 *', 'Nama Pembekal *'), TextField(
               controller: _supplierCtrl,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec(tr(lang, 'Supplier name', '供应商名称', 'Nama pembekal')),
             )),
 
@@ -197,7 +197,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
               controller: _amtCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               onChanged: (_) => setState(() {}),
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('0.00', prefix: 'RM '),
             )),
 
@@ -265,7 +265,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
             _field(tr(lang, 'Notes (optional)', '备注（可选）', 'Nota (pilihan)'), TextField(
               controller: _notesCtrl,
               maxLines: 2,
-              style: const TextStyle(fontSize: 14, color: kText),
+              style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec(tr(lang, 'Optional notes', '可选备注', 'Nota pilihan')),
             )),
 
@@ -361,11 +361,11 @@ class _BillFormSheetState extends State<BillFormSheet> {
 
   InputDecoration _dec(String hint, {String? prefix}) => InputDecoration(
     hintText: hint, hintStyle: const TextStyle(color: kMuted, fontSize: 13),
-    prefixText: prefix, prefixStyle: const TextStyle(color: kText, fontWeight: FontWeight.w600),
+    prefixText: prefix, prefixStyle: TextStyle(color: kText, fontWeight: FontWeight.w600),
     filled: true, fillColor: kBg,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kDark, width: 1.5)),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kBorder)),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: kDark, width: 1.5)),
     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
   );
 
@@ -385,7 +385,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
         child: Row(children: [
           const Icon(Icons.calendar_today_outlined, size: 15, color: kMuted),
           const SizedBox(width: 8),
-          Text(val, style: const TextStyle(fontSize: 13, color: kText)),
+          Text(val, style: TextStyle(fontSize: 13, color: kText)),
         ]),
       ),
     );

@@ -110,7 +110,7 @@ class _CnHistState extends State<CreditNoteHistoryScreen> {
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: kText),
+            icon: Icon(Icons.add, color: kText),
             onPressed: () async {
               await Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const CreditNoteSheet()));
@@ -215,7 +215,7 @@ class _CnCard extends StatelessWidget {
               Row(children: [
                 const Text('👤 ', style: TextStyle(fontSize: 13)),
                 Text(customer['name'] ?? '',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText)),
               ]),
             const SizedBox(height: 4),
             Row(children: [
@@ -252,7 +252,7 @@ class _CnCard extends StatelessWidget {
                   icon: const Icon(Icons.edit_outlined, size: 14),
                   label: Text(tr(lang, 'Edit', '编辑', 'Sunting')),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: kText, side: const BorderSide(color: kBorder),
+                    foregroundColor: kText, side: BorderSide(color: kBorder),
                     padding: const EdgeInsets.symmetric(vertical: 7),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))),
                 ),
@@ -388,7 +388,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: kSurface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -398,7 +398,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
             padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
             child: Row(children: [
               Text(L10n(lang).selectInvoice,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
               const Spacer(),
               GestureDetector(
                 onTap: () => Navigator.pop(ctx),
@@ -406,18 +406,18 @@ class _CnSheetState extends State<CreditNoteSheet> {
               ),
             ]),
           ),
-          const Divider(height: 1, color: kBorder),
+          Divider(height: 1, color: kBorder),
           Flexible(
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: 4),
               itemCount: invoices.length,
-              separatorBuilder: (_, __) => const Divider(height: 1, color: kBorder),
+              separatorBuilder: (_, __) => Divider(height: 1, color: kBorder),
               itemBuilder: (_, i) {
                 final inv  = invoices[i];
                 final cust = inv['customer'] as Map? ?? {};
                 return ListTile(
                   title: Text(inv['invNo'] ?? '—',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                   subtitle: Text(
                     '${cust['name'] ?? ''}${(inv['invDate'] ?? '').isNotEmpty ? ' · ${inv['invDate']}' : ''}',
                     style: const TextStyle(fontSize: 12, color: kMuted)),
@@ -561,7 +561,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
         title: Row(children: [
           const Text('🧾 ', style: TextStyle(fontSize: 20)),
           Text(t.creditNote,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: kText)),
         ]),
         actions: [
           SmBtn(
@@ -680,7 +680,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
                     child: Row(children: [
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(_customer.name,
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                         if (_customer.phone.isNotEmpty)
                           Text(_customer.phone, style: const TextStyle(fontSize: 11, color: kMuted)),
                       ])),
@@ -722,7 +722,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
                 const SizedBox(height: 16),
                 _TotalsRow(label: t.subTotal, value: _subtotal),
                 if (_totalSST > 0) _TotalsRow(label: t.sstAmt, value: _totalSST),
-                const Divider(color: kBorder, height: 20),
+                Divider(color: kBorder, height: 20),
                 _TotalsRow(label: t.totalCredit, value: _grand, bold: true, negative: true),
               ]),
             ),
@@ -820,9 +820,9 @@ class _CnItemRow extends StatelessWidget {
             filled: true, fillColor: kSurface,
             isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: kBorder)),
+                borderSide: BorderSide(color: kBorder)),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: kBorder)),
+                borderSide: BorderSide(color: kBorder)),
           ),
         ),
       ]),
