@@ -265,18 +265,6 @@ class _SettingsTab extends StatelessWidget {
 
 // ════════════════════════════════════════════════════════════════════════════
 // ADD / EDIT TRANSACTION SHEET
-// ════════════════════════════════════════════════════════════════════════════
-// Expense type groups (type_id, icon, enLabel, zhLabel)
-const _expenseTypeGroups = [
-  ('rent',  '🏢', 'Rental / Utilities',   '租金/水电'),
-  ('mkt',   '📣', 'Marketing / Ads',       '广告/营销'),
-  ('inv',   '📦', 'Inventory / Purchases', '进货/采购'),
-  ('util',  '⚡', 'Utilities',             '水电费'),
-  ('prof',  '⚖️', 'Professional Fees',     '专业服务费'),
-  ('rep',   '🔧', 'Repairs / Maintenance', '维修维护'),
-  ('ins',   '🛡️', 'Insurance',             '保险'),
-  ('other', '💸', 'Other Expense',         '其他支出'),
-];
 
 class AddTxSheet extends StatefulWidget {
   final Transaction? editTx;
@@ -297,7 +285,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
   bool _showCurrPicker = false;
   bool _confirmDel = false;
   bool _saving = false; // FIX: prevents double-tap during async save
-  String? _billTypeId; // selected expense type id before pay status
+  String? _payMode; // expense payment status: unpaid | cash | bank (null = income/edit)
 
   @override
   void initState() {
@@ -359,7 +347,11 @@ class _AddTxSheetState extends State<AddTxSheet> {
       descEN:       _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.enLabel,
       descZH:       _descCtrl.text.isNotEmpty ? _descCtrl.text : _cat!.zhLabel,
       date:         _date,
-      entries:      _cat!.mkEntries(total),
+      // Unified expense flow: entries from the chosen payment status; otherwise
+      // (income, or editing) keep the category's own entries.
+      entries:      (_type == 'expense' && _payMode != null)
+                      ? billEntries(total, drAccountOf(_cat!), _payMode!)
+                      : _cat!.mkEntries(total),
     );
 
     // ── Step 2: await DB write ────────────────────────────────────────────────
@@ -444,34 +436,14 @@ class _AddTxSheetState extends State<AddTxSheet> {
 
                     // STEP 2 — category
                     if (_step == 2) ...[
-                      if (_type == 'expense' && _billTypeId == null) ...[
-                        // Grouped expense types (8 groups only)
+                      if (_type == 'expense' && _cat == null) ...[
+                        // Unified expense category list (clean — no payment-mode variants)
                         GridView.count(
                           shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                           crossAxisCount: 2, crossAxisSpacing: 9, mainAxisSpacing: 9, childAspectRatio: 3,
-                          children: _expenseTypeGroups.map((g) => GestureDetector(
-                            onTap: () => setState(() => _billTypeId = g.$1),
+                          children: userExpenseCategories.map((cat) => GestureDetector(
+                            onTap: () => setState(() => _cat = cat), // → pick payment status next
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-                              decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder, width: 1.5), borderRadius: BorderRadius.circular(13)),
-                              child: Row(children: [
-                                Text(g.$2, style: const TextStyle(fontSize: 22)),
-                                const SizedBox(width: 10),
-                                Expanded(child: Text(app.settings.lang == 'zh' ? g.$4 : g.$3,
-                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText))),
-                              ]),
-                            ),
-                          )).toList(),
-                        ),
-                        const SizedBox(height: 10),
-                        // Direct expense categories (salary, transport, etc.)
-                        ...expenseCategories
-                          .where((cat) => !cat.id.startsWith('bill_') && cat.id != 'ap_payment')
-                          .map((cat) => GestureDetector(
-                            onTap: () => setState(() { _cat = cat; _step = 3; }),
-                            child: Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 9),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
                               decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder, width: 1.5), borderRadius: BorderRadius.circular(13)),
                               child: Row(children: [
@@ -481,22 +453,20 @@ class _AddTxSheetState extends State<AddTxSheet> {
                                   style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText))),
                               ]),
                             ),
-                          )),
+                          )).toList(),
+                        ),
                         const SizedBox(height: 14),
                         _BackBtn(label: t.back, onTap: () => setState(() => _step = 1)),
-                      ] else if (_type == 'expense' && _billTypeId != null) ...[
-                        // Show pay status for selected bill type
+                      ] else if (_type == 'expense' && _cat != null) ...[
+                        // Payment status for the chosen category
                         Container(
                           margin: const EdgeInsets.only(bottom: 14),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(12)),
                           child: Row(children: [
-                            Text(_expenseTypeGroups.firstWhere((g) => g.$1 == _billTypeId).$2,
-                              style: const TextStyle(fontSize: 22)),
+                            Text(_cat!.icon, style: const TextStyle(fontSize: 22)),
                             const SizedBox(width: 10),
-                            Text(app.settings.lang == 'zh'
-                              ? _expenseTypeGroups.firstWhere((g) => g.$1 == _billTypeId).$4
-                              : _expenseTypeGroups.firstWhere((g) => g.$1 == _billTypeId).$3,
+                            Text(_cat!.label(app.settings.lang),
                               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
                           ]),
                         ),
@@ -508,11 +478,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                           ('cash',   '💵', 'Paid (Cash)',  '已付（现金）'),
                           ('bank',   '🏦', 'Paid (Bank)',  '已付（银行）'),
                         ]) GestureDetector(
-                          onTap: () {
-                            final catId = 'bill_${_billTypeId}_${ps.$1}';
-                            final found = findCat(catId);
-                            if (found != null) setState(() { _cat = found; _step = 3; });
-                          },
+                          onTap: () => setState(() { _payMode = ps.$1; _step = 3; }),
                           child: Container(
                             width: double.infinity,
                             margin: const EdgeInsets.only(bottom: 9),
@@ -527,7 +493,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        _BackBtn(label: t.back, onTap: () => setState(() => _billTypeId = null)),
+                        _BackBtn(label: t.back, onTap: () => setState(() => _cat = null)),
                       ] else ...[
                         // Income categories (exclude invoice auto-generated ones)
                         GridView.count(
