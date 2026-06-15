@@ -377,15 +377,28 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
               Expanded(child: FieldInput(label: t.poDate, value: _poDate, keyboard: TextInputType.datetime, onChanged: (v) => setState(() => _poDate = v))),
             ]),
             // Supplier
-            Align(alignment: Alignment.centerLeft, child: Text((lang == 'zh' ? '供应商' : 'SUPPLIER').toUpperCase(),
+            Align(alignment: Alignment.centerLeft, child: Text(lang == 'zh' ? '供应商' : 'SUPPLIER',
               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted, letterSpacing: 0.5))),
-            const SizedBox(height: 4),
-            Row(children: [
-              Expanded(child: FieldInput(label: lang == 'zh' ? '供应商名称' : 'Supplier name',
-                value: (_supplier['name'] ?? '') as String,
-                onChanged: (v) => setState(() => _supplier = {..._supplier, 'name': v}))),
-            ]),
-            Align(alignment: Alignment.centerLeft, child: SmBtn(label: lang == 'zh' ? '从供应商选择' : 'Pick supplier', onTap: _pickSupplier)),
+            const SizedBox(height: 6),
+            if ((_supplier['name'] ?? '').toString().trim().isEmpty)
+              DashedBtn(label: '🏭 ${lang == 'zh' ? '选择供应商' : 'Select Supplier'}', onTap: _pickSupplier)
+            else
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(10)),
+                child: Row(children: [
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text((_supplier['name'] ?? '') as String,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                    if (((_supplier['phone'] ?? '') as String).isNotEmpty)
+                      Text(_supplier['phone'] as String, style: const TextStyle(fontSize: 11, color: kMuted)),
+                    if (((_supplier['address'] ?? '') as String).isNotEmpty)
+                      Text(_supplier['address'] as String, style: const TextStyle(fontSize: 11, color: kMuted),
+                        maxLines: 2, overflow: TextOverflow.ellipsis),
+                  ])),
+                  SmBtn(label: lang == 'zh' ? '更改' : 'Change', onTap: _pickSupplier),
+                ]),
+              ),
             const SizedBox(height: 6),
           ])),
           const SizedBox(height: 12),
