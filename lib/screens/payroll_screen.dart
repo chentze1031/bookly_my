@@ -1270,21 +1270,6 @@ class _DarkRow extends StatelessWidget {
   );
 }
 
-// needed by L10n
-extension _PayrollL10n on L10n {
-  String get payEmp      => isZh ? '员工' : 'Employee';
-  String get totalDed    => isZh ? '总扣款' : 'Total Deductions';
-  String get empIC       => isZh ? 'IC 号码' : 'IC No.';
-  String get empPos      => isZh ? '职位' : 'Position';
-  String get empDept     => isZh ? '部门' : 'Department';
-  String get empBasic    => isZh ? '基本薪资 (MYR)' : 'Basic Salary (MYR)';
-  String get empEPF      => 'EPF No.';
-  String get empSOCSO    => 'SOCSO No.';
-  String get empBank     => isZh ? '银行' : 'Bank';
-  String get empAcct     => isZh ? '账号' : 'Account No.';
-}
-
-
 // ════════════════════════════════════════════════════════════════════════════
 // PCB / MTD TAX CALCULATOR (Malaysia 2024 tax table)
 // ════════════════════════════════════════════════════════════════════════════
