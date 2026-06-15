@@ -112,7 +112,7 @@ class _DoHistState extends State<DeliveryOrderHistoryScreen> {
           ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Text('🚚', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(lang == 'zh' ? '还没有送货单' : 'No delivery orders yet',
+              Text(tr(lang, 'No delivery orders yet', '还没有送货单', 'Belum ada nota penghantaran'),
                   style: const TextStyle(color: kMuted, fontSize: 15)),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -192,7 +192,7 @@ class _DoCard extends StatelessWidget {
               Text(d['doDate'] ?? '', style: const TextStyle(fontSize: 11, color: kMuted)),
             ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text('${lang == 'zh' ? '总数量' : 'Total Qty'}: $qtyStr',
+              Text('${tr(lang, 'Total Qty', '总数量', 'Jumlah Kuantiti')}: $qtyStr',
                   style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kText)),
               if ((d['refInvNo'] ?? '').isNotEmpty)
                 Text('← ${d['refInvNo']}', style: const TextStyle(fontSize: 10, color: kBlue)),
@@ -218,7 +218,7 @@ class _DoCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onEdit,
                   icon: const Icon(Icons.edit_outlined, size: 14),
-                  label: Text(lang == 'zh' ? '编辑' : 'Edit'),
+                  label: Text(tr(lang, 'Edit', '编辑', 'Sunting')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: kText, side: const BorderSide(color: kBorder),
                     padding: const EdgeInsets.symmetric(vertical: 7),
@@ -230,7 +230,7 @@ class _DoCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onExport,
                   icon: const Icon(Icons.picture_as_pdf_outlined, size: 14),
-                  label: Text(lang == 'zh' ? '导出' : 'PDF'),
+                  label: Text(tr(lang, 'PDF', '导出', 'PDF')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: kBlue, side: const BorderSide(color: kBlueBd),
                     backgroundColor: kBlueBg,
@@ -501,14 +501,14 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
         ]),
         actions: [
           SmBtn(
-            label: _saving ? (lang == 'zh' ? '保存中…' : 'Saving…') : '💾 ${t.save}',
+            label: _saving ? tr(lang, 'Saving…', '保存中…', 'Menyimpan…') : '💾 ${t.save}',
             color: kGreenBg, borderColor: kGreenBd, textColor: kGreen,
             onTap: _saving ? () {} : () => _save(),
           ),
           const SizedBox(width: 8),
           // ── Share button (same size as Save, no icon) ─────────────
           SmBtn(
-            label: _sharing ? (lang == 'zh' ? '分享中…' : 'Sharing…') : t.sharePrint,
+            label: _sharing ? tr(lang, 'Sharing…', '分享中…', 'Berkongsi…') : t.sharePrint,
             color: kDark, borderColor: kDark, textColor: Colors.white,
             onTap: _sharing ? () {} : _share,
           ),
@@ -522,7 +522,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
 
           // ── Delivery details ──────────────────────────────────────────────
           _SectionBox(
-            title: lang == 'zh' ? '送货单信息' : 'Delivery Details',
+            title: tr(lang, 'Delivery Details', '送货单信息', 'Butiran Penghantaran'),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(children: [
@@ -539,7 +539,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
                   const SizedBox(width: 10),
                   Expanded(child: FieldInput(
                     label: t.deliveryDriver, value: _driver,
-                    placeholder: lang == 'zh' ? '司机姓名' : 'Driver name',
+                    placeholder: tr(lang, 'Driver name', '司机姓名', 'Nama pemandu'),
                     onChanged: (v) => setState(() => _driver = v),
                   )),
                 ]),
@@ -569,8 +569,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
                         child: Text(
                           _refInvNo.isNotEmpty
                               ? _refInvNo
-                              : (lang == 'zh' ? '点击选择发票（带出客户+明细）'
-                                              : 'Tap to select invoice'),
+                              : tr(lang, 'Tap to select invoice', '点击选择发票（带出客户+明细）', 'Ketik untuk pilih invois'),
                           style: TextStyle(fontSize: 14,
                               color: _refInvNo.isNotEmpty ? kText : kMuted,
                               fontWeight: _refInvNo.isNotEmpty ? FontWeight.w700 : FontWeight.normal),
@@ -601,7 +600,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 if (_customer.id == 0 || _customer.name.isEmpty)
                   DashedBtn(
-                    label: '🚚 ${lang == 'zh' ? '选择客户' : 'Select Customer'}',
+                    label: '🚚 ${tr(lang, 'Select Customer', '选择客户', 'Pilih Pelanggan')}',
                     onTap: () => showModalBottomSheet(
                       context: context, isScrollControlled: true,
                       builder: (_) => CustomerManagerScreen(
@@ -627,7 +626,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
                               maxLines: 2, overflow: TextOverflow.ellipsis),
                       ])),
                       SmBtn(
-                        label: lang == 'zh' ? '更改' : 'Change',
+                        label: tr(lang, 'Change', '更改', 'Tukar'),
                         onTap: () => showModalBottomSheet(
                           context: context, isScrollControlled: true,
                           builder: (_) => CustomerManagerScreen(
@@ -662,7 +661,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
                 ),
                 const SizedBox(height: 16),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text(lang == 'zh' ? '总数量' : 'Total Quantity',
+                  Text(tr(lang, 'Total Quantity', '总数量', 'Jumlah Kuantiti'),
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kText)),
                   Text(_totalQty == _totalQty.truncate()
                           ? _totalQty.toStringAsFixed(0) : _totalQty.toStringAsFixed(2),
@@ -680,9 +679,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
               padding: const EdgeInsets.all(14),
               child: FieldInput(
                 label: t.notes, value: _notes, multiline: true,
-                placeholder: lang == 'zh'
-                    ? '如：货物已点收无误。'
-                    : 'e.g. Goods received in good order.',
+                placeholder: tr(lang, 'e.g. Goods received in good order.', '如：货物已点收无误。', 'cth. Barang diterima dalam keadaan baik.'),
                 onChanged: (v) => setState(() => _notes = v),
               ),
             ),
@@ -741,7 +738,7 @@ class _DoItemRow extends StatelessWidget {
           )),
           const SizedBox(width: 8),
           Expanded(flex: 2, child: FieldInput(
-            label: lang == 'zh' ? '备注' : 'Note', value: item['note'] ?? '',
+            label: tr(lang, 'Note', '备注', 'Nota'), value: item['note'] ?? '',
             onChanged: (v) => _up('note', v),
           )),
         ]),

@@ -102,7 +102,7 @@ class _SstReportScreenState extends State<SstReportScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          lang == 'zh' ? '🧾 SST-02 申报摘要' : '🧾 SST-02 Summary',
+          tr(lang, '🧾 SST-02 Summary', '🧾 SST-02 申报摘要', '🧾 Ringkasan SST-02'),
           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText),
         ),
       ),
@@ -114,7 +114,7 @@ class _SstReportScreenState extends State<SstReportScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
-                lang == 'zh' ? '申报期间（双月）' : 'Bi-Monthly Period',
+                tr(lang, 'Bi-Monthly Period', '申报期间（双月）', 'Tempoh Dwi-Bulan'),
                 style: const TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
@@ -154,9 +154,10 @@ class _SstReportScreenState extends State<SstReportScreen> {
                         const Text('ℹ️', style: TextStyle(fontSize: 14)),
                         const SizedBox(width: 8),
                         Expanded(child: Text(
-                          lang == 'zh'
-                            ? '此摘要基于已记录交易中的 SST 数据生成，仅供申报参考。请在 MySST 系统上进行正式申报。'
-                            : 'This summary is based on SST data from recorded transactions. For reference only — file officially on the MySST portal.',
+                          tr(lang,
+                            'This summary is based on SST data from recorded transactions. For reference only — file officially on the MySST portal.',
+                            '此摘要基于已记录交易中的 SST 数据生成，仅供申报参考。请在 MySST 系统上进行正式申报。',
+                            'Ringkasan ini berdasarkan data SST daripada transaksi direkod. Untuk rujukan sahaja — failkan secara rasmi di portal MySST.'),
                           style: const TextStyle(fontSize: 11, color: kBlue),
                         )),
                       ]),
@@ -165,7 +166,7 @@ class _SstReportScreenState extends State<SstReportScreen> {
 
                     // ── Sales Tax section ───────────────────────────────────
                     if (salesGroups.isNotEmpty) ...[
-                      _sectionHeader(lang == 'zh' ? '销售税（Sales Tax）' : 'Sales Tax'),
+                      _sectionHeader(tr(lang, 'Sales Tax', '销售税（Sales Tax）', 'Cukai Jualan')),
                       const SizedBox(height: 8),
                       _SstTable(groups: salesGroups, lang: lang,
                         totalTaxable: totalSalesTaxable, totalSST: totalSalesSST),
@@ -174,7 +175,7 @@ class _SstReportScreenState extends State<SstReportScreen> {
 
                     // ── Service Tax section ─────────────────────────────────
                     if (serviceGroups.isNotEmpty) ...[
-                      _sectionHeader(lang == 'zh' ? '服务税（Service Tax）' : 'Service Tax'),
+                      _sectionHeader(tr(lang, 'Service Tax', '服务税（Service Tax）', 'Cukai Perkhidmatan')),
                       const SizedBox(height: 8),
                       _SstTable(groups: serviceGroups, lang: lang,
                         totalTaxable: totalServiceTaxable, totalSST: totalServiceSST),
@@ -192,7 +193,7 @@ class _SstReportScreenState extends State<SstReportScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            lang == 'zh' ? '本期应缴 SST 总额' : 'Total SST Payable',
+                            tr(lang, 'Total SST Payable', '本期应缴 SST 总额', 'Jumlah SST Perlu Bayar'),
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
                           ),
                           Text(
@@ -206,9 +207,7 @@ class _SstReportScreenState extends State<SstReportScreen> {
 
                     const SizedBox(height: 12),
                     Text(
-                      lang == 'zh'
-                        ? '期间: $periodLabel'
-                        : 'Period: $periodLabel',
+                      tr(lang, 'Period: $periodLabel', '期间: $periodLabel', 'Tempoh: $periodLabel'),
                       style: const TextStyle(fontSize: 11, color: kMuted),
                     ),
                     const SizedBox(height: 30),
@@ -268,9 +267,9 @@ class _SstTable extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
           ),
           child: Row(children: [
-            Expanded(flex: 3, child: Text(lang == 'zh' ? '税率' : 'Rate',
+            Expanded(flex: 3, child: Text(tr(lang, 'Rate', '税率', 'Kadar'),
               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: kMuted))),
-            Expanded(flex: 3, child: Text(lang == 'zh' ? '应税额 (RM)' : 'Taxable (RM)',
+            Expanded(flex: 3, child: Text(tr(lang, 'Taxable (RM)', '应税额 (RM)', 'Bercukai (RM)'),
               textAlign: TextAlign.right,
               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: kMuted))),
             Expanded(flex: 3, child: Text(lang == 'zh' ? 'SST (RM)' : 'SST (RM)',
@@ -304,7 +303,7 @@ class _SstTable extends StatelessWidget {
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(13)),
           ),
           child: Row(children: [
-            Expanded(flex: 3, child: Text(lang == 'zh' ? '小计' : 'Subtotal',
+            Expanded(flex: 3, child: Text(tr(lang, 'Subtotal', '小计', 'Jumlah Kecil'),
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kText))),
             Expanded(flex: 3, child: Text(fmtAmt(totalTaxable),
               textAlign: TextAlign.right,
@@ -330,15 +329,13 @@ class _EmptyState extends StatelessWidget {
         const Text('🧾', style: TextStyle(fontSize: 48)),
         const SizedBox(height: 16),
         Text(
-          lang == 'zh' ? '本期无 SST 交易记录' : 'No SST transactions this period',
+          tr(lang, 'No SST transactions this period', '本期无 SST 交易记录', 'Tiada transaksi SST tempoh ini'),
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: kText),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
-          lang == 'zh'
-            ? '请先在记账中为收入/支出添加 SST 税率'
-            : 'Add SST rates to your income/expense transactions first',
+          tr(lang, 'Add SST rates to your income/expense transactions first', '请先在记账中为收入/支出添加 SST 税率', 'Tambah kadar SST pada transaksi pendapatan/perbelanjaan dahulu'),
           style: const TextStyle(fontSize: 12, color: kMuted),
           textAlign: TextAlign.center,
         ),
