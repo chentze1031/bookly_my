@@ -254,6 +254,7 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
   String _notes = '';
   bool _saving = false, _sharing = false;
   Map<String, dynamic> _supplier = {'name': ''};
+  String _status = 'ordered';
 
   final List<Map<String, String>> _items = [
     {'desc': '', 'qty': '1', 'price': '', 'inv_id': ''},
@@ -266,6 +267,7 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
       final po = widget.existing!;
       _poNo = po['poNo'] ?? ''; _poDate = po['poDate'] ?? nowISO();
       _notes = po['notes'] ?? '';
+      _status = po['status'] ?? 'ordered'; // preserve received status on edit
       _supplier = Map<String, dynamic>.from(po['supplier'] ?? {'name': ''});
       if (po['items'] != null) {
         _items..clear()..addAll((po['items'] as List).map((e) => Map<String, String>.from(e)));
@@ -316,6 +318,7 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
       await context.read<AppState>().savePurchaseOrder(
         poNo: _poNo, poDate: _poDate, supplier: _supplier,
         items: List<Map<String, String>>.from(_items), notes: _notes,
+        status: _status,
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
