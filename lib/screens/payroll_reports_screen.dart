@@ -188,7 +188,7 @@ class _Cp39State extends State<Cp39ReportScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(lang == 'zh' ? '🧾 CP39 月度扣税' : '🧾 CP39 (PCB)'),
+        title: Text(tr(lang, '🧾 CP39 (PCB)', '🧾 CP39 月度扣税', '🧾 CP39 (PCB)')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
         actions: [
           if (lines.isNotEmpty)
@@ -200,13 +200,13 @@ class _Cp39State extends State<Cp39ReportScreen> {
         _PeriodBar(month: _month, year: _year, years: _availableYears(_payrolls),
           onMonth: (m) => setState(() => _month = m), onYear: (y) => setState(() => _year = y)),
         Expanded(child: lines.isEmpty
-          ? _emptyState(lang == 'zh' ? '本月无应扣税的工资记录' : 'No taxable payroll this month')
+          ? _emptyState(tr(lang, 'No taxable payroll this month', '本月无应扣税的工资记录', 'Tiada gaji bercukai bulan ini'))
           : ListView(padding: const EdgeInsets.all(16), children: [
-              _TotalCard(label: lang == 'zh' ? '本月 PCB 总额' : 'Total PCB', value: total, color: const Color(0xFFF59E0B)),
+              _TotalCard(label: tr(lang, 'Total PCB', '本月 PCB 总额', 'Jumlah PCB'), value: total, color: const Color(0xFFF59E0B)),
               const SizedBox(height: 12),
               ...lines.map((l) => _ReportRow(
                 title: l.empName,
-                subtitle: '${lang == 'zh' ? 'IC' : 'IC'}: ${_ic(app, l.empId).isNotEmpty ? _ic(app, l.empId) : '—'} · ${lang == 'zh' ? '月薪' : 'Gross'} ${fmtMYR(l.gross)}',
+                subtitle: '${lang == 'zh' ? 'IC' : 'IC'}: ${_ic(app, l.empId).isNotEmpty ? _ic(app, l.empId) : '—'} · ${tr(lang, 'Gross', '月薪', 'Kasar')} ${fmtMYR(l.gross)}',
                 amount: l.pcb,
               )),
             ])),
@@ -281,7 +281,7 @@ class _StatutoryState extends State<StatutoryReportScreen> {
         _PeriodBar(month: _month, year: _year, years: _availableYears(_payrolls),
           onMonth: (m) => setState(() => _month = m), onYear: (y) => setState(() => _year = y)),
         Expanded(child: lines.isEmpty
-          ? _emptyState(lang == 'zh' ? '本月无工资记录' : 'No payroll this month')
+          ? _emptyState(tr(lang, 'No payroll this month', '本月无工资记录', 'Tiada gaji bulan ini'))
           : ListView(padding: const EdgeInsets.all(16), children: [
               Row(children: [
                 Expanded(child: _MiniTotal(label: 'EPF', value: tE)),
@@ -312,8 +312,8 @@ class _StatutoryState extends State<StatutoryReportScreen> {
     padding: const EdgeInsets.symmetric(vertical: 2),
     child: Row(children: [
       SizedBox(width: 56, child: Text(fund, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kMuted))),
-      Expanded(child: Text('${lang == 'zh' ? '员工' : 'EE'} ${fmtMYR(ee)}', style: const TextStyle(fontSize: 12, color: kText))),
-      Expanded(child: Text('${lang == 'zh' ? '雇主' : 'ER'} ${fmtMYR(er)}', style: const TextStyle(fontSize: 12, color: kText))),
+      Expanded(child: Text('${tr(lang, 'EE', '员工', 'Pekerja')} ${fmtMYR(ee)}', style: const TextStyle(fontSize: 12, color: kText))),
+      Expanded(child: Text('${tr(lang, 'ER', '雇主', 'Majikan')} ${fmtMYR(er)}', style: const TextStyle(fontSize: 12, color: kText))),
       Text(fmtMYR(ee + er), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
     ]),
   );
@@ -393,7 +393,7 @@ class _EaState extends State<EaFormScreen> {
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(lang == 'zh' ? '📑 EA 表格' : '📑 Form EA'),
+        title: Text(tr(lang, '📑 Form EA', '📑 EA 表格', '📑 Borang EA')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
         actions: [
           if (lines.isNotEmpty)
@@ -412,24 +412,24 @@ class _EaState extends State<EaFormScreen> {
           const SizedBox(width: 10),
           Expanded(flex: 2, child: DropdownButtonFormField<String>(
             value: _empId,
-            hint: Text(lang == 'zh' ? '选择员工' : 'Select employee', style: const TextStyle(fontSize: 13)),
+            hint: Text(tr(lang, 'Select employee', '选择员工', 'Pilih pekerja'), style: const TextStyle(fontSize: 13)),
             items: emps.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis))).toList(),
             onChanged: (v) => setState(() => _empId = v),
             decoration: _dec(),
           )),
         ])),
         Expanded(child: _empId == null
-          ? _emptyState(lang == 'zh' ? '请选择员工查看 EA 汇总' : 'Select an employee to view EA summary')
+          ? _emptyState(tr(lang, 'Select an employee to view EA summary', '请选择员工查看 EA 汇总', 'Pilih pekerja untuk lihat ringkasan EA'))
           : lines.isEmpty
-            ? _emptyState(lang == 'zh' ? '该员工本年无工资记录' : 'No payroll for this employee this year')
+            ? _emptyState(tr(lang, 'No payroll for this employee this year', '该员工本年无工资记录', 'Tiada gaji untuk pekerja ini tahun ini'))
             : ListView(padding: const EdgeInsets.all(16), children: [
-                _TotalCard(label: lang == 'zh' ? '$_year 年度毛收入' : 'Annual Gross $_year', value: gross, color: kBlue),
+                _TotalCard(label: tr(lang, 'Annual Gross $_year', '$_year 年度毛收入', 'Kasar Tahunan $_year'), value: gross, color: kBlue),
                 const SizedBox(height: 12),
-                _eaRow(lang == 'zh' ? '雇员 EPF (G)' : 'Employee EPF (G)', epf),
-                _eaRow(lang == 'zh' ? 'PCB/MTD 已扣 (F)' : 'PCB/MTD deducted (F)', pcb),
-                _eaRow(lang == 'zh' ? '发薪月数' : 'Months paid', lines.length.toDouble(), isCount: true),
+                _eaRow(tr(lang, 'Employee EPF (G)', '雇员 EPF (G)', 'EPF Pekerja (G)'), epf),
+                _eaRow(tr(lang, 'PCB/MTD deducted (F)', 'PCB/MTD 已扣 (F)', 'PCB/MTD ditolak (F)'), pcb),
+                _eaRow(tr(lang, 'Months paid', '发薪月数', 'Bulan dibayar'), lines.length.toDouble(), isCount: true),
                 const Divider(color: kBorder, height: 24),
-                _eaRow(lang == 'zh' ? '扣 EPF 及 PCB 后' : 'Net of EPF & PCB', gross - epf - pcb, bold: true),
+                _eaRow(tr(lang, 'Net of EPF & PCB', '扣 EPF 及 PCB 后', 'Bersih selepas EPF & PCB'), gross - epf - pcb, bold: true),
               ])),
       ]),
     );

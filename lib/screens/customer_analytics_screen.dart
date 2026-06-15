@@ -83,14 +83,13 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<AppState>().settings.lang;
-    final zh   = lang == 'zh';
     final maxTotal = _stats.isNotEmpty ? _stats.first.total : 1.0;
     final avgPerCust = _stats.isNotEmpty ? _totalRevenue / _stats.length : 0.0;
 
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(zh ? '👥 顾客消费分析' : '👥 Customer Analytics'),
+        title: Text(tr(lang, '👥 Customer Analytics', '👥 顾客消费分析', '👥 Analitik Pelanggan')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
       ),
       body: _loading
@@ -99,10 +98,10 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
           ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Text('👥', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(zh ? '暂无客户消费数据' : 'No customer data yet',
+              Text(tr(lang, 'No customer data yet', '暂无客户消费数据', 'Belum ada data pelanggan'),
                   style: const TextStyle(color: kMuted, fontSize: 15)),
               const SizedBox(height: 6),
-              Text(zh ? '为发票选择客户后即可生成分析' : 'Assign customers to invoices to see analytics',
+              Text(tr(lang, 'Assign customers to invoices to see analytics', '为发票选择客户后即可生成分析', 'Tetapkan pelanggan pada invois untuk lihat analitik'),
                   style: const TextStyle(color: kMuted, fontSize: 12), textAlign: TextAlign.center),
             ]))
           : ListView(
@@ -111,39 +110,39 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
                 // ── Summary ────────────────────────────────────────────────
                 Row(children: [
                   Expanded(child: _MetricCard(
-                    label: zh ? '客户数' : 'Customers',
+                    label: tr(lang, 'Customers', '客户数', 'Pelanggan'),
                     value: '${_stats.length}',
                   )),
                   const SizedBox(width: 10),
                   Expanded(child: _MetricCard(
-                    label: zh ? '总营业额' : 'Total Revenue',
+                    label: tr(lang, 'Total Revenue', '总营业额', 'Jumlah Hasil'),
                     value: fmtMYR(_totalRevenue),
                   )),
                 ]),
                 const SizedBox(height: 10),
                 Row(children: [
                   Expanded(child: _MetricCard(
-                    label: zh ? '订单数' : 'Orders',
+                    label: tr(lang, 'Orders', '订单数', 'Pesanan'),
                     value: '$_orderCount',
                   )),
                   const SizedBox(width: 10),
                   Expanded(child: _MetricCard(
-                    label: zh ? '平均每客户' : 'Avg / Customer',
+                    label: tr(lang, 'Avg / Customer', '平均每客户', 'Purata / Pelanggan'),
                     value: fmtMYR(avgPerCust),
                   )),
                 ]),
                 const SizedBox(height: 20),
 
                 // ── Ranking ────────────────────────────────────────────────
-                Text(zh ? '客户排行' : 'Top Customers',
+                Text(tr(lang, 'Top Customers', '客户排行', 'Pelanggan Teratas'),
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
                 const SizedBox(height: 10),
                 ..._stats.asMap().entries.map((e) => _CustomerRow(
                   rank:  e.key + 1,
                   stat:  e.value,
                   maxTotal: maxTotal,
-                  zh:    zh,
-                  onTap: () => _showDetail(e.value, zh),
+                  lang:  lang,
+                  onTap: () => _showDetail(e.value, lang),
                 )),
                 const SizedBox(height: 24),
               ],
@@ -151,7 +150,7 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
     );
   }
 
-  void _showDetail(_CustStat s, bool zh) {
+  void _showDetail(_CustStat s, String lang) {
     final avg = s.count > 0 ? s.total / s.count : 0.0;
     final topItems = s.itemTotals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -184,31 +183,31 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
               children: [
                 Row(children: [
                   Expanded(child: _MetricCard(
-                    label: zh ? '消费总额' : 'Total Spent', value: fmtMYR(s.total))),
+                    label: tr(lang, 'Total Spent', '消费总额', 'Jumlah Dibelanja'), value: fmtMYR(s.total))),
                   const SizedBox(width: 10),
                   Expanded(child: _MetricCard(
-                    label: zh ? '订单数' : 'Orders', value: '${s.count}')),
+                    label: tr(lang, 'Orders', '订单数', 'Pesanan'), value: '${s.count}')),
                 ]),
                 const SizedBox(height: 10),
                 Row(children: [
                   Expanded(child: _MetricCard(
-                    label: zh ? '平均客单' : 'Avg Order', value: fmtMYR(avg))),
+                    label: tr(lang, 'Avg Order', '平均客单', 'Purata Pesanan'), value: fmtMYR(avg))),
                   const SizedBox(width: 10),
                   Expanded(child: _MetricCard(
-                    label: zh ? '最近购买' : 'Last Order',
+                    label: tr(lang, 'Last Order', '最近购买', 'Pesanan Terakhir'),
                     value: s.lastDate.isNotEmpty ? s.lastDate : '—', small: true)),
                 ]),
                 if (s.firstDate.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Text('${zh ? '首次购买' : 'First order'}: ${s.firstDate}',
+                  Text('${tr(lang, 'First order', '首次购买', 'Pesanan pertama')}: ${s.firstDate}',
                       style: const TextStyle(fontSize: 12, color: kMuted)),
                 ],
                 const SizedBox(height: 20),
-                Text(zh ? '常买项目' : 'Top Items',
+                Text(tr(lang, 'Top Items', '常买项目', 'Item Teratas'),
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
                 const SizedBox(height: 8),
                 if (topItems.isEmpty)
-                  Text(zh ? '无项目明细' : 'No item details',
+                  Text(tr(lang, 'No item details', '无项目明细', 'Tiada butiran item'),
                       style: const TextStyle(fontSize: 12, color: kMuted))
                 else
                   ...topItems.take(8).map((it) => Padding(
@@ -217,7 +216,7 @@ class _CustomerAnalyticsState extends State<CustomerAnalyticsScreen> {
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(it.key, style: const TextStyle(fontSize: 13, color: kText),
                             maxLines: 1, overflow: TextOverflow.ellipsis),
-                        Text('${zh ? '数量' : 'Qty'} ${_fmtQty(s.itemQtys[it.key] ?? 0)}',
+                        Text('${tr(lang, 'Qty', '数量', 'Kuantiti')} ${_fmtQty(s.itemQtys[it.key] ?? 0)}',
                             style: const TextStyle(fontSize: 11, color: kMuted)),
                       ])),
                       Text(fmtMYR(it.value),
@@ -276,10 +275,10 @@ class _CustomerRow extends StatelessWidget {
   final int rank;
   final _CustStat stat;
   final double maxTotal;
-  final bool zh;
+  final String lang;
   final VoidCallback onTap;
   const _CustomerRow({required this.rank, required this.stat,
-      required this.maxTotal, required this.zh, required this.onTap});
+      required this.maxTotal, required this.lang, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -307,8 +306,8 @@ class _CustomerRow extends StatelessWidget {
               Text(stat.name,
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
-              Text('${stat.count} ${zh ? '单' : 'orders'}'
-                   '${stat.lastDate.isNotEmpty ? ' · ${zh ? '最近' : 'last'} ${stat.lastDate}' : ''}',
+              Text('${stat.count} ${tr(lang, 'orders', '单', 'pesanan')}'
+                   '${stat.lastDate.isNotEmpty ? ' · ${tr(lang, 'last', '最近', 'akhir')} ${stat.lastDate}' : ''}',
                   style: const TextStyle(fontSize: 11, color: kMuted)),
             ])),
             const SizedBox(width: 8),

@@ -51,11 +51,11 @@ class _RecurringState extends State<RecurringScreen> {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
-    final zh  = app.settings.lang == 'zh';
+    final lang = app.settings.lang; final zh = lang == 'zh';
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(zh ? '🔁 定期记账' : '🔁 Recurring'),
+        title: Text(tr(lang, '🔁 Recurring', '🔁 定期记账', '🔁 Berulang')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
         actions: [IconButton(icon: const Icon(Icons.add, color: kText), onPressed: () => _edit())],
       ),
@@ -64,12 +64,12 @@ class _RecurringState extends State<RecurringScreen> {
           ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Text('🔁', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(zh ? '还没有定期记账' : 'No recurring entries yet', style: const TextStyle(color: kMuted, fontSize: 15)),
+              Text(tr(lang, 'No recurring entries yet', '还没有定期记账', 'Belum ada catatan berulang'), style: const TextStyle(color: kMuted, fontSize: 15)),
               const SizedBox(height: 6),
-              Text(zh ? '如：每月租金、订阅费' : 'e.g. monthly rent, subscriptions', style: const TextStyle(color: kMuted, fontSize: 12)),
+              Text(tr(lang, 'e.g. monthly rent, subscriptions', '如：每月租金、订阅费', 'cth. sewa bulanan, langganan'), style: const TextStyle(color: kMuted, fontSize: 12)),
               const SizedBox(height: 16),
               ElevatedButton.icon(onPressed: () => _edit(), icon: const Icon(Icons.add),
-                label: Text(zh ? '新增' : 'Add'),
+                label: Text(tr(lang, 'Add', '新增', 'Tambah')),
                 style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)))),
             ]))
@@ -79,7 +79,7 @@ class _RecurringState extends State<RecurringScreen> {
               final active = tpl['active'] != false;
               final isIncome = tpl['type'] == 'income';
               final amount = (tpl['amount'] as num?)?.toDouble() ?? 0;
-              final freq = tpl['freq'] == 'weekly' ? (zh ? '每周' : 'Weekly') : (zh ? '每月' : 'Monthly');
+              final freq = tpl['freq'] == 'weekly' ? tr(lang, 'Weekly', '每周', 'Mingguan') : tr(lang, 'Monthly', '每月', 'Bulanan');
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(14),
@@ -90,7 +90,7 @@ class _RecurringState extends State<RecurringScreen> {
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text((zh ? tpl['descZH'] : tpl['descEN']) ?? cat?.label(app.settings.lang) ?? '',
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: active ? kText : kMuted)),
-                    Text('$freq · ${zh ? '下次' : 'next'} ${tpl['nextDate'] ?? '—'}',
+                    Text('$freq · ${tr(lang, 'next', '下次', 'seterusnya')} ${tpl['nextDate'] ?? '—'}',
                       style: const TextStyle(fontSize: 11, color: kMuted)),
                   ])),
                   Text('${isIncome ? '+' : '-'}${fmtMYR(amount)}',
@@ -103,7 +103,7 @@ class _RecurringState extends State<RecurringScreen> {
               );
             }),
             Padding(padding: const EdgeInsets.only(top: 4),
-              child: Text(zh ? '到期的交易会在打开 App 时自动生成（标记"自动"）。' : 'Due transactions are generated automatically on app launch (marked "auto").',
+              child: Text(tr(lang, 'Due transactions are generated automatically on app launch (marked "auto").', '到期的交易会在打开 App 时自动生成（标记"自动"）。', 'Transaksi tertunggak dijana automatik semasa app dibuka (ditanda "auto").'),
                 style: const TextStyle(fontSize: 11, color: kMuted))),
           ]),
       floatingActionButton: _list.isEmpty ? null : FloatingActionButton(
@@ -146,7 +146,7 @@ class _RecurringSheetState extends State<_RecurringSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final zh = context.read<AppState>().settings.lang == 'zh';
+    final lang = context.read<AppState>().settings.lang;
     if (_catId != null && !_cats.any((c) => c.id == _catId)) _catId = null;
 
     return Container(
@@ -156,14 +156,14 @@ class _RecurringSheetState extends State<_RecurringSheet> {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text(zh ? '定期记账' : 'Recurring Entry', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
+            Text(tr(lang, 'Recurring Entry', '定期记账', 'Catatan Berulang'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
             const Spacer(),
             GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: kMuted)),
           ]),
           const SizedBox(height: 14),
           // Type toggle
           Row(children: [
-            for (final ty in [('expense', zh ? '支出' : 'Expense'), ('income', zh ? '收入' : 'Income')])
+            for (final ty in [('expense', tr(lang, 'Expense', '支出', 'Perbelanjaan')), ('income', tr(lang, 'Income', '收入', 'Pendapatan'))])
               Expanded(child: GestureDetector(
                 onTap: () => setState(() { _type = ty.$1; _catId = null; }),
                 child: Container(
@@ -182,9 +182,9 @@ class _RecurringSheetState extends State<_RecurringSheet> {
           DropdownButtonFormField<String>(
             value: _catId,
             isExpanded: true,
-            hint: Text(zh ? '选择分类' : 'Select category', style: const TextStyle(fontSize: 13)),
+            hint: Text(tr(lang, 'Select category', '选择分类', 'Pilih kategori'), style: const TextStyle(fontSize: 13)),
             items: _cats.map<DropdownMenuItem<String>>((c) => DropdownMenuItem(value: c.id as String,
-              child: Text('${c.icon}  ${c.label(zh ? 'zh' : 'en')}', style: const TextStyle(fontSize: 13)))).toList(),
+              child: Text('${c.icon}  ${c.label(lang)}', style: const TextStyle(fontSize: 13)))).toList(),
             onChanged: (v) => setState(() => _catId = v),
             decoration: _dec(),
           ),
@@ -194,18 +194,18 @@ class _RecurringSheetState extends State<_RecurringSheet> {
             initialValue: _amount > 0 ? _amount.toStringAsFixed(_amount == _amount.truncate() ? 0 : 2) : '',
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (v) => _amount = double.tryParse(v) ?? 0,
-            decoration: _dec(label: zh ? '金额 (RM)' : 'Amount (RM)'),
+            decoration: _dec(label: tr(lang, 'Amount (RM)', '金额 (RM)', 'Jumlah (RM)')),
           ),
           const SizedBox(height: 12),
           TextFormField(
             initialValue: _desc,
             onChanged: (v) => _desc = v,
-            decoration: _dec(label: zh ? '备注（可选）' : 'Note (optional)'),
+            decoration: _dec(label: tr(lang, 'Note (optional)', '备注（可选）', 'Nota (pilihan)')),
           ),
           const SizedBox(height: 12),
           // Frequency
           Row(children: [
-            for (final fr in [('monthly', zh ? '每月' : 'Monthly'), ('weekly', zh ? '每周' : 'Weekly')])
+            for (final fr in [('monthly', tr(lang, 'Monthly', '每月', 'Bulanan')), ('weekly', tr(lang, 'Weekly', '每周', 'Mingguan'))])
               Expanded(child: GestureDetector(
                 onTap: () => setState(() => _freq = fr.$1),
                 child: Container(
@@ -228,7 +228,7 @@ class _RecurringSheetState extends State<_RecurringSheet> {
               decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(10)),
               child: Row(children: [
                 const Icon(Icons.event, size: 18, color: kBlue), const SizedBox(width: 10),
-                Text('${zh ? '开始/下次日期' : 'Start / next date'}: ${_start.toIso8601String().substring(0, 10)}',
+                Text('${tr(lang, 'Start / next date', '开始/下次日期', 'Tarikh mula / seterusnya')}: ${_start.toIso8601String().substring(0, 10)}',
                   style: const TextStyle(fontSize: 14, color: kText, fontWeight: FontWeight.w600)),
               ]),
             ),
@@ -249,7 +249,7 @@ class _RecurringSheetState extends State<_RecurringSheet> {
             },
             style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            child: Text(zh ? '保存' : 'Save', style: const TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(tr(lang, 'Save', '保存', 'Simpan'), style: const TextStyle(fontWeight: FontWeight.w700)),
           )),
         ]),
       ),

@@ -125,7 +125,7 @@ class _CnHistState extends State<CreditNoteHistoryScreen> {
           ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Text('🧾', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(lang == 'zh' ? '还没有信用备注' : 'No credit notes yet',
+              Text(tr(lang, 'No credit notes yet', '还没有信用备注', 'Belum ada nota kredit'),
                   style: const TextStyle(color: kMuted, fontSize: 15)),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -250,7 +250,7 @@ class _CnCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onEdit,
                   icon: const Icon(Icons.edit_outlined, size: 14),
-                  label: Text(lang == 'zh' ? '编辑' : 'Edit'),
+                  label: Text(tr(lang, 'Edit', '编辑', 'Sunting')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: kText, side: const BorderSide(color: kBorder),
                     padding: const EdgeInsets.symmetric(vertical: 7),
@@ -262,7 +262,7 @@ class _CnCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onExport,
                   icon: const Icon(Icons.picture_as_pdf_outlined, size: 14),
-                  label: Text(lang == 'zh' ? '导出' : 'PDF'),
+                  label: Text(tr(lang, 'PDF', '导出', 'PDF')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: kBlue, side: const BorderSide(color: kBlueBd),
                     backgroundColor: kBlueBg,
@@ -565,13 +565,13 @@ class _CnSheetState extends State<CreditNoteSheet> {
         ]),
         actions: [
           SmBtn(
-            label: _saving ? (lang == 'zh' ? '保存中…' : 'Saving…') : '💾 ${t.save}',
+            label: _saving ? tr(lang, 'Saving…', '保存中…', 'Menyimpan…') : '💾 ${t.save}',
             color: kGreenBg, borderColor: kGreenBd, textColor: kGreen,
             onTap: _saving ? () {} : () => _save(),
           ),
           const SizedBox(width: 8),
           SmBtn(
-            label: _sharing ? (lang == 'zh' ? '分享中…' : 'Sharing…') : t.sharePrint,
+            label: _sharing ? tr(lang, 'Sharing…', '分享中…', 'Berkongsi…') : t.sharePrint,
             color: kDark, borderColor: kDark, textColor: Colors.white,
             onTap: _sharing ? () {} : _share,
           ),
@@ -585,7 +585,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
 
           // ── Credit note details ───────────────────────────────────────────
           _SectionBox(
-            title: lang == 'zh' ? '信用备注信息' : 'Credit Note Details',
+            title: tr(lang, 'Credit Note Details', '信用备注信息', 'Butiran Nota Kredit'),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(children: [
@@ -603,7 +603,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
                 ]),
                 FieldInput(
                   label: t.creditReason, value: _reason,
-                  placeholder: lang == 'zh' ? '如：退货 / 多收 / 折扣调整' : 'e.g. Return / Overcharge',
+                  placeholder: tr(lang, 'e.g. Return / Overcharge', '如：退货 / 多收 / 折扣调整', 'cth. Pulangan / Lebih caj'),
                   onChanged: (v) => setState(() => _reason = v),
                 ),
                 // ── One-click invoice picker ────────────────────────────────
@@ -631,8 +631,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
                         child: Text(
                           _refInvNo.isNotEmpty
                               ? _refInvNo
-                              : (lang == 'zh' ? '点击选择原发票（带出客户+明细）'
-                                              : 'Tap to select original invoice'),
+                              : tr(lang, 'Tap to select original invoice', '点击选择原发票（带出客户+明细）', 'Ketik untuk pilih invois asal'),
                           style: TextStyle(fontSize: 14,
                               color: _refInvNo.isNotEmpty ? kText : kMuted,
                               fontWeight: _refInvNo.isNotEmpty ? FontWeight.w700 : FontWeight.normal),
@@ -663,7 +662,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 if (_customer.id == 0 || _customer.name.isEmpty)
                   DashedBtn(
-                    label: '👤 ${lang == 'zh' ? '选择客户' : 'Select Customer'}',
+                    label: '👤 ${tr(lang, 'Select Customer', '选择客户', 'Pilih Pelanggan')}',
                     onTap: () => showModalBottomSheet(
                       context: context, isScrollControlled: true,
                       builder: (_) => CustomerManagerScreen(
@@ -686,7 +685,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
                           Text(_customer.phone, style: const TextStyle(fontSize: 11, color: kMuted)),
                       ])),
                       SmBtn(
-                        label: lang == 'zh' ? '更改' : 'Change',
+                        label: tr(lang, 'Change', '更改', 'Tukar'),
                         onTap: () => showModalBottomSheet(
                           context: context, isScrollControlled: true,
                           builder: (_) => CustomerManagerScreen(
@@ -801,7 +800,7 @@ class _CnItemRow extends StatelessWidget {
           )),
           const SizedBox(width: 8),
           Expanded(child: FieldInput(
-            label: lang == 'zh' ? '折扣 (%)' : 'Disc (%)', value: item['disc'] ?? '',
+            label: tr(lang, 'Disc (%)', '折扣 (%)', 'Diskaun (%)'), value: item['disc'] ?? '',
             keyboard: TextInputType.number,
             onChanged: (v) => _up('disc', v),
           )),
@@ -816,7 +815,7 @@ class _CnItemRow extends StatelessWidget {
           )).toList(),
           onChanged: (v) { if (v != null) _up('sst', v); },
           decoration: InputDecoration(
-            labelText: lang == 'zh' ? 'SST / 税率' : 'SST / Tax',
+            labelText: tr(lang, 'SST / Tax', 'SST / 税率', 'SST / Cukai'),
             labelStyle: const TextStyle(fontSize: 12, color: kMuted),
             filled: true, fillColor: kSurface,
             isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

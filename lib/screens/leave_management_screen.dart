@@ -15,11 +15,11 @@ import '../state/app_state.dart';
 
 const _leaveTypes = ['annual', 'sick', 'unpaid', 'emergency'];
 
-String _leaveTypeLabel(String t, bool zh) => switch (t) {
-  'annual'    => zh ? '年假'   : 'Annual',
-  'sick'      => zh ? '病假'   : 'Sick',
-  'unpaid'    => zh ? '无薪假' : 'Unpaid',
-  'emergency' => zh ? '紧急假' : 'Emergency',
+String _leaveTypeLabel(String t, String lang) => switch (t) {
+  'annual'    => tr(lang, 'Annual', '年假', 'Tahunan'),
+  'sick'      => tr(lang, 'Sick', '病假', 'Sakit'),
+  'unpaid'    => tr(lang, 'Unpaid', '无薪假', 'Tanpa Gaji'),
+  'emergency' => tr(lang, 'Emergency', '紧急假', 'Kecemasan'),
   _           => t,
 };
 
@@ -120,18 +120,17 @@ class _LeaveState extends State<LeaveManagementScreen> {
   Widget build(BuildContext context) {
     final app  = context.watch<AppState>();
     final lang = app.settings.lang;
-    final zh   = lang == 'zh';
     final emps = app.employees;
 
     return Scaffold(
       backgroundColor: kBg,
       appBar: AppBar(
-        title: Text(zh ? '🏖️ 请假管理' : '🏖️ Leave Management'),
+        title: Text(tr(lang, '🏖️ Leave Management', '🏖️ 请假管理', '🏖️ Pengurusan Cuti')),
         backgroundColor: kSurface, foregroundColor: kText, elevation: 0,
       ),
       body: _loading ? const Center(child: CircularProgressIndicator())
         : emps.isEmpty
-          ? Center(child: Text(zh ? '请先添加员工' : 'Add employees first',
+          ? Center(child: Text(tr(lang, 'Add employees first', '请先添加员工', 'Tambah pekerja dahulu'),
               style: const TextStyle(color: kMuted, fontSize: 14)))
           : Column(children: [
               // Employee selector
@@ -140,7 +139,7 @@ class _LeaveState extends State<LeaveManagementScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: DropdownButtonFormField<int>(
                   value: _emp?.id,
-                  hint: Text(zh ? '选择员工' : 'Select employee', style: const TextStyle(fontSize: 13)),
+                  hint: Text(tr(lang, 'Select employee', '选择员工', 'Pilih pekerja'), style: const TextStyle(fontSize: 13)),
                   items: emps.map((e) => DropdownMenuItem(value: e.id,
                     child: Text(e.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)))).toList(),
                   onChanged: (v) => setState(() => _emp = emps.firstWhere((e) => e.id == v)),
@@ -153,19 +152,20 @@ class _LeaveState extends State<LeaveManagementScreen> {
                 ),
               ),
               Expanded(child: _emp == null
-                ? Center(child: Text(zh ? '请选择员工' : 'Select an employee',
+                ? Center(child: Text(tr(lang, 'Select an employee', '请选择员工', 'Pilih seorang pekerja'),
                     style: const TextStyle(color: kMuted, fontSize: 14)))
-                : _empView(_emp!, zh)),
+                : _empView(_emp!, lang)),
             ]),
       floatingActionButton: _emp == null ? null : FloatingActionButton.extended(
         onPressed: () => _addLeave('${_emp!.id}', _emp!.name),
         backgroundColor: kDark, foregroundColor: Colors.white,
-        icon: const Icon(Icons.add), label: Text(zh ? '请假' : 'Add Leave'),
+        icon: const Icon(Icons.add), label: Text(tr(lang, 'Add Leave', '请假', 'Tambah Cuti')),
       ),
     );
   }
 
-  Widget _empView(Employee emp, bool zh) {
+  Widget _empView(Employee emp, String lang) {
+    final zh = lang == 'zh';
     final empId = '${emp.id}';
     final hire  = _hireDate(empId);
     final yos   = hire != null ? yearsOfService(hire) : 0;
@@ -185,12 +185,12 @@ class _LeaveState extends State<LeaveManagementScreen> {
             const Icon(Icons.event, size: 18, color: kBlue),
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(zh ? '入职日期' : 'Hire Date', style: const TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w600)),
-              Text(hire ?? (zh ? '点击设置（用于年假额度）' : 'Tap to set (for leave entitlement)'),
+              Text(tr(lang, 'Hire Date', '入职日期', 'Tarikh Mula Kerja'), style: const TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w600)),
+              Text(hire ?? (tr(lang, 'Tap to set (for leave entitlement)', '点击设置（用于年假额度）', 'Ketik untuk tetap (untuk kelayakan cuti)')),
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: hire != null ? kText : kMuted)),
             ])),
             if (hire != null)
-              Text(zh ? '工龄 $yos 年' : '$yos yr${yos == 1 ? '' : 's'}',
+              Text(tr(lang, '$yos yr${yos == 1 ? '' : 's'}', '工龄 $yos 年', '$yos thn'),
                 style: const TextStyle(fontSize: 12, color: kMuted, fontWeight: FontWeight.w600)),
             const Icon(Icons.chevron_right, color: kMuted),
           ]),
@@ -214,8 +214,8 @@ class _LeaveState extends State<LeaveManagementScreen> {
           decoration: BoxDecoration(color: kDark, borderRadius: BorderRadius.circular(14)),
           child: Column(children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(zh ? '年假余额' : 'Annual Leave Balance', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
-              Text(zh ? '$remaining / $entitlement 天' : '$remaining / $entitlement days',
+              Text(tr(lang, 'Annual Leave Balance', '年假余额', 'Baki Cuti Tahunan'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+              Text(tr(lang, '$remaining / $entitlement days', '$remaining / $entitlement 天', '$remaining / $entitlement hari'),
                 style: TextStyle(color: remaining > 0 ? const Color(0xFF4ADE80) : const Color(0xFFF87171), fontWeight: FontWeight.w900, fontSize: 18)),
             ]),
             const SizedBox(height: 10),
@@ -226,19 +226,21 @@ class _LeaveState extends State<LeaveManagementScreen> {
             )),
             const SizedBox(height: 6),
             Align(alignment: Alignment.centerLeft, child: Text(
-              zh ? '已用 ${used.toStringAsFixed(used == used.truncate() ? 0 : 1)} 天 · ${DateTime.now().year} 年'
-                 : 'Used ${used.toStringAsFixed(used == used.truncate() ? 0 : 1)} days · ${DateTime.now().year}',
+              tr(lang,
+                'Used ${used.toStringAsFixed(used == used.truncate() ? 0 : 1)} days · ${DateTime.now().year}',
+                '已用 ${used.toStringAsFixed(used == used.truncate() ? 0 : 1)} 天 · ${DateTime.now().year} 年',
+                'Diguna ${used.toStringAsFixed(used == used.truncate() ? 0 : 1)} hari · ${DateTime.now().year}'),
               style: const TextStyle(color: Colors.white70, fontSize: 11))),
           ]),
         ),
       const SizedBox(height: 16),
 
-      Text(zh ? '请假记录（本年）' : 'Leave Records (this year)',
+      Text(tr(lang, 'Leave Records (this year)', '请假记录（本年）', 'Rekod Cuti (tahun ini)'),
         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
       const SizedBox(height: 8),
       if (recs.isEmpty)
         Padding(padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Center(child: Text(zh ? '暂无请假记录' : 'No leave records yet',
+          child: Center(child: Text(tr(lang, 'No leave records yet', '暂无请假记录', 'Belum ada rekod cuti'),
             style: const TextStyle(color: kMuted, fontSize: 13))))
       else
         ...recs.map((r) => Container(
@@ -253,7 +255,7 @@ class _LeaveState extends State<LeaveManagementScreen> {
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(color: _leaveTypeColor(r['type']).withOpacity(0.3)),
               ),
-              child: Text(_leaveTypeLabel(r['type'], zh),
+              child: Text(_leaveTypeLabel(r['type'], lang),
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _leaveTypeColor(r['type']))),
             ),
             const SizedBox(width: 10),
@@ -262,7 +264,7 @@ class _LeaveState extends State<LeaveManagementScreen> {
               if ((r['reason'] ?? '').toString().isNotEmpty)
                 Text(r['reason'], style: const TextStyle(fontSize: 11, color: kMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
             ])),
-            Text('${(r['days'] as num?)?.toString() ?? '0'} ${zh ? '天' : 'd'}',
+            Text('${(r['days'] as num?)?.toString() ?? '0'} ${tr(lang, 'd', '天', 'h')}',
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: kText)),
             const SizedBox(width: 6),
             GestureDetector(onTap: () => _deleteLeave(r['id']),
@@ -305,7 +307,7 @@ class _AddLeaveSheetState extends State<_AddLeaveSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final zh = context.read<AppState>().settings.lang == 'zh';
+    final lang = context.read<AppState>().settings.lang;
     return Container(
       decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -313,13 +315,13 @@ class _AddLeaveSheetState extends State<_AddLeaveSheet> {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text(zh ? '添加请假 · ${widget.empName}' : 'Add Leave · ${widget.empName}',
+            Text(tr(lang, 'Add Leave · ${widget.empName}', '添加请假 · ${widget.empName}', 'Tambah Cuti · ${widget.empName}'),
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: kText)),
             const Spacer(),
             GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: kMuted)),
           ]),
           const SizedBox(height: 16),
-          Text(zh ? '类型' : 'Type', style: const TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w700)),
+          Text(tr(lang, 'Type', '类型', 'Jenis'), style: const TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Wrap(spacing: 8, children: _leaveTypes.map((t) {
             final sel = _type == t;
@@ -332,7 +334,7 @@ class _AddLeaveSheetState extends State<_AddLeaveSheet> {
                   border: Border.all(color: sel ? _leaveTypeColor(t) : kBorder, width: sel ? 1.5 : 1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(_leaveTypeLabel(t, zh),
+                child: Text(_leaveTypeLabel(t, lang),
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
                     color: sel ? _leaveTypeColor(t) : kMuted)),
               ),
@@ -340,18 +342,18 @@ class _AddLeaveSheetState extends State<_AddLeaveSheet> {
           }).toList()),
           const SizedBox(height: 16),
           Row(children: [
-            Expanded(child: _dateField(zh ? '从' : 'From', _fmt(_from), () => _pick(true))),
+            Expanded(child: _dateField(tr(lang, 'From', '从', 'Dari'), _fmt(_from), () => _pick(true))),
             const SizedBox(width: 10),
-            Expanded(child: _dateField(zh ? '至' : 'To', _fmt(_to), () => _pick(false))),
+            Expanded(child: _dateField(tr(lang, 'To', '至', 'Hingga'), _fmt(_to), () => _pick(false))),
           ]),
           const SizedBox(height: 6),
-          Text(zh ? '共 ${_days.toStringAsFixed(0)} 天' : '${_days.toStringAsFixed(0)} day(s)',
+          Text(tr(lang, '${_days.toStringAsFixed(0)} day(s)', '共 ${_days.toStringAsFixed(0)} 天', '${_days.toStringAsFixed(0)} hari'),
             style: const TextStyle(fontSize: 12, color: kMuted, fontWeight: FontWeight.w600)),
           const SizedBox(height: 14),
           TextField(
             onChanged: (v) => _reason = v,
             decoration: InputDecoration(
-              labelText: zh ? '原因（可选）' : 'Reason (optional)',
+              labelText: tr(lang, 'Reason (optional)', '原因（可选）', 'Sebab (pilihan)'),
               labelStyle: const TextStyle(fontSize: 12, color: kMuted),
               filled: true, fillColor: kBg, isDense: true,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: kBorder)),
@@ -369,7 +371,7 @@ class _AddLeaveSheetState extends State<_AddLeaveSheet> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text(zh ? '保存请假' : 'Save Leave', style: const TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(tr(lang, 'Save Leave', '保存请假', 'Simpan Cuti'), style: const TextStyle(fontWeight: FontWeight.w700)),
           )),
         ]),
       ),

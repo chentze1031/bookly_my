@@ -17,7 +17,7 @@ class _SubScreenState extends State<SubScreen> {
   String? _msg; // inline feedback (snackbars hide behind the bottom sheet)
 
   Future<void> _purchase(SubState sub) async {
-    final zh = context.read<AppState>().settings.lang == 'zh';
+    final lang = context.read<AppState>().settings.lang; final zh = lang == 'zh';
 
     // No store prices loaded → Google Play Billing isn't available here
     // (e.g. sideloaded/CI build). Tell the user clearly instead of failing silently.
@@ -36,7 +36,7 @@ class _SubScreenState extends State<SubScreen> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(zh ? '🎉 欢迎升级 Bookly PRO！' : '🎉 Welcome to Bookly PRO!'),
+          content: Text(tr(lang, '🎉 Welcome to Bookly PRO!', '🎉 欢迎升级 Bookly PRO！', '🎉 Selamat datang ke Bookly PRO!')),
           backgroundColor: kPro,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -50,7 +50,7 @@ class _SubScreenState extends State<SubScreen> {
   }
 
   Future<void> _restorePurchases(SubState sub) async {
-    final zh = context.read<AppState>().settings.lang == 'zh';
+    final lang = context.read<AppState>().settings.lang;
     setState(() => _restore = true);
     final ok = await sub.restorePurchases();
     if (mounted) {
@@ -59,7 +59,7 @@ class _SubScreenState extends State<SubScreen> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(zh ? '✅ 已恢复购买！' : '✅ Purchase restored!'),
+            content: Text(tr(lang, '✅ Purchase restored!', '✅ 已恢复购买！', '✅ Pembelian dipulihkan!')),
             backgroundColor: kGreen,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -67,7 +67,7 @@ class _SubScreenState extends State<SubScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(zh ? '未找到可恢复的购买记录。' : 'No previous purchase found.')),
+          SnackBar(content: Text(tr(lang, 'No previous purchase found.', '未找到可恢复的购买记录。', 'Tiada pembelian terdahulu dijumpai.'))),
         );
       }
     }
@@ -76,7 +76,7 @@ class _SubScreenState extends State<SubScreen> {
   @override
   Widget build(BuildContext context) {
     final sub = context.watch<SubState>();
-    final zh  = context.watch<AppState>().settings.lang == 'zh';
+    final lang = context.watch<AppState>().settings.lang; final zh = lang == 'zh';
 
     return Container(
       decoration: const BoxDecoration(
@@ -120,7 +120,7 @@ class _SubScreenState extends State<SubScreen> {
                 fontSize: 28, fontWeight: FontWeight.w900, color: kPro),
             ),
             Text(
-              zh ? '解锁全部 Pro 功能 · 永久去除广告' : 'Unlock every Pro feature · remove all ads',
+              tr(lang, 'Unlock every Pro feature · remove all ads', '解锁全部 Pro 功能 · 永久去除广告', 'Buka semua ciri Pro · buang semua iklan'),
               style: const TextStyle(fontSize: 14, color: kMuted),
             ),
             const SizedBox(height: 20),
@@ -142,15 +142,15 @@ class _SubScreenState extends State<SubScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(zh ? '以下情况会显示广告：' : 'Ads appear when you:',
+                        Text(tr(lang, 'Ads appear when you:', '以下情况会显示广告：', 'Iklan muncul apabila anda:'),
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kGold)),
                         const SizedBox(height: 4),
-                        Text(zh ? '• 保存或导出发票、工资单等单据' : '• Save or export invoices & payslips',
+                        Text(tr(lang, '• Save or export invoices & payslips', '• 保存或导出发票、工资单等单据', '• Simpan atau eksport invois & slip gaji'),
                           style: const TextStyle(fontSize: 12, color: kGold)),
-                        Text(zh ? '• 使用过程中每隔几分钟' : '• Every few minutes while using the app',
+                        Text(tr(lang, '• Every few minutes while using the app', '• 使用过程中每隔几分钟', '• Setiap beberapa minit semasa guna app'),
                           style: const TextStyle(fontSize: 12, color: kGold)),
                         const SizedBox(height: 4),
-                        Text(zh ? '订阅 Pro 永久去除所有广告。' : 'Subscribe to remove all ads permanently.',
+                        Text(tr(lang, 'Subscribe to remove all ads permanently.', '订阅 Pro 永久去除所有广告。', 'Langgan untuk buang semua iklan secara kekal.'),
                           style: const TextStyle(fontSize: 12, color: kGold, fontWeight: FontWeight.w600)),
                       ],
                     ),
@@ -182,15 +182,15 @@ class _SubScreenState extends State<SubScreen> {
               padding: const EdgeInsets.all(4),
               child: Row(children: [
                 _PlanTab(
-                  label: zh ? '月付' : 'Monthly',
-                  price: sub.monthlyPriceString != null ? '${sub.monthlyPriceString}${zh ? '/月' : '/mo'}' : '—',
+                  label: tr(lang, 'Monthly', '月付', 'Bulanan'),
+                  price: sub.monthlyPriceString != null ? '${sub.monthlyPriceString}${tr(lang, '/mo', '/月', '/bln')}' : '—',
                   badge: null,
                   selected: !_yearly,
                   onTap: () => setState(() => _yearly = false),
                 ),
                 _PlanTab(
-                  label: zh ? '年付' : 'Yearly',
-                  price: sub.yearlyPriceString != null ? '${sub.yearlyPriceString}${zh ? '/年' : '/yr'}' : '—',
+                  label: tr(lang, 'Yearly', '年付', 'Tahunan'),
+                  price: sub.yearlyPriceString != null ? '${sub.yearlyPriceString}${tr(lang, '/yr', '/年', '/thn')}' : '—',
                   badge: sub.yearlySavingsLabel,
                   selected: _yearly,
                   onTap: () => setState(() => _yearly = true),
@@ -257,7 +257,7 @@ class _SubScreenState extends State<SubScreen> {
                     ? const SizedBox(
                         width: 18, height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(zh ? '恢复购买' : 'Restore Purchases',
+                    : Text(tr(lang, 'Restore Purchases', '恢复购买', 'Pulih Pembelian'),
                         style: const TextStyle(color: kMuted, fontSize: 13)),
               ),
             ),
@@ -265,8 +265,9 @@ class _SubScreenState extends State<SubScreen> {
             // ── Legal note ────────────────────────────────────────────
             Center(
               child: Text(
-                zh ? '订阅到期自动续费，可随时在 Google Play 取消。'
-                   : 'Subscription auto-renews. Cancel anytime in Google Play.',
+                tr(lang, 'Subscription auto-renews. Cancel anytime in Google Play.',
+                   '订阅到期自动续费，可随时在 Google Play 取消。',
+                   'Langganan diperbaharui automatik. Batal bila-bila masa di Google Play.'),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 10, color: kMuted),
               ),

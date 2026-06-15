@@ -83,9 +83,9 @@ class _PoHistState extends State<PurchaseOrderHistoryScreen> {
     await app.markPurchaseOrderStatus(po['poNo'] ?? '', 'received');
     await _load();
     if (mounted) {
-      final zh = app.settings.lang == 'zh';
+      final lang = app.settings.lang;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(zh ? '已收货 · $linked 项入库' : 'Received · $linked item(s) added to stock'),
+        content: Text(tr(lang, 'Received · $linked item(s) added to stock', '已收货 · $linked 项入库', 'Diterima · $linked item ditambah ke stok')),
         backgroundColor: kDark, behavior: SnackBarBehavior.floating));
     }
   }
@@ -126,7 +126,7 @@ class _PoHistState extends State<PurchaseOrderHistoryScreen> {
           ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Text('📦', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
-              Text(lang == 'zh' ? '还没有采购单' : 'No purchase orders yet', style: const TextStyle(color: kMuted, fontSize: 15)),
+              Text(tr(lang, 'No purchase orders yet', '还没有采购单', 'Belum ada pesanan belian'), style: const TextStyle(color: kMuted, fontSize: 15)),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () async {
@@ -207,20 +207,20 @@ class _PoCard extends StatelessWidget {
             Row(children: [
               Expanded(child: OutlinedButton.icon(
                 onPressed: onEdit, icon: const Icon(Icons.edit_outlined, size: 14),
-                label: Text(lang == 'zh' ? '编辑' : 'Edit'),
+                label: Text(tr(lang, 'Edit', '编辑', 'Sunting')),
                 style: OutlinedButton.styleFrom(foregroundColor: kText, side: const BorderSide(color: kBorder),
                   padding: const EdgeInsets.symmetric(vertical: 7), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))))),
               const SizedBox(width: 8),
               Expanded(child: OutlinedButton.icon(
                 onPressed: onExport, icon: const Icon(Icons.picture_as_pdf_outlined, size: 14),
-                label: Text(lang == 'zh' ? '导出' : 'PDF'),
+                label: Text(tr(lang, 'PDF', '导出', 'PDF')),
                 style: OutlinedButton.styleFrom(foregroundColor: kBlue, side: const BorderSide(color: kBlueBd), backgroundColor: kBlueBg,
                   padding: const EdgeInsets.symmetric(vertical: 7), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9))))),
               const SizedBox(width: 8),
               Expanded(child: OutlinedButton.icon(
                 onPressed: onReceive,
                 icon: Icon(received ? Icons.check_circle_outline : Icons.inventory_2_outlined, size: 14),
-                label: Text(received ? (lang == 'zh' ? '已收' : 'Done') : t.receiveStock),
+                label: Text(received ? tr(lang, 'Done', '已收', 'Selesai') : t.receiveStock),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: received ? kMuted : kGreen,
                   side: BorderSide(color: received ? kBorder : kGreenBd),
@@ -373,18 +373,18 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
         children: [
-          _Section(title: lang == 'zh' ? '采购单信息' : 'Order Details', child: Column(children: [
+          _Section(title: tr(lang, 'Order Details', '采购单信息', 'Butiran Pesanan'), child: Column(children: [
             Row(children: [
               Expanded(child: FieldInput(label: t.poNo, value: _poNo, onChanged: (v) => setState(() => _poNo = v))),
               const SizedBox(width: 10),
               Expanded(child: FieldInput(label: t.poDate, value: _poDate, keyboard: TextInputType.datetime, onChanged: (v) => setState(() => _poDate = v))),
             ]),
             // Supplier
-            Align(alignment: Alignment.centerLeft, child: Text(lang == 'zh' ? '供应商' : 'SUPPLIER',
+            Align(alignment: Alignment.centerLeft, child: Text(tr(lang, 'SUPPLIER', '供应商', 'PEMBEKAL'),
               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted, letterSpacing: 0.5))),
             const SizedBox(height: 6),
             if ((_supplier['name'] ?? '').toString().trim().isEmpty)
-              DashedBtn(label: '🏭 ${lang == 'zh' ? '选择供应商' : 'Select Supplier'}', onTap: _pickSupplier)
+              DashedBtn(label: '🏭 ${tr(lang, 'Select Supplier', '选择供应商', 'Pilih Pembekal')}', onTap: _pickSupplier)
             else
               Container(
                 padding: const EdgeInsets.all(12),
@@ -399,7 +399,7 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
                       Text(_supplier['address'] as String, style: const TextStyle(fontSize: 11, color: kMuted),
                         maxLines: 2, overflow: TextOverflow.ellipsis),
                   ])),
-                  SmBtn(label: lang == 'zh' ? '更改' : 'Change', onTap: _pickSupplier),
+                  SmBtn(label: tr(lang, 'Change', '更改', 'Tukar'), onTap: _pickSupplier),
                 ]),
               ),
             const SizedBox(height: 6),
@@ -417,7 +417,7 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
             DashedBtn(label: '+ ${t.addLine}', onTap: () => setState(() => _items.add({'desc': '', 'qty': '1', 'price': '', 'inv_id': ''}))),
             const SizedBox(height: 14),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(lang == 'zh' ? '总计' : 'TOTAL', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kText)),
+              Text(tr(lang, 'TOTAL', '总计', 'JUMLAH'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: kText)),
               Text(fmtMYR(_total), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: kText)),
             ]),
           ])),
@@ -463,7 +463,7 @@ class _PoItemRow extends StatelessWidget {
             child: Row(children: [
               Icon(linked ? Icons.link : Icons.add_link, size: 13, color: linked ? kGreen : kMuted),
               const SizedBox(width: 4),
-              Text(linked ? (lang == 'zh' ? '已关联库存' : 'Linked') : (lang == 'zh' ? '关联库存' : 'Link stock'),
+              Text(linked ? tr(lang, 'Linked', '已关联库存', 'Dipaut') : tr(lang, 'Link stock', '关联库存', 'Paut stok'),
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: linked ? kGreen : kMuted)),
             ]),
           )),
@@ -475,7 +475,7 @@ class _PoItemRow extends StatelessWidget {
         Row(children: [
           Expanded(child: FieldInput(label: t.qty, value: item['qty'] ?? '1', keyboard: TextInputType.number, onChanged: (v) => _up('qty', v))),
           const SizedBox(width: 8),
-          Expanded(child: FieldInput(label: lang == 'zh' ? '成本价' : 'Unit Cost', value: item['price'] ?? '', keyboard: TextInputType.number, onChanged: (v) => _up('price', v))),
+          Expanded(child: FieldInput(label: tr(lang, 'Unit Cost', '成本价', 'Harga Kos'), value: item['price'] ?? '', keyboard: TextInputType.number, onChanged: (v) => _up('price', v))),
         ]),
       ]),
     );
@@ -498,11 +498,11 @@ class _SuppMgrState extends State<SupplierManagerScreen> {
   @override
   Widget build(BuildContext context) {
     final acc = context.watch<AccountingState>();
-    final zh  = context.read<AppState>().settings.lang == 'zh';
+    final lang = context.read<AppState>().settings.lang;
 
     if (_editing != null) {
       return _SuppEditForm(
-        supplier: _editing!, zh: zh,
+        supplier: _editing!, lang: lang,
         onSave: (s) async { await acc.saveSupplier(s); if (mounted) setState(() => _editing = null); },
         onCancel: () => setState(() => _editing = null),
       );
@@ -512,16 +512,16 @@ class _SuppMgrState extends State<SupplierManagerScreen> {
       decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88 - MediaQuery.of(context).viewInsets.bottom),
       child: Column(children: [
-        SheetHandle(title: zh ? '供应商管理' : 'Suppliers'),
+        SheetHandle(title: tr(lang, 'Suppliers', '供应商管理', 'Pembekal')),
         Expanded(child: ListView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
           children: [
-            DashedBtn(label: '+ ${zh ? '新增供应商' : 'New Supplier'}',
+            DashedBtn(label: '+ ${tr(lang, 'New Supplier', '新增供应商', 'Pembekal Baharu')}',
               onTap: () => setState(() => _editing = const Supplier(id: 0, name: ''))),
             const SizedBox(height: 10),
             if (acc.suppliers.isEmpty)
-              EmptyHint(icon: '🏭', label: zh ? '暂无供应商' : 'No suppliers yet'),
+              EmptyHint(icon: '🏭', label: tr(lang, 'No suppliers yet', '暂无供应商', 'Belum ada pembekal')),
             ...acc.suppliers.map((s) => _SuppCard(
               supplier: s,
               onSelect: widget.onSelect != null
@@ -565,10 +565,10 @@ class _SuppCard extends StatelessWidget {
 
 class _SuppEditForm extends StatefulWidget {
   final Supplier supplier;
-  final bool zh;
+  final String lang;
   final Future<void> Function(Supplier) onSave;
   final VoidCallback onCancel;
-  const _SuppEditForm({required this.supplier, required this.zh, required this.onSave, required this.onCancel});
+  const _SuppEditForm({required this.supplier, required this.lang, required this.onSave, required this.onCancel});
   @override State<_SuppEditForm> createState() => _SuppEditFormState();
 }
 
@@ -580,7 +580,7 @@ class _SuppEditFormState extends State<_SuppEditForm> {
 
   @override
   Widget build(BuildContext context) {
-    final zh = widget.zh;
+    final lang = widget.lang;
     final keyboardH = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardH),
@@ -588,28 +588,28 @@ class _SuppEditFormState extends State<_SuppEditForm> {
         decoration: const BoxDecoration(color: kSurface, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
         child: Column(children: [
-          SheetHandle(title: _s.id == 0 ? (zh ? '新增供应商' : 'New Supplier') : (zh ? '供应商' : 'Supplier'),
+          SheetHandle(title: _s.id == 0 ? tr(lang, 'New Supplier', '新增供应商', 'Pembekal Baharu') : tr(lang, 'Supplier', '供应商', 'Pembekal'),
             trailing: TextButton(onPressed: widget.onCancel, child: const Text('← Back'))),
           Expanded(child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
             child: Column(children: [
-              FieldInput(label: zh ? '供应商名称' : 'Supplier Name', value: _s.name, onChanged: (v) => _u(_s.copyWith(name: v))),
+              FieldInput(label: tr(lang, 'Supplier Name', '供应商名称', 'Nama Pembekal'), value: _s.name, onChanged: (v) => _u(_s.copyWith(name: v))),
               Row(children: [
-                Expanded(child: FieldInput(label: zh ? '注册号' : 'Reg No.', value: _s.regNo, onChanged: (v) => _u(_s.copyWith(regNo: v)))),
+                Expanded(child: FieldInput(label: tr(lang, 'Reg No.', '注册号', 'No. Pendaftaran'), value: _s.regNo, onChanged: (v) => _u(_s.copyWith(regNo: v)))),
                 const SizedBox(width: 10),
-                Expanded(child: FieldInput(label: zh ? 'SST 注册号' : 'SST Reg No.', value: _s.sstRegNo, onChanged: (v) => _u(_s.copyWith(sstRegNo: v)))),
+                Expanded(child: FieldInput(label: tr(lang, 'SST Reg No.', 'SST 注册号', 'No. Pendaftaran SST'), value: _s.sstRegNo, onChanged: (v) => _u(_s.copyWith(sstRegNo: v)))),
               ]),
-              FieldInput(label: zh ? '地址' : 'Address', value: _s.address, multiline: true, onChanged: (v) => _u(_s.copyWith(address: v))),
+              FieldInput(label: tr(lang, 'Address', '地址', 'Alamat'), value: _s.address, multiline: true, onChanged: (v) => _u(_s.copyWith(address: v))),
               Row(children: [
-                Expanded(child: FieldInput(label: zh ? '电话' : 'Phone', value: _s.phone, keyboard: TextInputType.phone, onChanged: (v) => _u(_s.copyWith(phone: v)))),
+                Expanded(child: FieldInput(label: tr(lang, 'Phone', '电话', 'Telefon'), value: _s.phone, keyboard: TextInputType.phone, onChanged: (v) => _u(_s.copyWith(phone: v)))),
                 const SizedBox(width: 10),
-                Expanded(child: FieldInput(label: zh ? '邮箱' : 'Email', value: _s.email, keyboard: TextInputType.emailAddress, onChanged: (v) => _u(_s.copyWith(email: v)))),
+                Expanded(child: FieldInput(label: tr(lang, 'Email', '邮箱', 'E-mel'), value: _s.email, keyboard: TextInputType.emailAddress, onChanged: (v) => _u(_s.copyWith(email: v)))),
               ]),
               Row(children: [
-                Expanded(child: FieldInput(label: zh ? '银行' : 'Bank', value: _s.bankName ?? '', onChanged: (v) => _u(_s.copyWith(bankName: v)))),
+                Expanded(child: FieldInput(label: tr(lang, 'Bank', '银行', 'Bank'), value: _s.bankName ?? '', onChanged: (v) => _u(_s.copyWith(bankName: v)))),
                 const SizedBox(width: 10),
-                Expanded(child: FieldInput(label: zh ? '账号' : 'Account No.', value: _s.bankAcct ?? '', onChanged: (v) => _u(_s.copyWith(bankAcct: v)))),
+                Expanded(child: FieldInput(label: tr(lang, 'Account No.', '账号', 'No. Akaun'), value: _s.bankAcct ?? '', onChanged: (v) => _u(_s.copyWith(bankAcct: v)))),
               ]),
               const SizedBox(height: 10),
               SizedBox(width: double.infinity, child: ElevatedButton(
@@ -622,7 +622,7 @@ class _SuppEditFormState extends State<_SuppEditForm> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(_saving ? '…' : (zh ? '保存供应商' : 'Save Supplier'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                child: Text(_saving ? '…' : tr(lang, 'Save Supplier', '保存供应商', 'Simpan Pembekal'), style: const TextStyle(fontWeight: FontWeight.w700)),
               )),
             ]),
           )),
