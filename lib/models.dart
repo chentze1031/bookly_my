@@ -1,6 +1,19 @@
 ﻿import 'dart:convert';
 
 
+// ─── Company (Phase 4 #24: multi-company ledger registry entry) ──────────────
+class Company {
+  final String id;   // 'default' or a millis-since-epoch string
+  final String name;
+  const Company({required this.id, required this.name});
+
+  Map<String, dynamic> toMap() => {'id': id, 'name': name};
+  factory Company.fromMap(Map<String, dynamic> m) =>
+      Company(id: m['id'] as String, name: (m['name'] ?? '') as String);
+
+  bool get isDefault => id == 'default';
+}
+
 // ─── Invoice Item (lightweight line-item interface) ──────────────────────────
 class InvoiceItem {
   final String desc;

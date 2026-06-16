@@ -252,24 +252,42 @@ String drAccountOf(TxCategory c) {
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 
 // ── Storage Keys ────────────────────────────────────────────────────────────
+// ─── Multi-company ledger (Phase 4 #24) ──────────────────────────────────────
+// One global "active company" id, like [kDarkMode]. The 'default' company keeps
+// the legacy (unscoped) storage keys so existing single-company data needs no
+// migration; any other company namespaces its keys / SQLite file by id.
+// Cloud sync is gated to the 'default' company only (see AppState); other
+// companies are device-local until a later cloud phase adds company_id columns.
+String activeCompanyId = 'default';
+void applyActiveCompany(String id) => activeCompanyId = id;
+bool get isDefaultCompany => activeCompanyId == 'default';
+
+/// Company-scoped storage key. 'default' → legacy key (no suffix).
+String coKey(String base) => isDefaultCompany ? base : '${base}__$activeCompanyId';
+
 abstract class StorageKeys {
-  static const settings    = 'bly_settings';
+  // Company-scoped (per active company)
+  static String get settings       => coKey('bly_settings');
+  static String get invoices       => coKey('bly_invoices');
+  static String get payrolls       => coKey('bly_payrolls');
+  static String get arInvoices     => coKey('bly_ar_invoices');
+  static String get quotations     => coKey('bly_quotations');
+  static String get deliveryOrders => coKey('bly_delivery_orders');
+  static String get creditNotes    => coKey('bly_credit_notes');
+  static String get leave          => coKey('bly_leave');
+  static String get purchaseOrders => coKey('bly_purchase_orders');
+  static String get budgets        => coKey('bly_budgets');
+  static String get recurring      => coKey('bly_recurring');
+  static String get warehouses     => coKey('bly_warehouses');
+  static String get apBills        => coKey('bly_ap_bills');
+  static String get suppliers      => coKey('bly_suppliers');
+
+  // Global (shared across all companies / device-level)
   static const offlineQueue = 'bly_offline_queue';
-  static const invoices    = 'bly_invoices';
-  static const payrolls    = 'bly_payrolls';
-  static const arInvoices  = 'bly_ar_invoices';
-  static const quotations  = 'bly_quotations';
-  static const deliveryOrders = 'bly_delivery_orders';
-  static const creditNotes = 'bly_credit_notes';
-  static const leave       = 'bly_leave';
-  static const purchaseOrders = 'bly_purchase_orders';
-  static const budgets     = 'bly_budgets';
-  static const recurring   = 'bly_recurring';
-  static const warehouses  = 'bly_warehouses';
-  static const apBills     = 'bly_ap_bills';
-  static const suppliers   = 'bly_suppliers';
-  static const fxCached    = 'bly_fx_cache';
-  static const fxTimestamp = 'bly_fx_ts';
+  static const fxCached     = 'bly_fx_cache';
+  static const fxTimestamp  = 'bly_fx_ts';
+  static const companies    = 'bly_companies';      // [{id,name}] registry
+  static const activeCompany = 'bly_active_company'; // current company id
 }
 /// Inline trilingual helper for one-off strings outside the [L10n] class.
 /// Usage: tr(lang, 'English', '中文', 'Bahasa Melayu').

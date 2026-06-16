@@ -6,6 +6,8 @@ import '../constants.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../state/sub_state.dart';
+import '../state/accounting_state.dart';
+import '../services/inventory_service.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import '../screens/auth_screen.dart';
@@ -73,6 +75,9 @@ class _SettingsState extends State<SettingsScreen> {
             ? _LoggedInTile(app: app, t: t)
             : _GuestTile(app: app, t: t),
         ),
+
+        // ── Company ledgers (Phase 4 #24, Pro) ───────────────────────────
+        _CompanyBlock(app: app, t: t, isPro: sub.isPro),
 
         // ── Subscription block ──────────────────────────────────────────
         if (sub.isPro)
@@ -285,6 +290,146 @@ class _SettingsState extends State<SettingsScreen> {
     );
   }
 
+}
+
+// ── Company ledgers block (Phase 4 #24) ──────────────────────────────────────
+class _CompanyBlock extends StatelessWidget {
+  final AppState app;
+  final L10n t;
+  final bool isPro;
+  const _CompanyBlock({required this.app, required this.t, required this.isPro});
+
+  // After switching, reload the other per-company stores too.
+  Future<void> _reloadOthers(BuildContext ctx) async {
+    await ctx.read<AccountingState>().init();
+    await ctx.read<InventoryState>().load();
+  }
+
+  Future<void> _switch(BuildContext ctx, String id) async {
+    if (id == app.activeCompany) return;
+    await app.switchCompany(id);
+    if (!ctx.mounted) return;
+    await _reloadOthers(ctx);
+    if (!ctx.mounted) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+      content: Text(tr(t.lang, 'Switched to ${app.activeCompanyObj.name}',
+          '已切换到 ${app.activeCompanyObj.name}', 'Bertukar ke ${app.activeCompanyObj.name}')),
+      behavior: SnackBarBehavior.floating, backgroundColor: kDark,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    ));
+  }
+
+  Future<String?> _nameDialog(BuildContext ctx,
+      {String initial = '', required String title}) {
+    final ctrl = TextEditingController(text: initial);
+    return showDialog<String>(
+      context: ctx,
+      builder: (dctx) => AlertDialog(
+        backgroundColor: kSurface,
+        title: Text(title, style: TextStyle(color: kText, fontSize: 16)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: TextStyle(color: kText),
+          decoration: InputDecoration(
+            hintText: tr(t.lang, 'Company name', '公司名称', 'Nama syarikat')),
+          onSubmitted: (v) => Navigator.pop(dctx, v.trim()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dctx),
+            child: Text(tr(t.lang, 'Cancel', '取消', 'Batal'))),
+          TextButton(onPressed: () => Navigator.pop(dctx, ctrl.text.trim()),
+            child: Text(tr(t.lang, 'Save', '保存', 'Simpan'))),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _add(BuildContext ctx) async {
+    final name = await _nameDialog(ctx,
+        title: tr(t.lang, 'New Company', '新建公司', 'Syarikat Baru'));
+    if (name == null || name.isEmpty || !ctx.mounted) return;
+    final id = await app.createCompany(name);
+    if (ctx.mounted) await _switch(ctx, id); // jump into the new ledger
+  }
+
+  Future<void> _rename(BuildContext ctx, Company c) async {
+    final name = await _nameDialog(ctx, initial: c.name,
+        title: tr(t.lang, 'Rename Company', '重命名公司', 'Namakan Semula'));
+    if (name == null || name.isEmpty) return;
+    await app.renameCompany(c.id, name);
+  }
+
+  Future<void> _delete(BuildContext ctx, Company c) async {
+    final ok = await showConfirmDialog(
+      context: ctx,
+      title: tr(t.lang, 'Delete company?', '删除公司？', 'Padam syarikat?'),
+      message: tr(t.lang,
+        'All data for "${c.name}" on this device will be permanently deleted.',
+        '本设备上「${c.name}」的所有数据将被永久删除。',
+        'Semua data "${c.name}" pada peranti ini akan dipadam kekal.'),
+      confirmLabel: tr(t.lang, 'Delete', '删除', 'Padam'),
+      cancelLabel: tr(t.lang, 'Cancel', '取消', 'Batal'),
+    );
+    if (ok != true) return;
+    await app.deleteCompany(c.id);
+    if (ctx.mounted) await _reloadOthers(ctx);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SectionCard(
+      title: '🏢 ${tr(t.lang, 'Company Ledgers', '公司账本', 'Lejar Syarikat')}',
+      child: Column(children: [
+        ...app.companies.map((c) {
+          final active = c.id == app.activeCompany;
+          return ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+            leading: Icon(active ? Icons.check_circle : Icons.business_outlined,
+                color: active ? kGreen : kMuted),
+            title: Text(c.name,
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText)),
+            subtitle: active
+                ? Text(tr(t.lang, 'Active', '使用中', 'Aktif'),
+                    style: TextStyle(fontSize: 11, color: kGreen, fontWeight: FontWeight.w600))
+                : null,
+            onTap: () => _switch(context, c.id),
+            trailing: c.isDefault
+                ? null
+                : Row(mainAxisSize: MainAxisSize.min, children: [
+                    IconButton(
+                      icon: Icon(Icons.edit_outlined, size: 18, color: kMuted),
+                      onPressed: () => _rename(context, c)),
+                    IconButton(
+                      icon: Icon(Icons.delete_outline, size: 18, color: kRed),
+                      onPressed: () => _delete(context, c)),
+                  ]),
+          );
+        }),
+        Divider(height: 1, color: kBorder),
+        InkWell(
+          onTap: () => isPro ? _add(context) : showSubSheet(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(children: [
+              Icon(Icons.add, color: kBlue, size: 20),
+              const SizedBox(width: 8),
+              Text(tr(t.lang, 'Add company', '添加公司', 'Tambah syarikat'),
+                  style: TextStyle(color: kBlue, fontWeight: FontWeight.w700, fontSize: 14)),
+              const Spacer(),
+              if (!isPro)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(color: kPro, borderRadius: BorderRadius.circular(99)),
+                  child: const Text('PRO',
+                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
+                ),
+            ]),
+          ),
+        ),
+      ]),
+    );
+  }
 }
 
 // ── Logged-in account tile ────────────────────────────────────────────────────

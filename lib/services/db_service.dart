@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart' hide Transaction;
 import 'package:path/path.dart';
+import '../constants.dart';
 import '../models.dart';
 
 class DbService {
@@ -10,8 +11,18 @@ class DbService {
     return _db!;
   }
 
+  /// Multi-company: close the cached handle so the next access reopens the DB
+  /// file for the now-active company. Call after switching companies.
+  static Future<void> reset() async {
+    await _db?.close();
+    _db = null;
+  }
+
   static Future<Database> _open() async {
-    final path = join(await getDatabasesPath(), 'bookly.db');
+    // The 'default' company keeps the legacy file name (no migration); other
+    // companies get their own isolated SQLite file.
+    final fileName = isDefaultCompany ? 'bookly.db' : 'bookly__$activeCompanyId.db';
+    final path = join(await getDatabasesPath(), fileName);
     return openDatabase(path, version: 7, onCreate: (db, v) async {
       await db.execute('''CREATE TABLE transactions(
         id INTEGER PRIMARY KEY, type TEXT, cat_id TEXT,

@@ -20,9 +20,10 @@ class AccountingState extends ChangeNotifier {
   AppState? appState;
 
   // ── Keys ──────────────────────────────────────────────────────────────────
-  static const _kAr  = StorageKeys.arInvoices;
-  static const _kAp  = StorageKeys.apBills;
-  static const _kSup = StorageKeys.suppliers;
+  // Getters (not const): StorageKeys.* are now company-scoped getters.
+  static String get _kAr  => StorageKeys.arInvoices;
+  static String get _kAp  => StorageKeys.apBills;
+  static String get _kSup => StorageKeys.suppliers;
 
   // ── Summary getters ───────────────────────────────────────────────────────
   double get totalReceivable => arInvoices.fold(0, (s, i) => s + i.balance);

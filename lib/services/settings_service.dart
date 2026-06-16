@@ -4,8 +4,10 @@ import '../models.dart';
 import '../constants.dart';
 
 class SettingsService {
-  static const _key = StorageKeys.settings;
-  static const _darkKey = '${StorageKeys.settings}_dark';
+  // Per-company (scoped) settings key.
+  static String get _key => StorageKeys.settings;
+  // Dark mode is a DEVICE preference — shared across all companies, never scoped.
+  static const _darkKey = 'bly_settings_dark';
 
   static Future<AppSettings> load() async {
     final prefs = await SharedPreferences.getInstance();

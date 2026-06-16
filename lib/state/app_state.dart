@@ -2,6 +2,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sqflite/sqflite.dart' hide Transaction;
+import 'package:path/path.dart';
 import '../models.dart';
 import '../constants.dart';
 import '../services/db_service.dart';
@@ -40,6 +42,15 @@ class AppState extends ChangeNotifier {
   AppSettings       settings  = const AppSettings();
   Map<String, double> fxRates = Map.from(defaultRates);
 
+  // ── Multi-company (Phase 4 #24) ───────────────────────────────────────────
+  List<Company> companies     = [];
+  String        activeCompany = 'default';
+  Company get activeCompanyObj =>
+      companies.firstWhere((c) => c.id == activeCompany,
+          orElse: () => const Company(id: 'default', name: 'My Company'));
+  // Cloud sync only runs for the 'default' company; others are device-local.
+  bool get _cloudOn => _loggedIn && isDefaultCompany;
+
   FxStatus   fxStatus   = FxStatus.idle;
   String?    fxUpdatedAt;
   SyncStatus syncStatus = SyncStatus.idle;
@@ -56,12 +67,15 @@ class AppState extends ChangeNotifier {
 
   // ── Init ─────────────────────────────────────────────────────────────────────
   Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    // Multi-company: resolve the active company BEFORE any scoped / SQLite read.
+    await _initCompanies(prefs);
     fxRates   = await FxService.loadCached();
     txs       = await DbService.loadTxs();
     customers = await DbService.loadCustomers();
     employees = await DbService.loadEmployees();
-    final prefs = await SharedPreferences.getInstance();
     settings = await SettingsService.load();
+    await _syncActiveCompanyName();
     final q = prefs.getString(StorageKeys.offlineQueue);
     if (q != null) {
       final list = (jsonDecode(q) as List);
@@ -73,12 +87,123 @@ class AppState extends ChangeNotifier {
     fetchFxRates();
     // FIX: 不在 init 里调 pullCloud()，避免与 AuthGate.syncOnLogin() 并发竞跑。
     // 云端同步统一由 AuthGate 在 signedIn / initialSession 事件后触发。
-    if (_loggedIn) await _flushQueue();
+    if (_cloudOn) await _flushQueue();
+  }
+
+  // ── Multi-company registry (Phase 4 #24) ──────────────────────────────────────
+  Future<void> _initCompanies(SharedPreferences prefs) async {
+    final raw = prefs.getString(StorageKeys.companies);
+    companies = raw != null
+        ? (jsonDecode(raw) as List)
+            .map((m) => Company.fromMap(Map<String, dynamic>.from(m)))
+            .toList()
+        : [];
+    if (companies.isEmpty) {
+      companies = [const Company(id: 'default', name: 'My Company')];
+      await _saveCompanies(prefs);
+    }
+    activeCompany = prefs.getString(StorageKeys.activeCompany) ?? 'default';
+    if (!companies.any((c) => c.id == activeCompany)) activeCompany = 'default';
+    applyActiveCompany(activeCompany);
+  }
+
+  Future<void> _saveCompanies([SharedPreferences? p]) async {
+    final prefs = p ?? await SharedPreferences.getInstance();
+    await prefs.setString(StorageKeys.companies,
+        jsonEncode(companies.map((c) => c.toMap()).toList()));
+  }
+
+  /// Keep the active company's registry name in step with its company-info name.
+  Future<void> _syncActiveCompanyName() async {
+    final name = settings.companyName.trim();
+    if (name.isEmpty) return;
+    final idx = companies.indexWhere((c) => c.id == activeCompany);
+    if (idx >= 0 && companies[idx].name != name) {
+      companies[idx] = Company(id: activeCompany, name: name);
+      await _saveCompanies();
+      notifyListeners();
+    }
+  }
+
+  /// Reload all of this AppState's per-company data (after a company switch).
+  Future<void> _reloadCompanyData() async {
+    txs       = await DbService.loadTxs();
+    customers = await DbService.loadCustomers();
+    employees = await DbService.loadEmployees();
+    settings  = await SettingsService.load();
+    filterFrom = null; filterTo = null; // company-specific view resets
+  }
+
+  /// Switch the active company. Caller must also reload AccountingState /
+  /// InventoryState (they hold their own per-company data).
+  Future<void> switchCompany(String id) async {
+    if (id == activeCompany || !companies.any((c) => c.id == id)) return;
+    activeCompany = id;
+    applyActiveCompany(id);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(StorageKeys.activeCompany, id);
+    await DbService.reset();            // reopen the right SQLite file
+    await _reloadCompanyData();
+    notifyListeners();
+  }
+
+  /// Create a new (empty) company and return its id.
+  Future<String> createCompany(String name) async {
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final nm = name.trim().isEmpty ? 'Company' : name.trim();
+    companies = [...companies, Company(id: id, name: nm)];
+    await _saveCompanies();
+    notifyListeners();
+    return id;
+  }
+
+  Future<void> renameCompany(String id, String name) async {
+    final idx = companies.indexWhere((c) => c.id == id);
+    if (idx < 0 || name.trim().isEmpty) return;
+    companies[idx] = Company(id: id, name: name.trim());
+    companies = [...companies];
+    await _saveCompanies();
+    notifyListeners();
+  }
+
+  /// Delete a non-default company: removes its registry entry and purges all of
+  /// its device-local data (scoped prefs + SQLite file).
+  Future<void> deleteCompany(String id) async {
+    if (id == 'default') return;
+    companies = companies.where((c) => c.id != id).toList();
+    await _saveCompanies();
+    await _purgeCompanyData(id);
+    if (activeCompany == id) {
+      activeCompany = 'default';
+      applyActiveCompany('default');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(StorageKeys.activeCompany, 'default');
+      await DbService.reset();
+      await _reloadCompanyData();
+    }
+    notifyListeners();
+  }
+
+  Future<void> _purgeCompanyData(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    const bases = [
+      'bly_settings', 'bly_invoices', 'bly_payrolls', 'bly_ar_invoices',
+      'bly_quotations', 'bly_delivery_orders', 'bly_credit_notes', 'bly_leave',
+      'bly_purchase_orders', 'bly_budgets', 'bly_recurring', 'bly_warehouses',
+      'bly_ap_bills', 'bly_suppliers',
+    ];
+    for (final b in bases) {
+      await prefs.remove('${b}__$id');
+    }
+    try { await deleteDatabase(join(await getDatabasesPath(), 'bookly__$id.db')); } catch (_) {}
   }
 
   // ── Sign Out ──────────────────────────────────────────────────────────────────
   /// 登出。返回 true=本地数据已安全上云后清除；false=推送失败，本地数据已保留。
   Future<bool> signOut() async {
+    // 多公司(#24): 非 default 公司是设备本地（无云端备份），登出会清本地数据，
+    // 故先切回 default，确保只清理/推送 default 公司的云备份数据，其他公司原样保留。
+    if (!isDefaultCompany) await switchCompany('default');
     // FIX(数据丢失): 登出前先把本地数据推到云端，确认成功后才清本地。
     // 推送失败则【不清除】本地数据，避免永久丢失。
     bool pushedOk = true;
@@ -117,7 +242,7 @@ class AppState extends ChangeNotifier {
   /// 登录成功后调用：合并本地数据与云端数据。
   /// pullCloud() 内部已处理本地独有记录的上传，不需要先单独 push。
   Future<void> syncOnLogin() async {
-    if (!_loggedIn) return;
+    if (!_cloudOn) return; // non-default companies are device-local
     await _flushQueue();
     // pullCloud() 内部：本地有、云端没有的 → 推上云；云端有的 → 拉下来合并。
     // 失败时保留现有本地数据，不清空。
@@ -128,8 +253,9 @@ class AppState extends ChangeNotifier {
   Future<void> updateSettings(AppSettings s) async {
     settings = s;
     await SettingsService.save(s);
+    await _syncActiveCompanyName(); // reflect company-name change in the switcher
     notifyListeners();
-    if (_loggedIn) _pushSettingsCloud();
+    if (_cloudOn) _pushSettingsCloud();
   }
 
   // ── FX ────────────────────────────────────────────────────────────────────────
@@ -161,7 +287,7 @@ class AppState extends ChangeNotifier {
     }
     txs.sort((a, b) => b.date.compareTo(a.date));
     notifyListeners();
-    if (_loggedIn) {
+    if (_cloudOn) {
       final ok = await _tryPushTxCloud(tx);
       if (!ok) _enqueue(_QueuedOp(table: 'transactions', op: 'upsert', data: tx.toMap()));
     }
@@ -171,7 +297,7 @@ class AppState extends ChangeNotifier {
     await DbService.deleteTx(id);
     txs = txs.where((t) => t.id != id).toList();
     notifyListeners();
-    if (_loggedIn) {
+    if (_cloudOn) {
       final ok = await _tryDeleteTxCloud(id);
       if (!ok) _enqueue(_QueuedOp(table: 'transactions', op: 'delete', id: id));
     }
@@ -188,7 +314,7 @@ class AppState extends ChangeNotifier {
     }
     customers.sort((a, b) => a.name.compareTo(b.name));
     notifyListeners();
-    if (_loggedIn) {
+    if (_cloudOn) {
       final ok = await _tryPushCustomerCloud(saved);
       if (!ok) _enqueue(_QueuedOp(table: 'customers', op: 'upsert', data: saved.toMap()));
     }
@@ -199,7 +325,7 @@ class AppState extends ChangeNotifier {
     await DbService.deleteCustomer(id);
     customers = customers.where((c) => c.id != id).toList();
     notifyListeners();
-    if (_loggedIn) {
+    if (_cloudOn) {
       final ok = await _tryDeleteCustomerCloud(id);
       if (!ok) _enqueue(_QueuedOp(table: 'customers', op: 'delete', id: id));
     }
@@ -216,7 +342,7 @@ class AppState extends ChangeNotifier {
     }
     employees.sort((a, b) => a.name.compareTo(b.name));
     notifyListeners();
-    if (_loggedIn) {
+    if (_cloudOn) {
       final ok = await _tryPushEmployeeCloud(saved);
       if (!ok) _enqueue(_QueuedOp(table: 'employees', op: 'upsert', data: saved.toMap()));
     }
@@ -227,7 +353,7 @@ class AppState extends ChangeNotifier {
     await DbService.deleteEmployee(id);
     employees = employees.where((e) => e.id != id).toList();
     notifyListeners();
-    if (_loggedIn) {
+    if (_cloudOn) {
       final ok = await _tryDeleteEmployeeCloud(id);
       if (!ok) _enqueue(_QueuedOp(table: 'employees', op: 'delete', id: id));
     }
@@ -253,7 +379,7 @@ class AppState extends ChangeNotifier {
     final idx = list.indexWhere((e) => e['invNo'] == invNo);
     if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
     await prefs.setString(StorageKeys.invoices, jsonEncode(list));
-    if (_loggedIn) _pushInvoicesCloud(list);
+    if (_cloudOn) _pushInvoicesCloud(list);
   }
 
   // ── Payroll save ─────────────────────────────────────────────────────────────
@@ -277,11 +403,12 @@ class AppState extends ChangeNotifier {
     final idx = list.indexWhere((e) => e['key'] == key);
     if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
     await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
-    if (_loggedIn) _pushPayrollsCloud(list);
+    if (_cloudOn) _pushPayrollsCloud(list);
   }
 
   // ── Cloud pull ───────────────────────────────────────────────────────────────
   Future<bool> pullCloud() async {
+    if (!_cloudOn) return true; // non-default companies are device-local
     syncStatus = SyncStatus.pulling; syncError = null;
     notifyListeners();
     try {
@@ -367,6 +494,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> pushCloud() async {
+    if (!_cloudOn) return true; // non-default companies are device-local
     syncStatus = SyncStatus.pushing; syncError = null;
     notifyListeners();
     try {
@@ -431,7 +559,7 @@ class AppState extends ChangeNotifier {
   Future<void> onReconnect() async {
     isOnline = true;
     notifyListeners();
-    if (_loggedIn) { await _flushQueue(); await pullCloud(); }
+    if (_cloudOn) { await _flushQueue(); await pullCloud(); }
   }
 
   // ── Try-push helpers ──────────────────────────────────────────────────────────
@@ -672,7 +800,7 @@ class AppState extends ChangeNotifier {
     final list = (jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List).cast<Map<String, dynamic>>();
     list.removeWhere((e) => e['invNo'] == invNo);
     await prefs.setString(StorageKeys.invoices, jsonEncode(list));
-    if (_loggedIn) _pushInvoicesCloud(list);
+    if (_cloudOn) _pushInvoicesCloud(list);
   }
 
   Future<List<Map<String, dynamic>>> loadPayrolls() async {
@@ -685,7 +813,7 @@ class AppState extends ChangeNotifier {
     final list = (jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List).cast<Map<String, dynamic>>();
     list.removeWhere((e) => e['key'] == key);
     await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
-    if (_loggedIn) _pushPayrollsCloud(list);
+    if (_cloudOn) _pushPayrollsCloud(list);
   }
 
   // ── Warehouses / stores (Phase 4 #25) ─────────────────────────────────────────

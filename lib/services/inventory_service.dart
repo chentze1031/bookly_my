@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../constants.dart';
 import 'db_service.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -162,7 +163,8 @@ class InventoryState extends ChangeNotifier {
 
   static SupabaseClient get _db => Supabase.instance.client;
   // FIX(游客模式): 未登录时数据走本地 SQLite，登录后走 Supabase。
-  static bool get _isGuest => _db.auth.currentUser == null;
+  // 多公司(#24): 非 default 公司也强制走本地（云端按公司隔离留待后续阶段）。
+  static bool get _isGuest => _db.auth.currentUser == null || !isDefaultCompany;
 
   InventoryItem? byId(int id) {
     final idx = _items.indexWhere((i) => i.id == id);
