@@ -98,7 +98,7 @@ class _RecurringState extends State<RecurringScreen> {
                   const SizedBox(width: 6),
                   Switch(value: active, onChanged: (_) => _toggle(tpl), activeColor: kDark),
                   GestureDetector(onTap: () => _delete(tpl['id'] as int),
-                    child: const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.delete_outline, size: 20, color: kRed))),
+                    child: Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.delete_outline, size: 20, color: kRed))),
                 ]),
               );
             }),
@@ -227,7 +227,7 @@ class _RecurringSheetState extends State<_RecurringSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(color: kBg, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(10)),
               child: Row(children: [
-                const Icon(Icons.event, size: 18, color: kBlue), const SizedBox(width: 10),
+                Icon(Icons.event, size: 18, color: kBlue), const SizedBox(width: 10),
                 Text('${tr(lang, 'Start / next date', '开始/下次日期', 'Tarikh mula / seterusnya')}: ${_start.toIso8601String().substring(0, 10)}',
                   style: TextStyle(fontSize: 14, color: kText, fontWeight: FontWeight.w600)),
               ]),

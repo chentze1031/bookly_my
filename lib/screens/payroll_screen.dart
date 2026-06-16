@@ -101,14 +101,14 @@ class _EmpCard extends StatelessWidget {
             style: const TextStyle(fontSize: 11, color: kMuted)),
         if (emp.basicSalary > 0)
           Text('RM ${emp.basicSalary.toStringAsFixed(2)}/mo',
-            style: const TextStyle(fontSize: 11, color: kGreen)),
+            style: TextStyle(fontSize: 11, color: kGreen)),
       ])),
       if (onSelect != null)
         SmBtn(label: 'Select', color: kDark, textColor: Colors.white, onTap: onSelect!),
       const SizedBox(width: 6),
       SmBtn(label: 'Edit', onTap: onEdit ?? () {}),
       const SizedBox(width: 6),
-      GestureDetector(onTap: onDelete, child: const Icon(Icons.delete_outline, color: kRed, size: 22)),
+      GestureDetector(onTap: onDelete, child: Icon(Icons.delete_outline, color: kRed, size: 22)),
     ]),
   );
 }
@@ -1007,7 +1007,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                   padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(color: kGreenBg, border: Border.all(color: kGreenBd), borderRadius: BorderRadius.circular(14)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(t.earnings.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kGreen, letterSpacing: 0.5)),
+                    Text(t.earnings.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kGreen, letterSpacing: 0.5)),
                     const SizedBox(height: 10),
                     ..._earn.asMap().entries.map((e) => _EarnRow(
                       item: e.value, i: e.key, type: 'earn',
@@ -1019,7 +1019,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                       child: Container(
                         width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 7),
                         decoration: BoxDecoration(border: Border.all(color: kGreenBd, style: BorderStyle.solid), borderRadius: BorderRadius.circular(9)),
-                        child: const Center(child: Text('+ Add Earning', style: TextStyle(color: kGreen, fontSize: 12))),
+                        child: Center(child: Text('+ Add Earning', style: TextStyle(color: kGreen, fontSize: 12))),
                       ),
                     ),
                     Container(
@@ -1028,7 +1028,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                       decoration: const BoxDecoration(border: Border(top: BorderSide(color: kGreenBd))),
                       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                         Text(t.grossPay, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
-                        Text(fmtMYR(_gross), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kGreen)),
+                        Text(fmtMYR(_gross), style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kGreen)),
                       ]),
                     ),
                   ]),
@@ -1040,7 +1040,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                   padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(color: kBlueBg, border: Border.all(color: kBlueBd), borderRadius: BorderRadius.circular(14)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(t.statutory.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kBlue, letterSpacing: 0.5)),
+                    Text(t.statutory.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kBlue, letterSpacing: 0.5)),
                     const SizedBox(height: 10),
                     ToggleRow(
                       label: 'EPF — Ee: ${fmtMYR(_eeEPF)} · Er: ${fmtMYR(_erEPF)}',
@@ -1076,7 +1076,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                   padding: const EdgeInsets.all(13),
                   decoration: BoxDecoration(color: kRedBg, border: Border.all(color: kRedBd), borderRadius: BorderRadius.circular(14)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(t.otherDed.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kRed, letterSpacing: 0.5)),
+                    Text(t.otherDed.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kRed, letterSpacing: 0.5)),
                     const SizedBox(height: 10),
                     ..._ded.asMap().entries.map((e) => _EarnRow(
                       item: e.value, i: e.key, type: 'ded',
@@ -1088,7 +1088,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                       child: Container(
                         width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 7),
                         decoration: BoxDecoration(border: Border.all(color: kRedBd, style: BorderStyle.solid), borderRadius: BorderRadius.circular(9)),
-                        child: const Center(child: Text('+ Add Deduction', style: TextStyle(color: kRed, fontSize: 12))),
+                        child: Center(child: Text('+ Add Deduction', style: TextStyle(color: kRed, fontSize: 12))),
                       ),
                     ),
                   ]),

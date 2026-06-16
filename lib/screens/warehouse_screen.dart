@@ -162,7 +162,7 @@ class _WarehouseState extends State<WarehouseScreen> {
                     child: Text(tr(lang, 'Assign', '分配物品', 'Tetapkan'))),
                   GestureDetector(onTap: () => _addOrRename(wh: wh), child: const Icon(Icons.edit_outlined, size: 20, color: kMuted)),
                   const SizedBox(width: 10),
-                  GestureDetector(onTap: () => _delete(wh['id'] as int), child: const Icon(Icons.delete_outline, size: 20, color: kRed)),
+                  GestureDetector(onTap: () => _delete(wh['id'] as int), child: Icon(Icons.delete_outline, size: 20, color: kRed)),
                 ]),
               );
             }).toList()),

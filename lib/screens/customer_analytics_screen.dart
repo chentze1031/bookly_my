@@ -320,7 +320,7 @@ class _CustomerRow extends StatelessWidget {
             child: LinearProgressIndicator(
               value: pct, minHeight: 5,
               backgroundColor: kBg,
-              valueColor: const AlwaysStoppedAnimation(kBlue),
+              valueColor: AlwaysStoppedAnimation(kBlue),
             ),
           ),
         ]),

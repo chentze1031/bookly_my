@@ -279,7 +279,7 @@ class _BillFormSheetState extends State<BillFormSheet> {
               Container(
                 width: double.infinity, padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(color: kRedBg, borderRadius: BorderRadius.circular(10), border: Border.all(color: kRedBd)),
-                child: Text(_error!, style: const TextStyle(color: kRed, fontSize: 13)),
+                child: Text(_error!, style: TextStyle(color: kRed, fontSize: 13)),
               ),
             ],
 
@@ -310,20 +310,20 @@ class _BillFormSheetState extends State<BillFormSheet> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0F4FF), borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFCDD7FF)),
+        color: kBlueBg, borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: kBlueBd),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Row(children: [
+        Row(children: [
           Text('📒', style: TextStyle(fontSize: 13)),
           SizedBox(width: 6),
-          Text('Journal Entry', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF3344AA))),
+          Text('Journal Entry', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: kBlue)),
         ]),
         const SizedBox(height: 8),
         _glRow('Dr', expLabel,           fmt.format(amt)),
         _glRow('Cr', 'Accounts Payable', fmt.format(amt)),
         if (_payStatus != _PayStatus.unpaid) ...[
-          const Divider(height: 12, color: Color(0xFFCDD7FF)),
+          Divider(height: 12, color: kBlueBd),
           _glRow('Dr', 'Accounts Payable', fmt.format(amt)),
           _glRow('Cr', _payStatus == _PayStatus.cash ? 'Cash' : 'Bank Account', fmt.format(amt)),
         ],
@@ -335,12 +335,12 @@ class _BillFormSheetState extends State<BillFormSheet> {
     padding: const EdgeInsets.only(bottom: 3),
     child: Row(children: [
       SizedBox(width: 28, child: Text(dc,
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
-          color: Color(0xFF3344AA), fontFamily: 'monospace'))),
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+          color: kBlue, fontFamily: 'monospace'))),
       Expanded(child: Text(name,
-        style: const TextStyle(fontSize: 11, color: Color(0xFF3344AA)))),
+        style: TextStyle(fontSize: 11, color: kBlue))),
       Text('RM $val',
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF3344AA))),
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: kBlue)),
     ]),
   );
 

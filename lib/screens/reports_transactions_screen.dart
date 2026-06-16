@@ -144,8 +144,8 @@ class _TxScreenState extends State<TransactionsScreen> {
                               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
                                 color: kMuted, letterSpacing: 0.5)),
                             Row(children: [
-                              if (dayIn  > 0) Text('+${fmtShort(dayIn)} ',  style: const TextStyle(fontSize: 11, color: kGreen)),
-                              if (dayOut > 0) Text('-${fmtShort(dayOut)}',  style: const TextStyle(fontSize: 11, color: kRed)),
+                              if (dayIn  > 0) Text('+${fmtShort(dayIn)} ',  style: TextStyle(fontSize: 11, color: kGreen)),
+                              if (dayOut > 0) Text('-${fmtShort(dayOut)}',  style: TextStyle(fontSize: 11, color: kRed)),
                             ]),
                           ],
                         ),
@@ -420,7 +420,7 @@ class _ReportsState extends State<ReportsScreen> {
                   border: Border.all(color: kProBd, width: 1.5),
                   borderRadius: BorderRadius.circular(12)),
                 child: Text('🔒 ${t.proLocked} — Monthly filter',
-                  style: const TextStyle(color: kPro, fontWeight: FontWeight.w700, fontSize: 13)),
+                  style: TextStyle(color: kPro, fontWeight: FontWeight.w700, fontSize: 13)),
               ),
             ),
 
@@ -452,7 +452,7 @@ class _ReportsState extends State<ReportsScreen> {
                   Icon(Icons.download_outlined, size: 15, color: kText),
                   const SizedBox(width: 5),
                   Text(tr(lang, 'Export', '导出', 'Eksport'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
-                  if (!sub.hasAccess) const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 13, color: kPro)),
+                  if (!sub.hasAccess) Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 13, color: kPro)),
                 ]),
               ),
             ),
@@ -491,7 +491,7 @@ class _ReportsState extends State<ReportsScreen> {
                   Text(tr(lang, 'Monthly Budget', '月度预算', 'Bajet Bulanan'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kText)),
                   Text(tr(lang, 'Per-category limits · over-spend alerts', '按分类设上限 · 超支预警', 'Had setiap kategori · amaran lebih belanja'), style: const TextStyle(fontSize: 11, color: kMuted)),
                 ])),
-                sub.hasAccess ? const Icon(Icons.chevron_right, color: kMuted) : const Icon(Icons.lock_outline, size: 18, color: kPro),
+                sub.hasAccess ? const Icon(Icons.chevron_right, color: kMuted) : Icon(Icons.lock_outline, size: 18, color: kPro),
               ]),
             ),
           ),
@@ -526,7 +526,7 @@ class _ReportsState extends State<ReportsScreen> {
                 if (sub.hasAccess)
                   const Icon(Icons.chevron_right, color: kMuted)
                 else
-                  const Icon(Icons.lock_outline, size: 18, color: kPro),
+                  Icon(Icons.lock_outline, size: 18, color: kPro),
               ]),
             ),
           ),
@@ -692,7 +692,7 @@ class _SSTView extends StatelessWidget {
           if (sstRegNo.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text('SST Reg: $sstRegNo',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: kGold)),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: kGold)),
           ],
         ]),
       ),

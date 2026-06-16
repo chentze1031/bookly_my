@@ -182,7 +182,7 @@ class _LeaveState extends State<LeaveManagementScreen> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(color: kSurface, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(12)),
           child: Row(children: [
-            const Icon(Icons.event, size: 18, color: kBlue),
+            Icon(Icons.event, size: 18, color: kBlue),
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(tr(lang, 'Hire Date', '入职日期', 'Tarikh Mula Kerja'), style: const TextStyle(fontSize: 11, color: kMuted, fontWeight: FontWeight.w600)),
@@ -205,7 +205,7 @@ class _LeaveState extends State<LeaveManagementScreen> {
           child: Text(zh
             ? '设置入职日期后，将按马来西亚法定年资自动计算年假额度（<2年 8天，2–5年 12天，>5年 16天）。'
             : 'Set the hire date to auto-compute statutory annual leave (<2y 8d, 2–5y 12d, >5y 16d).',
-            style: const TextStyle(fontSize: 12, color: kBlue)),
+            style: TextStyle(fontSize: 12, color: kBlue)),
         )
       else
         // Annual leave balance

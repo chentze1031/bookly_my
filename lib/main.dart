@@ -511,7 +511,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                             const SizedBox(width: 6),
                             const Text('✨', style: TextStyle(fontSize: 13)),
                             if (!context.watch<SubState>().isPro)
-                              const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 14, color: kPro)),
+                              Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 14, color: kPro)),
                           ]),
                         ),
                       ),
@@ -665,7 +665,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                                         Text('${currencyFlags[cc]??''} ', style: const TextStyle(fontSize: 18)),
                                         const SizedBox(width: 8),
                                         Text(cc, style: TextStyle(color: _currency==cc?kBlue:kText, fontWeight: _currency==cc?FontWeight.w700:FontWeight.normal)),
-                                        if (_currency == cc) ...[const Spacer(), const Text('✓', style: TextStyle(color: kBlue))],
+                                        if (_currency == cc) ...[const Spacer(), Text('✓', style: TextStyle(color: kBlue))],
                                       ]),
                                     ),
                                   )).toList(),
@@ -709,7 +709,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(color: kBlueBg, border: Border.all(color: kBlueBd), borderRadius: BorderRadius.circular(10)),
                             child: Column(children: [
-                              Text('${fmtMYR(myrAmt)} = MYR', style: const TextStyle(fontWeight: FontWeight.w700, color: kBlue, fontSize: 13)),
+                              Text('${fmtMYR(myrAmt)} = MYR', style: TextStyle(fontWeight: FontWeight.w700, color: kBlue, fontSize: 13)),
                               Text('1 $_currency = RM ${rate.toStringAsFixed(4)}', style: const TextStyle(color: kMuted, fontSize: 11)),
                             ]),
                           ),
@@ -738,7 +738,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                           Padding(
                             padding: const EdgeInsets.only(top: 5),
                             child: Text('SST +${fmtMYR(sstAmt)} → Total: ${fmtMYR(total)}',
-                              style: const TextStyle(fontSize: 12, color: kGold)),
+                              style: TextStyle(fontSize: 12, color: kGold)),
                           ),
                         const SizedBox(height: 12),
                       ]),
@@ -789,7 +789,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                           padding: const EdgeInsets.all(13),
                           decoration: BoxDecoration(color: kGoldBg, border: Border.all(color: kGoldBd), borderRadius: BorderRadius.circular(11)),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text(t.autoLbl.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kGold, letterSpacing: 0.5)),
+                            Text(t.autoLbl.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kGold, letterSpacing: 0.5)),
                             const SizedBox(height: 5),
                             ..._cat!.mkEntries(total > 0 ? total : 1).map((e) => Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
@@ -816,7 +816,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                           if (!_confirmDel)
                             IconButton.outlined(
                               onPressed: () => setState(() => _confirmDel = true),
-                              icon: const Icon(Icons.delete_outline, color: kRed),
+                              icon: Icon(Icons.delete_outline, color: kRed),
                               style: OutlinedButton.styleFrom(side: const BorderSide(color: kRedBd)),
                             )
                           else
@@ -828,7 +828,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                                 final nav = Navigator.of(context);
                                 if (nav.canPop()) nav.pop();
                               },
-                              style: OutlinedButton.styleFrom(foregroundColor: kRed, side: const BorderSide(color: kRed)),
+                              style: OutlinedButton.styleFrom(foregroundColor: kRed, side: BorderSide(color: kRed)),
                               child: Text(t.del),
                             ),
                           const SizedBox(width: 10),

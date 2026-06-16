@@ -232,7 +232,7 @@ class _AutoCatTabState extends State<_AutoCatTab> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: kRedBg, borderRadius: BorderRadius.circular(10), border: Border.all(color: kRedBd)),
-              child: Text(_error!, style: const TextStyle(color: kRed, fontSize: 13)),
+              child: Text(_error!, style: TextStyle(color: kRed, fontSize: 13)),
             ),
           ],
 
@@ -443,7 +443,7 @@ class _CashflowTabState extends State<_CashflowTab> {
                 child: Row(children: [
                   const Text('⚠️', style: TextStyle(fontSize: 18)),
                   const SizedBox(width: 10),
-                  Expanded(child: Text(fc.alert!, style: const TextStyle(color: kRed, fontSize: 13, fontWeight: FontWeight.w600))),
+                  Expanded(child: Text(fc.alert!, style: TextStyle(color: kRed, fontSize: 13, fontWeight: FontWeight.w600))),
                 ]),
               ),
               const SizedBox(height: 16),

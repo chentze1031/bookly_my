@@ -114,7 +114,7 @@ class _SubScreenState extends State<SubScreen> {
             // ── Title ─────────────────────────────────────────────────
             const Text('✨', style: TextStyle(fontSize: 36)),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Bookly PRO',
               style: TextStyle(
                 fontSize: 28, fontWeight: FontWeight.w900, color: kPro),
@@ -143,15 +143,15 @@ class _SubScreenState extends State<SubScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(tr(lang, 'Ads appear when you:', '以下情况会显示广告：', 'Iklan muncul apabila anda:'),
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kGold)),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kGold)),
                         const SizedBox(height: 4),
                         Text(tr(lang, '• Save or export invoices & payslips', '• 保存或导出发票、工资单等单据', '• Simpan atau eksport invois & slip gaji'),
-                          style: const TextStyle(fontSize: 12, color: kGold)),
+                          style: TextStyle(fontSize: 12, color: kGold)),
                         Text(tr(lang, '• Every few minutes while using the app', '• 使用过程中每隔几分钟', '• Setiap beberapa minit semasa guna app'),
-                          style: const TextStyle(fontSize: 12, color: kGold)),
+                          style: TextStyle(fontSize: 12, color: kGold)),
                         const SizedBox(height: 4),
                         Text(tr(lang, 'Subscribe to remove all ads permanently.', '订阅 Pro 永久去除所有广告。', 'Langgan untuk buang semua iklan secara kekal.'),
-                          style: const TextStyle(fontSize: 12, color: kGold, fontWeight: FontWeight.w600)),
+                          style: TextStyle(fontSize: 12, color: kGold, fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ),
@@ -208,7 +208,7 @@ class _SubScreenState extends State<SubScreen> {
                   color: kRedBg, border: Border.all(color: kRedBd),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(_msg!, style: const TextStyle(fontSize: 12, color: kRed, fontWeight: FontWeight.w600)),
+                child: Text(_msg!, style: TextStyle(fontSize: 12, color: kRed, fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 12),
             ],

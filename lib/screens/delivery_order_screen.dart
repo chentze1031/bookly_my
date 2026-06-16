@@ -80,7 +80,7 @@ class _DoHistState extends State<DeliveryOrderHistoryScreen> {
         TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
         TextButton(
           onPressed: () { Navigator.pop(dctx); _delete(doNo); },
-          child: const Text('Delete', style: TextStyle(color: kRed)),
+          child: Text('Delete', style: TextStyle(color: kRed)),
         ),
       ],
     ));
@@ -195,7 +195,7 @@ class _DoCard extends StatelessWidget {
               Text('${tr(lang, 'Total Qty', '总数量', 'Jumlah Kuantiti')}: $qtyStr',
                   style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: kText)),
               if ((d['refInvNo'] ?? '').isNotEmpty)
-                Text('← ${d['refInvNo']}', style: const TextStyle(fontSize: 10, color: kBlue)),
+                Text('← ${d['refInvNo']}', style: TextStyle(fontSize: 10, color: kBlue)),
             ]),
           ]),
         ),
@@ -247,7 +247,7 @@ class _DoCard extends StatelessWidget {
                     color: kRedBg, border: Border.all(color: kRedBd),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: const Icon(Icons.delete_outline, size: 16, color: kRed),
+                  child: Icon(Icons.delete_outline, size: 16, color: kRed),
                 ),
               ),
             ]),
@@ -563,7 +563,7 @@ class _DoSheetState extends State<DeliveryOrderSheet> {
                       borderRadius: BorderRadius.circular(11),
                     ),
                     child: Row(children: [
-                      const Icon(Icons.receipt_long_outlined, size: 18, color: kBlue),
+                      Icon(Icons.receipt_long_outlined, size: 18, color: kBlue),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -722,7 +722,7 @@ class _DoItemRow extends StatelessWidget {
           if (onRemove != null)
             GestureDetector(
               onTap: onRemove,
-              child: const Icon(Icons.remove_circle_outline, size: 18, color: kRed),
+              child: Icon(Icons.remove_circle_outline, size: 18, color: kRed),
             ),
         ]),
         const SizedBox(height: 6),

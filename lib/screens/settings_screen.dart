@@ -40,8 +40,8 @@ class _SettingsState extends State<SettingsScreen> {
             margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF3CD),
-              border: Border.all(color: const Color(0xFFFFE083)),
+              color: kGoldBg,
+              border: Border.all(color: kGoldBd),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(children: [
@@ -54,7 +54,7 @@ class _SettingsState extends State<SettingsScreen> {
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                   if (app.pendingOps > 0)
                     Text('${app.pendingOps} change(s) pending sync',
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF856404))),
+                      style: TextStyle(fontSize: 11, color: kGold)),
                 ],
               )),
               if (app.pendingOps > 0)
@@ -177,7 +177,7 @@ class _SettingsState extends State<SettingsScreen> {
             ),
             trailing: sub.isPro
               ? const Icon(Icons.chevron_right, color: kMuted)
-              : const Icon(Icons.lock_outline, size: 18, color: kPro),
+              : Icon(Icons.lock_outline, size: 18, color: kPro),
             onTap: () => sub.isPro
               ? Navigator.push(context, MaterialPageRoute(builder: (_) => const RecurringScreen()))
               : showSubSheet(context),
@@ -317,7 +317,7 @@ class _LoggedInTile extends StatelessWidget {
             color: kGreenBg, border: Border.all(color: kGreenBd),
             borderRadius: BorderRadius.circular(99),
           ),
-          child: const Text('●  Synced',
+          child: Text('●  Synced',
             style: TextStyle(fontSize: 11, color: kGreen, fontWeight: FontWeight.w700)),
         ),
       ),
@@ -325,9 +325,9 @@ class _LoggedInTile extends StatelessWidget {
       // Sign out button
       ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-        leading: const Icon(Icons.logout, color: kRed, size: 20),
+        leading: Icon(Icons.logout, color: kRed, size: 20),
         title: Text(tr(t.lang, 'Sign Out', '登出', 'Log Keluar'),
-          style: const TextStyle(color: kRed, fontWeight: FontWeight.w600, fontSize: 14)),
+          style: TextStyle(color: kRed, fontWeight: FontWeight.w600, fontSize: 14)),
         onTap: () => _confirmSignOut(context),
       ),
     ]);
@@ -396,12 +396,12 @@ class _GuestTile extends StatelessWidget {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF3CD),
-            border: Border.all(color: const Color(0xFFFFE083)),
+            color: kGoldBg,
+            border: Border.all(color: kGoldBd),
             borderRadius: BorderRadius.circular(99),
           ),
-          child: const Text('⚠ Local only',
-            style: TextStyle(fontSize: 11, color: Color(0xFF856404), fontWeight: FontWeight.w700)),
+          child: Text('⚠ Local only',
+            style: TextStyle(fontSize: 11, color: kGold, fontWeight: FontWeight.w700)),
         ),
       ),
       Divider(height: 1, color: kBorder, indent: 16),

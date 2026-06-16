@@ -350,7 +350,7 @@ class _CustCard extends StatelessWidget {
       const SizedBox(width: 6),
       GestureDetector(
           onTap: onDelete,
-          child: const Icon(Icons.delete_outline, color: kRed, size: 22)),
+          child: Icon(Icons.delete_outline, color: kRed, size: 22)),
     ]),
   );
 }
@@ -408,9 +408,12 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
     {'desc': '', 'qty': '1', 'price': '', 'disc': '', 'sst': 'none', 'note': ''},
   ];
 
+  // Pen is always ink-black: the signature PNG is embedded in the white-paper
+  // PDF, so it must NOT follow kText (which is near-white in dark mode and would
+  // be invisible on the printed invoice).
   final SignatureController _sigCtrl = SignatureController(
       penStrokeWidth: 2.5,
-      penColor: kText,
+      penColor: const Color(0xFF18160F),
       exportBackgroundColor: Colors.transparent);
 
   @override
@@ -650,7 +653,7 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
   Future<void> _toDeliveryOrder() async {
     if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
     if (_customer.name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Select a customer first'), backgroundColor: kRed));
       return;
     }
@@ -819,7 +822,12 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
                             width: 70,
                             height: 44,
                             decoration: BoxDecoration(
-                                color: kSurface,
+                                // White when a signature is present: the ink is
+                                // black, so it must sit on a light backing even
+                                // in dark mode (matches the white-paper PDF).
+                                color: _sigB64 != null
+                                    ? const Color(0xFFFAFAF8)
+                                    : kSurface,
                                 border: Border.all(color: kBorder, width: 1.5),
                                 borderRadius: BorderRadius.circular(8)),
                             child: _sigB64 != null
@@ -1245,7 +1253,7 @@ class _ItemCard extends StatelessWidget {
           const SizedBox(width: 8),
           GestureDetector(
               onTap: onDelete,
-              child: const Icon(Icons.close, color: kRed, size: 20)),
+              child: Icon(Icons.close, color: kRed, size: 20)),
         ],
       ]),
       const SizedBox(height: 8),
@@ -1426,14 +1434,14 @@ class _SectionBox extends StatelessWidget {
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
         padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
             color: kBlueBg,
             borderRadius:
                 BorderRadius.vertical(top: Radius.circular(14)),
             border: Border(bottom: BorderSide(color: kBlueBd))),
         child: Row(children: [
           Text(title,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12, fontWeight: FontWeight.w700, color: kBlue)),
           const Spacer(),
           if (headerAction != null) headerAction!,

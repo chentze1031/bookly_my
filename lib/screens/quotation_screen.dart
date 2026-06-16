@@ -106,7 +106,7 @@ class _QuotHistState extends State<QuotationHistoryScreen> {
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
         TextButton(
           onPressed: () { Navigator.pop(context); _delete(quotNo); },
-          child: const Text('Delete', style: TextStyle(color: kRed)),
+          child: Text('Delete', style: TextStyle(color: kRed)),
         ),
       ],
     ));
@@ -327,7 +327,7 @@ class _QuotCard extends StatelessWidget {
                     color: kRedBg, border: Border.all(color: kRedBd),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: const Icon(Icons.delete_outline, size: 16, color: kRed),
+                  child: Icon(Icons.delete_outline, size: 16, color: kRed),
                 ),
               ),
             ]),
@@ -679,7 +679,7 @@ class _ItemRow extends StatelessWidget {
           if (onRemove != null)
             GestureDetector(
               onTap: onRemove,
-              child: const Icon(Icons.remove_circle_outline, size: 18, color: kRed),
+              child: Icon(Icons.remove_circle_outline, size: 18, color: kRed),
             ),
         ]),
         const SizedBox(height: 6),

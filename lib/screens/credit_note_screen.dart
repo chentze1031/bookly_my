@@ -93,7 +93,7 @@ class _CnHistState extends State<CreditNoteHistoryScreen> {
         TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
         TextButton(
           onPressed: () { Navigator.pop(dctx); _delete(cnNo); },
-          child: const Text('Delete', style: TextStyle(color: kRed)),
+          child: Text('Delete', style: TextStyle(color: kRed)),
         ),
       ],
     ));
@@ -192,7 +192,7 @@ class _CnCard extends StatelessWidget {
         // Header
         Container(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: kRedBg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
             border: Border(bottom: BorderSide(color: kRedBd)),
@@ -200,11 +200,11 @@ class _CnCard extends StatelessWidget {
           child: Row(children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(c['cnNo'] ?? '—',
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kRed)),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kRed)),
               Text(c['cnDate'] ?? '', style: const TextStyle(fontSize: 11, color: kMuted)),
             ])),
             Text('-${fmtMYR(total)}',
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kRed)),
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: kRed)),
           ]),
         ),
         // Body
@@ -223,7 +223,7 @@ class _CnCard extends StatelessWidget {
                   style: const TextStyle(fontSize: 12, color: kMuted)),
               if ((c['refInvNo'] ?? '').isNotEmpty) ...[
                 const SizedBox(width: 8),
-                Text('← ${c['refInvNo']}', style: const TextStyle(fontSize: 11, color: kBlue)),
+                Text('← ${c['refInvNo']}', style: TextStyle(fontSize: 11, color: kBlue)),
               ],
             ]),
             if ((c['reason'] ?? '').isNotEmpty)
@@ -242,7 +242,7 @@ class _CnCard extends StatelessWidget {
                 border: Border.all(color: kGreenBd),
               ),
               child: Text('✓ ${t.arReduced}',
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kGreen)),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kGreen)),
             ),
             const SizedBox(height: 10),
             Row(children: [
@@ -279,7 +279,7 @@ class _CnCard extends StatelessWidget {
                     color: kRedBg, border: Border.all(color: kRedBd),
                     borderRadius: BorderRadius.circular(9),
                   ),
-                  child: const Icon(Icons.delete_outline, size: 16, color: kRed),
+                  child: Icon(Icons.delete_outline, size: 16, color: kRed),
                 ),
               ),
             ]),
@@ -625,7 +625,7 @@ class _CnSheetState extends State<CreditNoteSheet> {
                       borderRadius: BorderRadius.circular(11),
                     ),
                     child: Row(children: [
-                      const Icon(Icons.receipt_long_outlined, size: 18, color: kBlue),
+                      Icon(Icons.receipt_long_outlined, size: 18, color: kBlue),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -778,7 +778,7 @@ class _CnItemRow extends StatelessWidget {
           if (onRemove != null)
             GestureDetector(
               onTap: onRemove,
-              child: const Icon(Icons.remove_circle_outline, size: 18, color: kRed),
+              child: Icon(Icons.remove_circle_outline, size: 18, color: kRed),
             ),
         ]),
         const SizedBox(height: 6),

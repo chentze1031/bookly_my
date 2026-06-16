@@ -320,7 +320,10 @@ class _ImageCard extends StatelessWidget {
         child: Container(
           height: 90,
           decoration: BoxDecoration(
-            color: kSurface,
+            // Uploaded logo/signature are designed for white paper (black ink /
+            // dark marks). Back them with white even in dark mode so they stay
+            // visible; the empty placeholder keeps the themed surface.
+            color: b64 != null ? const Color(0xFFFAFAF8) : kSurface,
             border: Border.all(color: kBorder),
             borderRadius: BorderRadius.circular(12),
           ),
@@ -337,7 +340,7 @@ class _ImageCard extends StatelessWidget {
         const SizedBox(height: 4),
         GestureDetector(
           onTap: onRemove,
-          child: const Text('Remove',
+          child: Text('Remove',
               style: TextStyle(fontSize: 12, color: kRed,
                   fontWeight: FontWeight.w600)),
         ),

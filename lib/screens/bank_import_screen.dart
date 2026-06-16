@@ -296,11 +296,11 @@ class _PreviewView extends StatelessWidget {
         ] else ...[
           Container(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: const Color(0xFFF0F4FF), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFCDD7FF))),
+            decoration: BoxDecoration(color: kBlueBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: kBlueBd)),
             child: Row(children: [
               const Text('🤖', style: TextStyle(fontSize: 20)),
               const SizedBox(width: 10),
-              const Expanded(child: Text('Gemini AI will read the PDF and extract all transactions, dates, and amounts automatically.', style: TextStyle(fontSize: 13, color: Color(0xFF3344AA)))),
+              Expanded(child: Text('Gemini AI will read the PDF and extract all transactions, dates, and amounts automatically.', style: TextStyle(fontSize: 13, color: kBlue))),
             ]),
           ),
           if (error != null) ...[
@@ -308,7 +308,7 @@ class _PreviewView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: kRedBg, borderRadius: BorderRadius.circular(10), border: Border.all(color: kRedBd)),
-              child: Text(error!, style: const TextStyle(color: kRed, fontSize: 13)),
+              child: Text(error!, style: TextStyle(color: kRed, fontSize: 13)),
             ),
           ],
           const Spacer(),
@@ -402,7 +402,7 @@ class _ReviewView extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(color: kRedBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: kRedBd)),
-            child: Text(error!, style: const TextStyle(color: kRed, fontSize: 13)),
+            child: Text(error!, style: TextStyle(color: kRed, fontSize: 13)),
           ),
         ),
 

@@ -102,7 +102,7 @@ class _PoHistState extends State<PurchaseOrderHistoryScreen> {
       actions: [
         TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
         TextButton(onPressed: () { Navigator.pop(dctx); _delete(poNo); },
-          child: const Text('Delete', style: TextStyle(color: kRed))),
+          child: Text('Delete', style: TextStyle(color: kRed))),
       ],
     ));
   }
@@ -230,7 +230,7 @@ class _PoCard extends StatelessWidget {
               GestureDetector(onTap: onDelete, child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(color: kRedBg, border: Border.all(color: kRedBd), borderRadius: BorderRadius.circular(9)),
-                child: const Icon(Icons.delete_outline, size: 16, color: kRed))),
+                child: Icon(Icons.delete_outline, size: 16, color: kRed))),
             ]),
           ]),
         ),
@@ -312,7 +312,7 @@ class _PoSheetState extends State<PurchaseOrderSheet> {
     setState(() => _saving = true);
     try {
       if (_supplier['name'] == null || (_supplier['name'] as String).trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter a supplier'), backgroundColor: kRed));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enter a supplier'), backgroundColor: kRed));
         return;
       }
       await context.read<AppState>().savePurchaseOrder(
@@ -468,7 +468,7 @@ class _PoItemRow extends StatelessWidget {
             ]),
           )),
           if (onRemove != null) ...[const SizedBox(width: 8),
-            GestureDetector(onTap: onRemove, child: const Icon(Icons.remove_circle_outline, size: 18, color: kRed))],
+            GestureDetector(onTap: onRemove, child: Icon(Icons.remove_circle_outline, size: 18, color: kRed))],
         ]),
         const SizedBox(height: 6),
         FieldInput(label: t.description2, value: item['desc'] ?? '', onChanged: (v) => _up('desc', v)),
@@ -558,7 +558,7 @@ class _SuppCard extends StatelessWidget {
       ],
       SmBtn(label: 'Edit', onTap: onEdit ?? () {}),
       const SizedBox(width: 6),
-      GestureDetector(onTap: onDelete, child: const Icon(Icons.delete_outline, color: kRed, size: 22)),
+      GestureDetector(onTap: onDelete, child: Icon(Icons.delete_outline, color: kRed, size: 22)),
     ]),
   );
 }

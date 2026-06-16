@@ -273,7 +273,7 @@ class HomeScreen extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('${e.cat.icon} ${e.cat.label(lang)}', style: TextStyle(fontSize: 13, color: kText)),
-                                  Text('-${fmtShort(e.total)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kRed)),
+                                  Text('-${fmtShort(e.total)}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kRed)),
                                 ],
                               ),
                               const SizedBox(height: 4),
@@ -520,12 +520,12 @@ class _OverdueBanner extends StatelessWidget {
               border: Border.all(color: kRedBd),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.warning_amber_rounded, size: 21, color: kRed),
+            child: Icon(Icons.warning_amber_rounded, size: 21, color: kRed),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kRed)),
+              Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kRed)),
               const SizedBox(height: 1),
               Text(sub, style: const TextStyle(fontSize: 12, color: kMuted)),
             ]),

@@ -16,24 +16,29 @@ Color get kBorder  => kDarkMode ? const Color(0xFF333333) : const Color(0xFFE8E4
 Color get kText    => kDarkMode ? const Color(0xFFECEAE4) : const Color(0xFF18160F);
 const kMuted   = Color(0xFF9B9084);
 
-const kGreen   = Color(0xFF15803D);
-const kGreenBg = Color(0xFFF0FDF4);
+// Accent colours: in light mode the main tone is a dark ink (tone-700) on a
+// near-white tint (*Bg). In dark mode that flips — a bright tone (tone-300/400)
+// reads as the foreground on a very dark tinted background, so labels stay
+// legible without the near-white tints glaring on a dark screen. Borders (*Bd)
+// are already light pastels that read fine on dark, so they stay const.
+Color get kGreen   => kDarkMode ? const Color(0xFF4ADE80) : const Color(0xFF15803D);
+Color get kGreenBg => kDarkMode ? const Color(0xFF0F1F14) : const Color(0xFFF0FDF4);
 const kGreenBd = Color(0xFF86EFAC);
 
-const kRed     = Color(0xFFB91C1C);
-const kRedBg   = Color(0xFFFEF2F2);
+Color get kRed     => kDarkMode ? const Color(0xFFF87171) : const Color(0xFFB91C1C);
+Color get kRedBg   => kDarkMode ? const Color(0xFF1F0F0F) : const Color(0xFFFEF2F2);
 const kRedBd   = Color(0xFFFCA5A5);
 
-const kGold    = Color(0xFF92400E);
-const kGoldBg  = Color(0xFFFFFBEB);
+Color get kGold    => kDarkMode ? const Color(0xFFFBBF24) : const Color(0xFF92400E);
+Color get kGoldBg  => kDarkMode ? const Color(0xFF1F1700) : const Color(0xFFFFFBEB);
 const kGoldBd  = Color(0xFFFCD34D);
 
-const kBlue    = Color(0xFF1D4ED8);
-const kBlueBg  = Color(0xFFEFF6FF);
+Color get kBlue    => kDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8);
+Color get kBlueBg  => kDarkMode ? const Color(0xFF0A1020) : const Color(0xFFEFF6FF);
 const kBlueBd  = Color(0xFF93C5FD);
 
-const kPro     = Color(0xFF7C3AED);
-const kProBg   = Color(0xFFFAF5FF);
+Color get kPro     => kDarkMode ? const Color(0xFFA78BFA) : const Color(0xFF7C3AED);
+Color get kProBg   => kDarkMode ? const Color(0xFF160F20) : const Color(0xFFFAF5FF);
 const kProBd   = Color(0xFFC4B5FD);
 
 Color get kDark => kDarkMode ? const Color(0xFF2C2C2E) : const Color(0xFF18160F);

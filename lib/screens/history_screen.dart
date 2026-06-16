@@ -169,7 +169,7 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
         TextButton(onPressed: () { Navigator.pop(ctx); onConfirm(); },
-            child: const Text('Delete', style: TextStyle(color: kRed))),
+            child: Text('Delete', style: TextStyle(color: kRed))),
       ],
     ));
   }
@@ -199,13 +199,13 @@ class _InvoiceCard extends StatelessWidget {
           // Header
           Container(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-            decoration: const BoxDecoration(color: kBlueBg,
+            decoration: BoxDecoration(color: kBlueBg,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
                 border: Border(bottom: BorderSide(color: kBlueBd))),
             child: Row(children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(inv['invNo'] ?? '—',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kBlue)),
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: kBlue)),
                 Text(inv['invDate'] ?? '', style: const TextStyle(fontSize: 11, color: kMuted)),
               ])),
               Text(fmtMYR(total),
@@ -226,7 +226,7 @@ class _InvoiceCard extends StatelessWidget {
               Text('${items.length} item${items.length == 1 ? '' : 's'}',
                   style: const TextStyle(fontSize: 12, color: kMuted)),
               if ((inv['dueDate'] ?? '').isNotEmpty)
-                Text('Due: ${inv['dueDate']}', style: const TextStyle(fontSize: 11, color: kRed)),
+                Text('Due: ${inv['dueDate']}', style: TextStyle(fontSize: 11, color: kRed)),
               const SizedBox(height: 10),
               // Row 1: View / PDF / delete
               Row(children: [
@@ -257,7 +257,7 @@ class _InvoiceCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 IconButton(
                   onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline, color: kRed, size: 20),
+                  icon: Icon(Icons.delete_outline, color: kRed, size: 20),
                 ),
               ]),
               const SizedBox(height: 6),
@@ -609,7 +609,7 @@ class _PayrollHistoryState extends State<PayrollHistoryScreen> {
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
         TextButton(onPressed: () { Navigator.pop(ctx); onConfirm(); },
-            child: const Text('Delete', style: TextStyle(color: kRed))),
+            child: Text('Delete', style: TextStyle(color: kRed))),
       ],
     ));
   }
@@ -751,7 +751,7 @@ class _PayrollCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 IconButton(
                   onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline, color: kRed, size: 20),
+                  icon: Icon(Icons.delete_outline, color: kRed, size: 20),
                 ),
               ]),
             ]),

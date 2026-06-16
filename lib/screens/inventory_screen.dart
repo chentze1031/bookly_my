@@ -359,7 +359,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       const Icon(Icons.settings_outlined, size: 13, color: kMuted),
                       const SizedBox(width: 3),
                       Text(tr(t.lang, 'Manage', '管理仓库', 'Urus'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kMuted)),
-                      if (!context.read<SubState>().isPro) const Padding(padding: EdgeInsets.only(left: 3), child: Icon(Icons.lock_outline, size: 12, color: kPro)),
+                      if (!context.read<SubState>().isPro) Padding(padding: EdgeInsets.only(left: 3), child: Icon(Icons.lock_outline, size: 12, color: kPro)),
                     ]),
                   ),
                 ),
@@ -544,7 +544,7 @@ class _ItemDetailSheetState extends State<_ItemDetailSheet> {
                       content: Text('"${item.name}"\n${t.deleteConfirm}'),
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(dCtx, false), child: Text(t.cancel)),
-                        TextButton(onPressed: () => Navigator.pop(dCtx, true),  child: Text(t.delete, style: const TextStyle(color: kRed))),
+                        TextButton(onPressed: () => Navigator.pop(dCtx, true),  child: Text(t.delete, style: TextStyle(color: kRed))),
                       ],
                     ));
                     if (ok == true) {
@@ -552,7 +552,7 @@ class _ItemDetailSheetState extends State<_ItemDetailSheet> {
                       if (context.mounted) Navigator.pop(context);
                     }
                   },
-                  icon: const Icon(Icons.delete_outline, color: kRed),
+                  icon: Icon(Icons.delete_outline, color: kRed),
                 ),
               ]),
               const SizedBox(height: 8),
@@ -637,7 +637,7 @@ class _HistoryList extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: kText)),
                 Text(when, style: const TextStyle(fontSize: 10, color: kMuted)),
                 if (m.invoiceNo?.isNotEmpty == true)
-                  Text('${t.invoiceRef}: ${m.invoiceNo}', style: const TextStyle(fontSize: 11, color: kBlue)),
+                  Text('${t.invoiceRef}: ${m.invoiceNo}', style: TextStyle(fontSize: 11, color: kBlue)),
                 if (m.note?.isNotEmpty == true)
                   Text(m.note!, style: const TextStyle(fontSize: 11, color: kMuted)),
               ])),
@@ -814,7 +814,7 @@ class _StockAdjustCardState extends State<_StockAdjustCard> {
 
         if (_err != null) ...[
           const SizedBox(height: 8),
-          Text(_err!, style: const TextStyle(color: kRed, fontSize: 12)),
+          Text(_err!, style: TextStyle(color: kRed, fontSize: 12)),
         ],
       ]),
     );
@@ -1071,7 +1071,7 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
                     decoration: BoxDecoration(
                       color: kRedBg, borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: kRedBd)),
-                    child: Text(_saveError!, style: const TextStyle(color: kRed, fontSize: 13)),
+                    child: Text(_saveError!, style: TextStyle(color: kRed, fontSize: 13)),
                   ),
 
                 SizedBox(
@@ -1254,7 +1254,7 @@ class _ReportsTabState extends State<_ReportsTab> {
                         Expanded(child: Text(e.item.name, maxLines: 1, overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: kText))),
                         Text('${qfmt.format(e.sold)} ${e.item.unit} ${t.soldSuffix}',
-                          style: const TextStyle(fontSize: 12, color: kGreen, fontWeight: FontWeight.w700)),
+                          style: TextStyle(fontSize: 12, color: kGreen, fontWeight: FontWeight.w700)),
                       ]),
                     ),
                 ])),
@@ -1619,7 +1619,7 @@ class _Corner extends StatelessWidget {
       angle: rotate * 3.14159 / 180,
       child: Container(
         width: 24, height: 24,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(
             top:  BorderSide(color: kGreen, width: 3),
             left: BorderSide(color: kGreen, width: 3))),

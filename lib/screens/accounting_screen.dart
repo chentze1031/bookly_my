@@ -204,7 +204,7 @@ class _ArInvoiceCard extends StatelessWidget {
                   color: kRedBg, borderRadius: BorderRadius.circular(6),
                   border: Border.all(color: kRedBd),
                 ),
-                child: const Text('C/N',
+                child: Text('C/N',
                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: kRed)),
               )
             else
@@ -239,7 +239,7 @@ class _ArInvoiceCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: kRedBg, borderRadius: BorderRadius.circular(99)),
               child: Text('${invoice.daysOverdue} days overdue',
-                style: const TextStyle(fontSize: 11, color: kRed, fontWeight: FontWeight.w700)),
+                style: TextStyle(fontSize: 11, color: kRed, fontWeight: FontWeight.w700)),
             ),
           ],
         ]),
@@ -302,7 +302,7 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
                     await context.read<AccountingState>().deleteArInvoice(inv.id);
                     if (context.mounted) Navigator.pop(context);
                   },
-                  icon: const Icon(Icons.delete_outline, color: kRed)),
+                  icon: Icon(Icons.delete_outline, color: kRed)),
               ]),
               Text(inv.customerName, style: const TextStyle(fontSize: 14, color: kMuted)),
             ]),
@@ -366,7 +366,7 @@ class _ArDetailSheetState extends State<_ArDetailSheet> {
                       'This is a credit note — it reduces receivables. No payment to collect.',
                       '这是一张信用备注，已冲减应收账款，无需收款。',
                       'Ini nota kredit — ia mengurangkan akaun belum terima. Tiada bayaran untuk dikutip.'),
-                    style: const TextStyle(fontSize: 12, color: kRed, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 12, color: kRed, fontWeight: FontWeight.w600),
                   )),
                 ]),
               ),
@@ -816,7 +816,7 @@ class _ApBillCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: kRedBg, borderRadius: BorderRadius.circular(99)),
               child: Text('${bill.daysOverdue} days overdue',
-                style: const TextStyle(fontSize: 11, color: kRed, fontWeight: FontWeight.w700)),
+                style: TextStyle(fontSize: 11, color: kRed, fontWeight: FontWeight.w700)),
             ),
           ],
         ]),
@@ -877,7 +877,7 @@ class _ApDetailSheetState extends State<_ApDetailSheet> {
                     await context.read<AccountingState>().deleteApBill(bill.id);
                     if (context.mounted) Navigator.pop(context);
                   },
-                  icon: const Icon(Icons.delete_outline, color: kRed)),
+                  icon: Icon(Icons.delete_outline, color: kRed)),
               ]),
               Text(bill.supplierName, style: const TextStyle(fontSize: 14, color: kMuted)),
             ]),

@@ -77,13 +77,13 @@ class LockBanner extends StatelessWidget {
         const Text('??', style: TextStyle(fontSize: 28)),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label, style: const TextStyle(color: kPro, fontWeight: FontWeight.w800, fontSize: 14)),
+          Text(label, style: TextStyle(color: kPro, fontWeight: FontWeight.w800, fontSize: 14)),
           Text(sublabel, style: const TextStyle(color: kMuted, fontSize: 12)),
         ])),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(color: kProBd, borderRadius: BorderRadius.circular(99)),
-          child: const Text('?', style: TextStyle(color: kPro, fontWeight: FontWeight.w700, fontSize: 12)),
+          child: Text('?', style: TextStyle(color: kPro, fontWeight: FontWeight.w700, fontSize: 12)),
         ),
       ]),
     ),
@@ -138,22 +138,24 @@ class ToggleRow extends StatelessWidget {
   final String? sublabel;
   final bool value;
   final ValueChanged<bool> onChanged;
-  final Color activeColor;
+  final Color? activeColor;
 
   const ToggleRow({
     super.key, required this.label, required this.value,
-    required this.onChanged, this.sublabel, this.activeColor = kBlue,
+    required this.onChanged, this.sublabel, this.activeColor,
   });
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) {
+    final ac = activeColor ?? kBlue;
+    return GestureDetector(
     onTap: () => onChanged(!value),
     child: Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: value ? activeColor.withValues(alpha: 0.08) : kBg,
-        border: Border.all(color: value ? activeColor.withValues(alpha: 0.4) : kBorder),
+        color: value ? ac.withValues(alpha: 0.08) : kBg,
+        border: Border.all(color: value ? ac.withValues(alpha: 0.4) : kBorder),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(children: [
@@ -162,10 +164,11 @@ class ToggleRow extends StatelessWidget {
           if (sublabel != null)
             Text(sublabel!, style: const TextStyle(fontSize: 11, color: kMuted)),
         ])),
-        Switch(value: value, onChanged: onChanged, activeColor: activeColor),
+        Switch(value: value, onChanged: onChanged, activeColor: ac),
       ]),
     ),
   );
+  }
 }
 
 // --- Amount Display -----------------------------------------------------------
@@ -212,7 +215,7 @@ Future<bool?> showConfirmDialog({
   String? message,
   String confirmLabel = 'Delete',
   String cancelLabel = 'Cancel',
-  Color confirmColor = kRed,
+  Color? confirmColor,
 }) => showDialog<bool>(
   context: context,
   builder: (ctx) => AlertDialog(
@@ -225,7 +228,7 @@ Future<bool?> showConfirmDialog({
       ),
       TextButton(
         onPressed: () => Navigator.pop(ctx, true),
-        child: Text(confirmLabel, style: TextStyle(color: confirmColor, fontWeight: FontWeight.w700)),
+        child: Text(confirmLabel, style: TextStyle(color: confirmColor ?? kRed, fontWeight: FontWeight.w700)),
       ),
     ],
   ),
