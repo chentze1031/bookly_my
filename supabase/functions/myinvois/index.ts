@@ -128,6 +128,25 @@ Deno.serve(async (req: Request) => {
       return json({ ok: stRes.ok, status: stRes.status, data: out });
     }
 
+    // ── 2c. Cancel a validated document (within LHDN's 72h window) ──────────────
+    if (action === "cancel") {
+      const uuid = body.uuid as string;
+      const reason = (body.reason as string) || "Cancelled by issuer";
+      const cancelRes = await fetch(
+        `${base}/api/v1.0/documents/state/${uuid}/state`,
+        {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "cancelled", reason }),
+        },
+      );
+      const out = await cancelRes.json().catch(() => ({}));
+      return json({ ok: cancelRes.ok, status: cancelRes.status, data: out });
+    }
+
     return json({ error: "Unknown action" }, 400);
   } catch (e) {
     return json({ error: String(e) }, 500);

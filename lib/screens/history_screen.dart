@@ -1159,10 +1159,52 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
     });
   }
 
+  Future<void> _cancel() async {
+    if (_uuid == null) return;
+    final lang = context.read<AppState>().settings.lang;
+    final reason = await _askReason(lang);
+    if (reason == null || reason.trim().isEmpty) return;
+    final app = context.read<AppState>();
+    setState(() { _busy = true; _error = null; });
+    final r = await MyInvoisService.cancelInvoice(_uuid!, reason.trim());
+    if (r.ok) {
+      await app.updateInvoiceMyInvois(widget.inv['invNo'] ?? '', {'miStatus': 'Cancelled'});
+    }
+    if (mounted) setState(() {
+      _busy = false;
+      if (r.ok) _status = 'Cancelled';
+      _error = r.error;
+    });
+  }
+
+  Future<String?> _askReason(String lang) {
+    final ctrl = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr(lang, 'Cancel e-Invoice', '取消电子发票', 'Batal e-Invois'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: TextField(
+          controller: ctrl, autofocus: true, maxLines: 2,
+          decoration: InputDecoration(
+            hintText: tr(lang, 'Reason for cancellation', '取消原因', 'Sebab pembatalan'),
+            hintStyle: const TextStyle(color: kMuted),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(tr(lang, 'Back', '返回', 'Kembali'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, ctrl.text),
+              child: Text(tr(lang, 'Confirm', '确认', 'Sahkan'), style: TextStyle(color: kRed))),
+        ],
+      ),
+    );
+  }
+
   ({Color c, String label}) _badge(String lang) => switch (_status) {
     'Valid'      => (c: kGreen, label: tr(lang, 'Validated', '已验证', 'Disahkan')),
     'Invalid'    => (c: kRed,   label: tr(lang, 'Invalid', '无效', 'Tidak Sah')),
     'InProgress' => (c: kGold,  label: tr(lang, 'In progress', '处理中', 'Diproses')),
+    'Cancelled'  => (c: kMuted, label: tr(lang, 'Cancelled', '已取消', 'Dibatalkan')),
     'error'      => (c: kRed,   label: tr(lang, 'Error', '错误', 'Ralat')),
     _            => (c: kMuted, label: tr(lang, 'Not submitted', '未提交', 'Belum hantar')),
   };
@@ -1206,6 +1248,26 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
           Text(tr(lang, 'Sign in + configure MyInvois in Settings to submit.',
                   '请先登录并在设置里配置 MyInvois。', 'Log masuk + konfigur MyInvois di Tetapan.'),
               style: const TextStyle(fontSize: 12, color: kMuted))
+        else if (_status == 'Cancelled')
+          Text(tr(lang, 'This e-Invoice was cancelled.', '此电子发票已取消。', 'e-Invois ini telah dibatalkan.'),
+              style: const TextStyle(fontSize: 12, color: kMuted))
+        else if (_status == 'Valid')
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _cancel,
+              icon: _busy
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.cancel_outlined, size: 18),
+              style: OutlinedButton.styleFrom(foregroundColor: kRed, side: BorderSide(color: kRedBd)),
+              label: Text(tr(lang, 'Cancel e-Invoice', '取消电子发票', 'Batal e-Invois')),
+            ),
+            const SizedBox(height: 4),
+            Text(tr(lang,
+                'Cancellation is only allowed within 72 hours of validation.',
+                '仅可在验证后 72 小时内取消。',
+                'Pembatalan hanya dibenarkan dalam 72 jam selepas pengesahan.'),
+                style: const TextStyle(fontSize: 11, color: kMuted)),
+          ])
         else
           Row(children: [
             Expanded(child: ElevatedButton(
@@ -1215,9 +1277,7 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                 : Text(_status == 'InProgress'
                     ? tr(lang, 'Refresh status', '刷新状态', 'Semak status')
-                    : _status == 'Valid'
-                      ? tr(lang, 'Re-submit', '重新提交', 'Hantar semula')
-                      : tr(lang, 'Submit to MyInvois', '提交 MyInvois', 'Hantar ke MyInvois')),
+                    : tr(lang, 'Submit to MyInvois', '提交 MyInvois', 'Hantar ke MyInvois')),
             )),
           ]),
       ]),

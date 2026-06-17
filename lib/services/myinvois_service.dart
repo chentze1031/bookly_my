@@ -144,6 +144,33 @@ class MyInvoisService {
     }
   }
 
+  // ── Cancel a validated document (LHDN allows this within 72h) ──────────────
+  static Future<MyInvoisResult> cancelInvoice(String uuid, String reason) async {
+    if (!isLoggedIn) {
+      return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
+    }
+    try {
+      final res = await _sb.functions.invoke('myinvois', body: {
+        'action': 'cancel',
+        'uuid': uuid,
+        'reason': reason,
+      });
+      final data = res.data as Map<String, dynamic>?;
+      if (data == null || data['ok'] != true) {
+        return MyInvoisResult(
+          ok: false, status: 'error', uuid: uuid,
+          error: _err(data) ?? 'Cancel failed (${res.status})',
+        );
+      }
+      final inner = data['data'] as Map<String, dynamic>? ?? {};
+      // LHDN echoes the new status ("Cancelled"); treat any ok response as done.
+      return MyInvoisResult(
+        ok: true, status: (inner['status'] ?? 'Cancelled').toString(), uuid: uuid);
+    } catch (e) {
+      return MyInvoisResult(ok: false, status: 'error', uuid: uuid, error: e.toString());
+    }
+  }
+
   static String? _err(Map<String, dynamic>? data) {
     if (data == null) return null;
     if (data['error'] != null) return data['error'].toString();
