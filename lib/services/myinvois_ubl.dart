@@ -21,6 +21,8 @@ class MyInvoisUbl {
   static String _taxType(String key) => key == 'none' ? '06' : '01';
   // General-public TIN for buyers without their own TIN (B2C).
   static const generalPublicTin = 'EI00000000010';
+  // General TIN for foreign suppliers/buyers (self-billed to non-residents).
+  static const generalForeignTin = 'EI00000000020';
   // Fallback classification when none configured ("022" = Others on CLASS list).
   static const _fallbackClassification = '022';
 
@@ -47,7 +49,12 @@ class MyInvoisUbl {
     bool signed = false,
     bool consolidated = false,
     String invoiceTypeCode = '01',
+    Customer? selfBilledSupplier,
   }) {
+    // Self-billed (type 11): you issue on the supplier's behalf, so the roles
+    // swap — the counterparty is the supplier and your company is the buyer.
+    final selfBilled = selfBilledSupplier != null;
+    final typeCode = selfBilled ? '11' : invoiceTypeCode;
     final version = signed ? '1.1' : '1.0';
     final classCode = consolidated
         ? '004' // "Consolidated e-Invoice" on the CLASS list
@@ -85,17 +92,17 @@ class MyInvoisUbl {
           'ID': _v(inv['invNo'] ?? ''),
           'IssueDate': _v(issueDate),
           'IssueTime': _v(issueTime),
-          'InvoiceTypeCode': _vA(invoiceTypeCode, {'listVersionID': version}),
+          'InvoiceTypeCode': _vA(typeCode, {'listVersionID': version}),
           'DocumentCurrencyCode': _v('MYR'),
           'TaxCurrencyCode': _v('MYR'),
           'AccountingSupplierParty': [
             {
-              'Party': [_supplierParty(s)]
+              'Party': [selfBilled ? _customerAsSupplier(selfBilledSupplier) : _supplierParty(s)]
             }
           ],
           'AccountingCustomerParty': [
             {
-              'Party': [_buyerParty(effBuyer, buyerTin)]
+              'Party': [selfBilled ? _companyAsBuyer(s) : _buyerParty(effBuyer, buyerTin)]
             }
           ],
           'InvoiceLine': [
@@ -121,59 +128,70 @@ class MyInvoisUbl {
     };
   }
 
-  static Map<String, dynamic> _supplierParty(AppSettings s) => {
-        if (s.msicCode.isNotEmpty)
-          'IndustryClassificationCode': _vA(s.msicCode, {'name': s.msicDesc}),
+  // Unified party builder — same structure for supplier and buyer. MSIC
+  // (IndustryClassificationCode) is supplier-only, so it's optional.
+  static Map<String, dynamic> _party({
+    required String name,
+    required String tin,
+    required String brn,
+    required String sst,
+    required String addr,
+    required String city,
+    required String postcode,
+    required String state,
+    required String phone,
+    required String email,
+    String msicCode = '',
+    String msicDesc = '',
+  }) =>
+      {
+        if (msicCode.isNotEmpty)
+          'IndustryClassificationCode': _vA(msicCode, {'name': msicDesc}),
         'PartyIdentification': [
-          {
-            'ID': _vA(s.coTin, {'schemeID': 'TIN'})
-          },
-          {
-            'ID': _vA(s.coReg.isEmpty ? 'NA' : s.coReg, {'schemeID': 'BRN'})
-          },
-          {
-            'ID': _vA(s.sstRegNo.isEmpty ? 'NA' : s.sstRegNo, {'schemeID': 'SST'})
-          },
+          {'ID': _vA(tin, {'schemeID': 'TIN'})},
+          {'ID': _vA(brn.isEmpty ? 'NA' : brn, {'schemeID': 'BRN'})},
+          {'ID': _vA(sst.isEmpty ? 'NA' : sst, {'schemeID': 'SST'})},
         ],
-        'PostalAddress': [_address(s.coAddr, s.coCity, s.coPostcode, s.coState)],
+        'PostalAddress': [_address(addr, city, postcode, state)],
         'PartyLegalEntity': [
-          {
-            'RegistrationName': _v(s.companyName)
-          }
+          {'RegistrationName': _v(name)}
         ],
         'Contact': [
           {
-            'Telephone': _v(s.coPhone.isEmpty ? 'NA' : s.coPhone),
-            if (s.coEmail.isNotEmpty) 'ElectronicMail': _v(s.coEmail),
+            'Telephone': _v(phone.isEmpty ? 'NA' : phone),
+            if (email.isNotEmpty) 'ElectronicMail': _v(email),
           }
         ],
       };
 
-  static Map<String, dynamic> _buyerParty(Customer b, String tin) => {
-        'PartyIdentification': [
-          {
-            'ID': _vA(tin, {'schemeID': 'TIN'})
-          },
-          {
-            'ID': _vA(b.regNo.isEmpty ? 'NA' : b.regNo, {'schemeID': 'BRN'})
-          },
-          {
-            'ID': _vA(b.sstRegNo.isEmpty ? 'NA' : b.sstRegNo, {'schemeID': 'SST'})
-          },
-        ],
-        'PostalAddress': [_address(b.address, b.city, b.postcode, b.state)],
-        'PartyLegalEntity': [
-          {
-            'RegistrationName': _v(b.name)
-          }
-        ],
-        'Contact': [
-          {
-            'Telephone': _v(b.phone.isEmpty ? 'NA' : b.phone),
-            if (b.email.isNotEmpty) 'ElectronicMail': _v(b.email),
-          }
-        ],
-      };
+  static Map<String, dynamic> _supplierParty(AppSettings s) => _party(
+        name: s.companyName, tin: s.coTin, brn: s.coReg, sst: s.sstRegNo,
+        addr: s.coAddr, city: s.coCity, postcode: s.coPostcode, state: s.coState,
+        phone: s.coPhone, email: s.coEmail,
+        msicCode: s.msicCode, msicDesc: s.msicDesc,
+      );
+
+  // Your own company as the BUYER (self-billed): same fields, no MSIC.
+  static Map<String, dynamic> _companyAsBuyer(AppSettings s) => _party(
+        name: s.companyName, tin: s.coTin, brn: s.coReg, sst: s.sstRegNo,
+        addr: s.coAddr, city: s.coCity, postcode: s.coPostcode, state: s.coState,
+        phone: s.coPhone, email: s.coEmail,
+      );
+
+  static Map<String, dynamic> _buyerParty(Customer b, String tin) => _party(
+        name: b.name, tin: tin, brn: b.regNo, sst: b.sstRegNo,
+        addr: b.address, city: b.city, postcode: b.postcode, state: b.state,
+        phone: b.phone, email: b.email,
+      );
+
+  // The counterparty as the SUPPLIER (self-billed). MSIC unknown → omitted.
+  static Map<String, dynamic> _customerAsSupplier(Customer c) => _party(
+        name: c.name,
+        tin: c.tin.trim().isEmpty ? generalForeignTin : c.tin.trim(),
+        brn: c.regNo, sst: c.sstRegNo,
+        addr: c.address, city: c.city, postcode: c.postcode, state: c.state,
+        phone: c.phone, email: c.email,
+      );
 
   // Structured MyInvois address: line + city + postcode + LHDN state code.
   // Country fixed to MYS (this build targets Malaysian taxpayers).

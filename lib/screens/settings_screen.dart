@@ -15,6 +15,7 @@ import '../screens/auth_screen.dart';
 import '../services/myinvois_service.dart';
 import '../services/cert_service.dart';
 import 'consolidated_einvoice_screen.dart';
+import 'self_billed_einvoice_screen.dart';
 import 'company_info_screen.dart';
 import 'sst_report_screen.dart';
 import 'sub_screen.dart';
@@ -991,6 +992,13 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
           icon: const Icon(Icons.merge_type, size: 18),
           style: OutlinedButton.styleFrom(foregroundColor: kText, side: BorderSide(color: kBorder)),
           label: Text(tr(lang, 'Consolidated e-Invoice (B2C)', '合并发票 (B2C)', 'e-Invois Disatukan (B2C)')),
+        )),
+        const SizedBox(height: 8),
+        SizedBox(width: double.infinity, child: OutlinedButton.icon(
+          onPressed: () => showSelfBilledSheet(context),
+          icon: const Icon(Icons.swap_horiz, size: 18),
+          style: OutlinedButton.styleFrom(foregroundColor: kText, side: BorderSide(color: kBorder)),
+          label: Text(tr(lang, 'Self-billed e-Invoice', '自开发票', 'e-Invois Layan Diri')),
         )),
       ]),
     );

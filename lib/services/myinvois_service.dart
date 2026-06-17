@@ -108,6 +108,21 @@ class MyInvoisService {
     return _signAndSubmit(doc, consolidatedInvNo);
   }
 
+  // ── Submit a self-billed e-Invoice (type 11; you issue on supplier's behalf) ─
+  static Future<MyInvoisResult> submitSelfBilled({
+    required Customer counterparty,
+    required Map<String, dynamic> invoice,
+    required AppSettings supplier,
+  }) async {
+    if (!isLoggedIn) {
+      return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
+    }
+    final doc = MyInvoisUbl.buildInvoice(
+      inv: invoice, s: supplier, buyer: counterparty,
+      signed: await _hasCert(), selfBilledSupplier: counterparty);
+    return _signAndSubmit(doc, (invoice['invNo'] ?? '').toString());
+  }
+
   static Future<bool> _hasCert() async => (await CertService.load()) != null;
 
   // Sign on-device when a certificate exists (production v1.1), else submit
