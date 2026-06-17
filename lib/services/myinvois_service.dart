@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models.dart';
+import 'cert_service.dart';
+import 'myinvois_signer.dart';
 import 'myinvois_ubl.dart';
 
 /// Result of a MyInvois submit / status call.
@@ -65,11 +69,21 @@ class MyInvoisService {
     if (!isLoggedIn) {
       return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
     }
-    final doc = MyInvoisUbl.buildInvoice(inv: invoice, s: supplier, buyer: buyer);
+    // Sign on-device when the active company has a certificate (production-grade
+    // v1.1); otherwise submit unsigned v1.0 (sandbox only). The private key is
+    // loaded from device-only secure storage and never leaves the device.
+    final cert = await CertService.load();
+    final doc = MyInvoisUbl.buildInvoice(
+      inv: invoice, s: supplier, buyer: buyer, signed: cert != null);
+    final payload = cert != null ? MyInvoisSigner.sign(doc, cert) : doc;
+    // Send the EXACT serialized bytes we signed — the Edge Function base64s and
+    // hashes this string verbatim, so the submitted document is byte-identical
+    // to what was signed (no Dart→Deno re-serialization drift).
+    final docString = jsonEncode(payload);
     try {
       final res = await _sb.functions.invoke('myinvois', body: {
         'action': 'submit',
-        'document': doc,
+        'documentString': docString,
         'codeNumber': invoice['invNo'] ?? '',
       });
       final data = res.data as Map<String, dynamic>?;

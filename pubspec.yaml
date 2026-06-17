@@ -58,6 +58,13 @@ dependencies:
   go_router: ^16.0.0
   home_widget: ^0.9.3
 
+  # MyInvois digital signature (on-device): RSA-SHA256 signing + X.509/PEM
+  # parsing + device-only secure key storage. Private key never leaves device.
+  pointycastle: ^3.9.1
+  basic_utils: ^5.7.0
+  crypto: ^3.0.5
+  flutter_secure_storage: ^9.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -90,7 +90,12 @@ Deno.serve(async (req: Request) => {
 
     // ── 2a. Submit a document ──────────────────────────────────────────────────
     if (action === "submit") {
-      const docStr = JSON.stringify(body.document);
+      // Prefer the exact serialized string from the device (byte-identical to
+      // what was digitally signed). Fall back to stringifying the object for
+      // unsigned callers.
+      const docStr = typeof body.documentString === "string"
+        ? body.documentString
+        : JSON.stringify(body.document);
       const submitRes = await fetch(`${base}/api/v1.0/documentsubmissions/`, {
         method: "POST",
         headers: {

@@ -33,11 +33,17 @@ class MyInvoisUbl {
 
   /// Build the UBL document for [inv] (an invoice record as stored by AppState),
   /// the supplier [s] and the [buyer]. Returns the JSON map to Base64-encode.
+  ///
+  /// [signed] selects the document version: `1.1` (digitally signed, required
+  /// for production) when true, `1.0` (unsigned, sandbox only) when false. The
+  /// version is part of the signed payload, so it must be set before signing.
   static Map<String, dynamic> buildInvoice({
     required Map<String, dynamic> inv,
     required AppSettings s,
     required Customer buyer,
+    bool signed = false,
   }) {
+    final version = signed ? '1.1' : '1.0';
     final rows = (inv['items'] as List).cast<Map<String, dynamic>>();
     double netOf(Map r) =>
         (double.tryParse('${r['qty'] ?? '1'}') ?? 1) * (double.tryParse('${r['price'] ?? '0'}') ?? 0);
@@ -65,7 +71,7 @@ class MyInvoisUbl {
           'ID': _v(inv['invNo'] ?? ''),
           'IssueDate': _v(issueDate),
           'IssueTime': _v(issueTime),
-          'InvoiceTypeCode': _vA('01', {'listVersionID': '1.0'}),
+          'InvoiceTypeCode': _vA('01', {'listVersionID': version}),
           'DocumentCurrencyCode': _v('MYR'),
           'TaxCurrencyCode': _v('MYR'),
           'AccountingSupplierParty': [
