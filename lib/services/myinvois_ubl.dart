@@ -37,14 +37,25 @@ class MyInvoisUbl {
   /// [signed] selects the document version: `1.1` (digitally signed, required
   /// for production) when true, `1.0` (unsigned, sandbox only) when false. The
   /// version is part of the signed payload, so it must be set before signing.
+  /// [consolidated] builds a B2C consolidated e-Invoice: the buyer becomes the
+  /// general public (TIN EI00000000010) and every line uses classification 004.
+  /// [invoiceTypeCode] is the LHDN document type ('01' invoice, '11' self-billed).
   static Map<String, dynamic> buildInvoice({
     required Map<String, dynamic> inv,
     required AppSettings s,
     required Customer buyer,
     bool signed = false,
+    bool consolidated = false,
+    String invoiceTypeCode = '01',
   }) {
     final version = signed ? '1.1' : '1.0';
-    final classCode = s.classCode.trim().isEmpty ? _fallbackClassification : s.classCode.trim();
+    final classCode = consolidated
+        ? '004' // "Consolidated e-Invoice" on the CLASS list
+        : (s.classCode.trim().isEmpty ? _fallbackClassification : s.classCode.trim());
+    // For a consolidated invoice the buyer is always the general public.
+    final effBuyer = consolidated
+        ? const Customer(id: 0, name: 'General Public', regNo: 'NA')
+        : buyer;
     final rows = (inv['items'] as List).cast<Map<String, dynamic>>();
     double netOf(Map r) =>
         (double.tryParse('${r['qty'] ?? '1'}') ?? 1) * (double.tryParse('${r['price'] ?? '0'}') ?? 0);
@@ -61,7 +72,9 @@ class MyInvoisUbl {
     final issueTime =
         '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}Z';
 
-    final buyerTin = buyer.tin.trim().isEmpty ? generalPublicTin : buyer.tin.trim();
+    final buyerTin = consolidated
+        ? generalPublicTin
+        : (effBuyer.tin.trim().isEmpty ? generalPublicTin : effBuyer.tin.trim());
 
     return {
       '_D': 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
@@ -72,7 +85,7 @@ class MyInvoisUbl {
           'ID': _v(inv['invNo'] ?? ''),
           'IssueDate': _v(issueDate),
           'IssueTime': _v(issueTime),
-          'InvoiceTypeCode': _vA('01', {'listVersionID': version}),
+          'InvoiceTypeCode': _vA(invoiceTypeCode, {'listVersionID': version}),
           'DocumentCurrencyCode': _v('MYR'),
           'TaxCurrencyCode': _v('MYR'),
           'AccountingSupplierParty': [
@@ -82,7 +95,7 @@ class MyInvoisUbl {
           ],
           'AccountingCustomerParty': [
             {
-              'Party': [_buyerParty(buyer, buyerTin)]
+              'Party': [_buyerParty(effBuyer, buyerTin)]
             }
           ],
           'InvoiceLine': [

@@ -69,22 +69,61 @@ class MyInvoisService {
     if (!isLoggedIn) {
       return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
     }
-    // Sign on-device when the active company has a certificate (production-grade
-    // v1.1); otherwise submit unsigned v1.0 (sandbox only). The private key is
-    // loaded from device-only secure storage and never leaves the device.
-    final cert = await CertService.load();
     final doc = MyInvoisUbl.buildInvoice(
-      inv: invoice, s: supplier, buyer: buyer, signed: cert != null);
+      inv: invoice, s: supplier, buyer: buyer, signed: await _hasCert());
+    return _signAndSubmit(doc, (invoice['invNo'] ?? '').toString());
+  }
+
+  // ── Submit a B2C consolidated e-Invoice (one doc for many small receipts) ───
+  static Future<MyInvoisResult> submitConsolidated({
+    required List<Map<String, dynamic>> invoices,
+    required AppSettings supplier,
+    required String consolidatedInvNo,
+  }) async {
+    if (!isLoggedIn) {
+      return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
+    }
+    // Flatten every selected invoice's line items, tagging each with its source
+    // invoice number so the consolidated doc preserves per-line tax exactly.
+    final items = <Map<String, dynamic>>[];
+    for (final inv in invoices) {
+      final no = (inv['invNo'] ?? '').toString();
+      final rows = (inv['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      for (final it in rows) {
+        items.add({...it, 'desc': '[$no] ${it['desc'] ?? ''}'.trim()});
+      }
+    }
+    if (items.isEmpty) {
+      return const MyInvoisResult(ok: false, status: 'error', error: 'No items to consolidate');
+    }
+    final consolidatedInv = <String, dynamic>{
+      'invNo': consolidatedInvNo,
+      'invDate': DateTime.now().toIso8601String().substring(0, 10),
+      'items': items,
+    };
+    final doc = MyInvoisUbl.buildInvoice(
+      inv: consolidatedInv, s: supplier,
+      buyer: const Customer(id: 0, name: 'General Public'),
+      signed: await _hasCert(), consolidated: true);
+    return _signAndSubmit(doc, consolidatedInvNo);
+  }
+
+  static Future<bool> _hasCert() async => (await CertService.load()) != null;
+
+  // Sign on-device when a certificate exists (production v1.1), else submit
+  // unsigned v1.0 (sandbox only). The private key never leaves the device. The
+  // exact serialized bytes we sign are what the Edge Function base64s + hashes,
+  // so the submitted document is byte-identical to what was signed.
+  static Future<MyInvoisResult> _signAndSubmit(
+      Map<String, dynamic> doc, String codeNumber) async {
+    final cert = await CertService.load();
     final payload = cert != null ? MyInvoisSigner.sign(doc, cert) : doc;
-    // Send the EXACT serialized bytes we signed — the Edge Function base64s and
-    // hashes this string verbatim, so the submitted document is byte-identical
-    // to what was signed (no Dart→Deno re-serialization drift).
     final docString = jsonEncode(payload);
     try {
       final res = await _sb.functions.invoke('myinvois', body: {
         'action': 'submit',
         'documentString': docString,
-        'codeNumber': invoice['invNo'] ?? '',
+        'codeNumber': codeNumber,
       });
       final data = res.data as Map<String, dynamic>?;
       if (data == null || data['ok'] != true) {
