@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../constants.dart';
 import '../models.dart';
 
 class SupabaseService {
@@ -14,20 +15,21 @@ class SupabaseService {
 
   // ── Transactions ──────────────────────────────────────────────────────────────
 
-  /// Pull all transactions for current user from Supabase.
+  /// Pull all transactions for current user + active company from Supabase.
   static Future<List<Transaction>> loadTxs() async {
     final uid = _uid;
     if (uid == null) return [];
     final rows = await _sb
         .from('transactions')
         .select()
-        .eq('user_id', uid);
+        .eq('user_id', uid)
+        .eq('company_id', activeCompanyId);
     return (rows as List)
         .map((r) => Transaction.fromMap(Map<String, dynamic>.from(r)))
         .toList();
   }
 
-  /// Push all local transactions to Supabase (upsert by id + user_id).
+  /// Push all local transactions to Supabase (upsert by id + user_id + company).
   static Future<void> upsertTxs(List<Transaction> txs) async {
     final uid = _uid;
     if (uid == null) return;
@@ -36,9 +38,10 @@ class SupabaseService {
     final rows = txs.map((t) => {
       ...t.toMap(),
       'user_id': uid,
+      'company_id': activeCompanyId,
       'updated_at': now,
     }).toList();
-    await _sb.from('transactions').upsert(rows, onConflict: 'id,user_id');
+    await _sb.from('transactions').upsert(rows, onConflict: 'id,user_id,company_id');
   }
 
   // ── Settings ──────────────────────────────────────────────────────────────────
@@ -52,19 +55,21 @@ class SupabaseService {
         .from('user_settings')
         .select('settings')
         .eq('user_id', uid)
+        .eq('company_id', activeCompanyId)
         .maybeSingle();
     if (row == null || row['settings'] == null) return null;
     return Map<String, dynamic>.from(row['settings'] as Map);
   }
 
-  /// Push settings for current user to Supabase.
+  /// Push settings for current user + active company to Supabase.
   static Future<void> saveSettings(Map<String, dynamic> settingsMap) async {
     final uid = _uid;
     if (uid == null) return;
     await _sb.from('user_settings').upsert({
       'user_id': uid,
+      'company_id': activeCompanyId,
       'settings': settingsMap,
       'updated_at': DateTime.now().toIso8601String(),
-    }, onConflict: 'user_id');
+    }, onConflict: 'user_id,company_id');
   }
 }

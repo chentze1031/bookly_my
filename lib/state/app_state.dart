@@ -19,12 +19,15 @@ class _QueuedOp {
   final String op;
   final Map<String, dynamic>? data;
   final int? id;
+  final String companyId; // company this op belongs to (Phase 4 #24)
   final DateTime queuedAt;
-  _QueuedOp({required this.table, required this.op, this.data, this.id})
-    : queuedAt = DateTime.now();
+  _QueuedOp({required this.table, required this.op, this.data, this.id,
+      String? companyId})
+    : companyId = companyId ?? activeCompanyId,
+      queuedAt = DateTime.now();
 
   Map<String, dynamic> toMap() => {
-    'table': table, 'op': op, 'data': data, 'id': id,
+    'table': table, 'op': op, 'data': data, 'id': id, 'companyId': companyId,
     'queuedAt': queuedAt.toIso8601String(),
   };
 
@@ -32,6 +35,7 @@ class _QueuedOp {
     table: m['table'], op: m['op'],
     data: m['data'] != null ? Map<String, dynamic>.from(m['data']) : null,
     id: m['id'],
+    companyId: m['companyId'] as String? ?? 'default',
   );
 }
 
@@ -48,8 +52,9 @@ class AppState extends ChangeNotifier {
   Company get activeCompanyObj =>
       companies.firstWhere((c) => c.id == activeCompany,
           orElse: () => const Company(id: 'default', name: 'My Company'));
-  // Cloud sync only runs for the 'default' company; others are device-local.
-  bool get _cloudOn => _loggedIn && isDefaultCompany;
+  // Cloud sync runs whenever logged in; every row is tagged with company_id so
+  // each company stays isolated in the cloud too (Phase 4 #24 cloud phase).
+  bool get _cloudOn => _loggedIn;
 
   FxStatus   fxStatus   = FxStatus.idle;
   String?    fxUpdatedAt;
@@ -145,6 +150,8 @@ class AppState extends ChangeNotifier {
     await DbService.reset();            // reopen the right SQLite file
     await _reloadCompanyData();
     notifyListeners();
+    // Merge this company's cloud data (all rows are company_id-scoped now).
+    if (_cloudOn) { await _flushQueue(); await pullCloud(); }
   }
 
   /// Create a new (empty) company and return its id.
@@ -172,6 +179,7 @@ class AppState extends ChangeNotifier {
     if (id == 'default') return;
     companies = companies.where((c) => c.id != id).toList();
     await _saveCompanies();
+    if (_loggedIn) await _deleteCompanyCloud(id);
     await _purgeCompanyData(id);
     if (activeCompany == id) {
       activeCompany = 'default';
@@ -180,8 +188,20 @@ class AppState extends ChangeNotifier {
       await prefs.setString(StorageKeys.activeCompany, 'default');
       await DbService.reset();
       await _reloadCompanyData();
+      notifyListeners();
+      if (_cloudOn) await pullCloud();
+    } else {
+      notifyListeners();
     }
-    notifyListeners();
+  }
+
+  /// Delete all of a company's cloud rows (best-effort).
+  Future<void> _deleteCompanyCloud(String id) async {
+    const tables = ['transactions', 'customers', 'employees', 'inventory',
+        'stock_movements', 'user_data', 'user_settings'];
+    for (final t in tables) {
+      try { await _sb.from(t).delete().eq('user_id', _uid!).eq('company_id', id); } catch (_) {}
+    }
   }
 
   Future<void> _purgeCompanyData(String id) async {
@@ -201,11 +221,10 @@ class AppState extends ChangeNotifier {
   // ── Sign Out ──────────────────────────────────────────────────────────────────
   /// 登出。返回 true=本地数据已安全上云后清除；false=推送失败，本地数据已保留。
   Future<bool> signOut() async {
-    // 多公司(#24): 非 default 公司是设备本地（无云端备份），登出会清本地数据，
-    // 故先切回 default，确保只清理/推送 default 公司的云备份数据，其他公司原样保留。
-    if (!isDefaultCompany) await switchCompany('default');
     // FIX(数据丢失): 登出前先把本地数据推到云端，确认成功后才清本地。
     // 推送失败则【不清除】本地数据，避免永久丢失。
+    // 多公司(#24): 每家公司在切换为活动时即实时同步，云端已是最新；这里只需
+    // 推送/清理当前活动公司的本地缓存，其余公司的本地缓存原样保留。
     bool pushedOk = true;
     if (_loggedIn) {
       try {
@@ -437,7 +456,7 @@ class AppState extends ChangeNotifier {
       txs = merged;
 
       // ── Customers ─────────────────────────────────────────────────────────
-      final remoteCusts = await _sb.from('customers').select().eq('user_id', uid);
+      final remoteCusts = await _sb.from('customers').select().eq('user_id', uid).eq('company_id', activeCompany);
       // 合并：云端有的写回本地；本地有云端没有的推上云
       final remoteCustomerIds = <int>{};
       for (final row in (remoteCusts as List)) {
@@ -451,7 +470,7 @@ class AppState extends ChangeNotifier {
       customers = await DbService.loadCustomers();
 
       // ── Employees ─────────────────────────────────────────────────────────
-      final remoteEmps = await _sb.from('employees').select().eq('user_id', uid);
+      final remoteEmps = await _sb.from('employees').select().eq('user_id', uid).eq('company_id', activeCompany);
       final remoteEmpIds = <int>{};
       for (final row in (remoteEmps as List)) {
         final e = Employee.fromMap(row);
@@ -464,13 +483,13 @@ class AppState extends ChangeNotifier {
       employees = await DbService.loadEmployees();
 
       // ── Invoices / Payrolls ───────────────────────────────────────────────
-      final invRow = await _sb.from('user_data').select('invoices').eq('user_id', uid).maybeSingle();
+      final invRow = await _sb.from('user_data').select('invoices').eq('user_id', uid).eq('company_id', activeCompany).maybeSingle();
       if (invRow != null && invRow['invoices'] != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(StorageKeys.invoices, jsonEncode(invRow['invoices']));
       }
 
-      final payRow = await _sb.from('user_data').select('payrolls').eq('user_id', uid).maybeSingle();
+      final payRow = await _sb.from('user_data').select('payrolls').eq('user_id', uid).eq('company_id', activeCompany).maybeSingle();
       if (payRow != null && payRow['payrolls'] != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(StorageKeys.payrolls, jsonEncode(payRow['payrolls']));
@@ -533,12 +552,13 @@ class AppState extends ChangeNotifier {
       try {
         if (op.op == 'upsert' && op.data != null) {
           await _sb.from(op.table).upsert({
-            ...op.data!, 'user_id': _uid,
+            ...op.data!, 'user_id': _uid, 'company_id': op.companyId,
             'updated_at': DateTime.now().toIso8601String(),
-          }, onConflict: 'id,user_id');
+          }, onConflict: 'id,user_id,company_id');
           ok = true;
         } else if (op.op == 'delete' && op.id != null) {
-          await _sb.from(op.table).delete().eq('id', op.id!).eq('user_id', _uid!);
+          await _sb.from(op.table).delete()
+              .eq('id', op.id!).eq('user_id', _uid!).eq('company_id', op.companyId);
           ok = true;
         }
       } catch (_) {}
@@ -563,49 +583,50 @@ class AppState extends ChangeNotifier {
   }
 
   // ── Try-push helpers ──────────────────────────────────────────────────────────
+  // Every cloud row carries company_id so companies stay isolated (Phase 4 #24).
   Future<bool> _tryPushTxCloud(Transaction tx) async {
     try {
-      await _sb.from('transactions').upsert({...tx.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id');
+      await _sb.from('transactions').upsert({...tx.toMap(), 'user_id': _uid, 'company_id': activeCompany, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id,company_id');
       return true;
     } catch (_) { return false; }
   }
   Future<bool> _tryDeleteTxCloud(int id) async {
-    try { await _sb.from('transactions').delete().eq('id', id).eq('user_id', _uid!); return true; } catch (_) { return false; }
+    try { await _sb.from('transactions').delete().eq('id', id).eq('user_id', _uid!).eq('company_id', activeCompany); return true; } catch (_) { return false; }
   }
   Future<bool> _tryPushCustomerCloud(Customer c) async {
     try {
-      await _sb.from('customers').upsert({...c.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id');
+      await _sb.from('customers').upsert({...c.toMap(), 'user_id': _uid, 'company_id': activeCompany, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id,company_id');
       return true;
     } catch (_) { return false; }
   }
   Future<bool> _tryDeleteCustomerCloud(int id) async {
-    try { await _sb.from('customers').delete().eq('id', id).eq('user_id', _uid!); return true; } catch (_) { return false; }
+    try { await _sb.from('customers').delete().eq('id', id).eq('user_id', _uid!).eq('company_id', activeCompany); return true; } catch (_) { return false; }
   }
   Future<bool> _tryPushEmployeeCloud(Employee e) async {
     try {
-      await _sb.from('employees').upsert({...e.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id');
+      await _sb.from('employees').upsert({...e.toMap(), 'user_id': _uid, 'company_id': activeCompany, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id,company_id');
       return true;
     } catch (_) { return false; }
   }
   Future<bool> _tryDeleteEmployeeCloud(int id) async {
-    try { await _sb.from('employees').delete().eq('id', id).eq('user_id', _uid!); return true; } catch (_) { return false; }
+    try { await _sb.from('employees').delete().eq('id', id).eq('user_id', _uid!).eq('company_id', activeCompany); return true; } catch (_) { return false; }
   }
 
   // ── Fire-and-forget helpers ───────────────────────────────────────────────────
   Future<void> _pushTxCloud(Transaction tx) async {
-    try { await _sb.from('transactions').upsert({...tx.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id'); } catch (_) {}
+    try { await _sb.from('transactions').upsert({...tx.toMap(), 'user_id': _uid, 'company_id': activeCompany, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id,company_id'); } catch (_) {}
   }
   Future<void> _pushCustomerCloud(Customer c) async {
-    try { await _sb.from('customers').upsert({...c.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id'); } catch (_) {}
+    try { await _sb.from('customers').upsert({...c.toMap(), 'user_id': _uid, 'company_id': activeCompany, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id,company_id'); } catch (_) {}
   }
   Future<void> _pushEmployeeCloud(Employee e) async {
-    try { await _sb.from('employees').upsert({...e.toMap(), 'user_id': _uid, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id'); } catch (_) {}
+    try { await _sb.from('employees').upsert({...e.toMap(), 'user_id': _uid, 'company_id': activeCompany, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'id,user_id,company_id'); } catch (_) {}
   }
   Future<void> _pushInvoicesCloud(List list) async {
-    try { await _sb.from('user_data').upsert({'user_id': _uid, 'invoices': list, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'user_id'); } catch (_) {}
+    try { await _sb.from('user_data').upsert({'user_id': _uid, 'company_id': activeCompany, 'invoices': list, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'user_id,company_id'); } catch (_) {}
   }
   Future<void> _pushPayrollsCloud(List list) async {
-    try { await _sb.from('user_data').upsert({'user_id': _uid, 'payrolls': list, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'user_id'); } catch (_) {}
+    try { await _sb.from('user_data').upsert({'user_id': _uid, 'company_id': activeCompany, 'payrolls': list, 'updated_at': DateTime.now().toIso8601String()}, onConflict: 'user_id,company_id'); } catch (_) {}
   }
   Future<void> _pushSettingsCloud() async {
     try { await SupabaseService.saveSettings(settings.toMap()); } catch (_) {}

@@ -163,8 +163,8 @@ class InventoryState extends ChangeNotifier {
 
   static SupabaseClient get _db => Supabase.instance.client;
   // FIX(游客模式): 未登录时数据走本地 SQLite，登录后走 Supabase。
-  // 多公司(#24): 非 default 公司也强制走本地（云端按公司隔离留待后续阶段）。
-  static bool get _isGuest => _db.auth.currentUser == null || !isDefaultCompany;
+  // 多公司(#24 云端阶段): 云端按 company_id 隔离，登录后所有公司都走云端。
+  static bool get _isGuest => _db.auth.currentUser == null;
 
   InventoryItem? byId(int id) {
     final idx = _items.indexWhere((i) => i.id == id);
@@ -179,7 +179,7 @@ class InventoryState extends ChangeNotifier {
         final rows = await DbService.loadInventory();
         _items = rows.map((r) => InventoryItem.fromMap(r)).toList();
       } else {
-        final rows = await _db.from('inventory').select().order('name');
+        final rows = await _db.from('inventory').select().eq('company_id', activeCompanyId).order('name');
         _items = (rows as List).map((r) => InventoryItem.fromMap(r as Map<String, dynamic>)).toList();
       }
     } catch (e) {
@@ -212,7 +212,8 @@ class InventoryState extends ChangeNotifier {
         // 2) 插入云端 inventory（去掉本地 id，让云端生成新 id）
         final map = Map<String, dynamic>.from(li)
           ..remove('id')
-          ..['image_url'] = imageUrl;
+          ..['image_url'] = imageUrl
+          ..['company_id'] = activeCompanyId;
         final row = await _db.from('inventory').insert(map).select().single();
         final newId = (row as Map<String, dynamic>)['id'] as int;
 
@@ -221,7 +222,8 @@ class InventoryState extends ChangeNotifier {
         for (final mv in movements) {
           final m = Map<String, dynamic>.from(mv)
             ..remove('id')
-            ..['item_id'] = newId;
+            ..['item_id'] = newId
+            ..['company_id'] = activeCompanyId;
           try { await _db.from('stock_movements').insert(m); } catch (_) {}
         }
       }
@@ -270,7 +272,8 @@ class InventoryState extends ChangeNotifier {
         final newId = await DbService.insertInventory(map);
         newItem = InventoryItem.fromMap({...map, 'id': newId});
       } else {
-        final row = await _db.from('inventory').insert(map).select().single();
+        // Cloud rows carry company_id; the local table is already per-company.
+        final row = await _db.from('inventory').insert({...map, 'company_id': activeCompanyId}).select().single();
         newItem = InventoryItem.fromMap(row);
       }
       _items = [newItem, ..._items]..sort((a, b) => a.name.compareTo(b.name));
@@ -373,7 +376,7 @@ class InventoryState extends ChangeNotifier {
       if (_isGuest) {
         await DbService.insertMovement(mv);
       } else {
-        await _db.from('stock_movements').insert(mv);
+        await _db.from('stock_movements').insert({...mv, 'company_id': activeCompanyId});
       }
     } catch (e) {
       // Movement logging must never break the stock operation itself.
@@ -406,7 +409,7 @@ class InventoryState extends ChangeNotifier {
       return rows.map((r) => StockMovement.fromMap(r)).toList();
     }
     final rows = await _db.from('stock_movements')
-        .select().eq('item_id', itemId)
+        .select().eq('item_id', itemId).eq('company_id', activeCompanyId)
         .order('created_at', ascending: false).limit(limit);
     return (rows as List).map((r) => StockMovement.fromMap(r as Map<String, dynamic>)).toList();
   }
@@ -418,7 +421,7 @@ class InventoryState extends ChangeNotifier {
     }
     final since = DateTime.now().subtract(Duration(days: days)).toIso8601String();
     final rows = await _db.from('stock_movements')
-        .select().gte('created_at', since)
+        .select().eq('company_id', activeCompanyId).gte('created_at', since)
         .order('created_at', ascending: false).limit(2000);
     return (rows as List).map((r) => StockMovement.fromMap(r as Map<String, dynamic>)).toList();
   }
