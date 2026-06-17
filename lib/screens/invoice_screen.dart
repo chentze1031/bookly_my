@@ -257,6 +257,10 @@ class _CustEditFormState extends State<_CustEditForm> {
                         onChanged: (v) => _upd(_c.copyWith(sstRegNo: v)))),
               ]),
               FieldInput(
+                  label: tr(t.lang, 'TIN (MyInvois)', 'TIN (税号, MyInvois)', 'TIN (MyInvois)'),
+                  value: _c.tin,
+                  onChanged: (v) => _upd(_c.copyWith(tin: v))),
+              FieldInput(
                   label: t.custAddr,
                   value: _c.address,
                   multiline: true,

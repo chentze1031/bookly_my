@@ -11,6 +11,7 @@ import '../services/inventory_service.dart';
 import '../utils.dart';
 import '../widgets/common.dart';
 import '../screens/auth_screen.dart';
+import '../services/myinvois_service.dart';
 import 'company_info_screen.dart';
 import 'sst_report_screen.dart';
 import 'sub_screen.dart';
@@ -164,6 +165,12 @@ class _SettingsState extends State<SettingsScreen> {
             onTap: () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const SstReportScreen())),
           ),
+        ),
+
+        // ── MyInvois e-Invoice (Phase 4 #28, Pro) ────────────────────────
+        SectionCard(
+          title: '🧾 ${tr(t.lang, "MyInvois e-Invoice", "MyInvois 电子发票", "e-Invois MyInvois")}',
+          child: _MyInvoisCard(lang: t.lang, isPro: sub.isPro, loggedIn: uid != null),
         ),
 
         // ── Recurring transactions (Phase 4 #21, Pro) ────────────────────
@@ -673,6 +680,155 @@ class _FxStatusBar extends StatelessWidget {
           ),
           child: const Text('↺', style: TextStyle(fontSize: 14)),
         ),
+      ]),
+    );
+  }
+}
+
+// ─── MyInvois e-Invoice config (Phase 4 #28) ─────────────────────────────────
+class _MyInvoisCard extends StatefulWidget {
+  final String lang;
+  final bool isPro, loggedIn;
+  const _MyInvoisCard({required this.lang, required this.isPro, required this.loggedIn});
+  @override State<_MyInvoisCard> createState() => _MyInvoisCardState();
+}
+
+class _MyInvoisCardState extends State<_MyInvoisCard> {
+  final _clientId = TextEditingController();
+  final _secret   = TextEditingController();
+  final _msic     = TextEditingController();
+  final _msicDesc = TextEditingController();
+  String _env = 'sandbox';
+  bool _secretSet = false;
+  bool _saving = false;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final s = context.read<AppState>().settings;
+    _msic.text = s.msicCode;
+    _msicDesc.text = s.msicDesc;
+    _load();
+  }
+
+  Future<void> _load() async {
+    if (!widget.loggedIn) { setState(() => _loaded = true); return; }
+    try {
+      final creds = await MyInvoisService.loadCredentials();
+      if (creds != null && mounted) {
+        _clientId.text = (creds['client_id'] ?? '') as String;
+        _env = (creds['env'] ?? 'sandbox') as String;
+        _secretSet = (creds['client_id'] ?? '').toString().isNotEmpty;
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loaded = true);
+  }
+
+  @override
+  void dispose() {
+    _clientId.dispose(); _secret.dispose(); _msic.dispose(); _msicDesc.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    final app = context.read<AppState>();
+    try {
+      await MyInvoisService.saveCredentials(
+        clientId: _clientId.text, clientSecret: _secret.text, env: _env);
+      await app.updateSettings(app.settings.copyWith(
+        msicCode: _msic.text.trim(), msicDesc: _msicDesc.text.trim()));
+      if (mounted) {
+        _secret.clear();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(tr(widget.lang, 'MyInvois settings saved', 'MyInvois 设置已保存', 'Tetapan MyInvois disimpan')),
+          backgroundColor: kDark, behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${tr(widget.lang, 'Save failed', '保存失败', 'Gagal simpan')}: $e'), backgroundColor: kRed));
+    }
+    if (mounted) setState(() => _saving = false);
+  }
+
+  InputDecoration _dec(String hint) => InputDecoration(
+    isDense: true, hintText: hint,
+    hintStyle: const TextStyle(fontSize: 13, color: kMuted),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: kBorder)),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = widget.lang;
+    if (!widget.loggedIn) {
+      return Padding(
+        padding: const EdgeInsets.all(14),
+        child: Text(
+          tr(lang, 'Sign in to configure MyInvois e-Invoice.', '登录后才能配置 MyInvois 电子发票。', 'Log masuk untuk konfigurasi e-Invois MyInvois.'),
+          style: const TextStyle(fontSize: 13, color: kMuted)),
+      );
+    }
+    if (!_loaded) {
+      return const Padding(padding: EdgeInsets.all(20),
+        child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))));
+    }
+    Widget label(String txt) => Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 5),
+      child: Text(txt, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: kMuted, letterSpacing: .3)));
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(tr(lang,
+          'Submit invoices to LHDN MyInvois. Get your API client ID/secret from the MyInvois portal.',
+          '将发票提交到 LHDN MyInvois。在 MyInvois 门户获取 API client ID/secret。',
+          'Hantar invois ke LHDN MyInvois. Dapatkan client ID/secret API dari portal MyInvois.'),
+          style: const TextStyle(fontSize: 12, color: kMuted)),
+
+        // Environment toggle
+        label(tr(lang, 'ENVIRONMENT', '环境', 'PERSEKITARAN')),
+        Row(children: [
+          for (final e in [('sandbox', tr(lang, 'Sandbox', '沙盒', 'Sandbox')), ('prod', tr(lang, 'Production', '生产', 'Produksi'))])
+            Padding(padding: const EdgeInsets.only(right: 8),
+              child: GestureDetector(
+                onTap: () => setState(() => _env = e.$1),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: _env == e.$1 ? kDark : kBg,
+                    borderRadius: BorderRadius.circular(99), border: Border.all(color: kBorder)),
+                  child: Text(e.$2, style: TextStyle(
+                    color: _env == e.$1 ? Colors.white : kMuted, fontWeight: FontWeight.w700, fontSize: 13)),
+                ),
+              )),
+        ]),
+
+        label('CLIENT ID'),
+        TextField(controller: _clientId, style: TextStyle(fontSize: 13, color: kText), decoration: _dec('xxxxxxxx-xxxx-...')),
+        label('CLIENT SECRET'),
+        TextField(controller: _secret, obscureText: true, style: TextStyle(fontSize: 13, color: kText),
+          decoration: _dec(_secretSet
+            ? tr(lang, '•••• (leave blank to keep)', '•••• (留空则不变)', '•••• (kosong = kekal)')
+            : tr(lang, 'Enter client secret', '输入 client secret', 'Masukkan client secret'))),
+        label(tr(lang, 'MSIC CODE', 'MSIC 行业码', 'KOD MSIC')),
+        TextField(controller: _msic, keyboardType: TextInputType.number, style: TextStyle(fontSize: 13, color: kText), decoration: _dec('e.g. 46900')),
+        label(tr(lang, 'BUSINESS ACTIVITY', '业务活动描述', 'AKTIVITI PERNIAGAAN')),
+        TextField(controller: _msicDesc, style: TextStyle(fontSize: 13, color: kText), decoration: _dec(tr(lang, 'e.g. Wholesale trade', '例如：批发贸易', 'cth. Perdagangan borong'))),
+
+        const SizedBox(height: 14),
+        SizedBox(width: double.infinity, child: ElevatedButton(
+          onPressed: _saving ? null : (widget.isPro ? _save : () => showSubSheet(context)),
+          style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white),
+          child: _saving
+            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+            : Text(widget.isPro
+                ? tr(lang, 'Save', '保存', 'Simpan')
+                : '🔒 ${tr(lang, 'Pro feature', 'Pro 功能', 'Ciri Pro')}'),
+        )),
       ]),
     );
   }

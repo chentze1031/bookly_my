@@ -122,6 +122,7 @@ class Customer {
   final String address;
   final String phone;
   final String email;
+  final String tin; // LHDN buyer TIN (MyInvois #28); blank → general public
 
   const Customer({
     required this.id,
@@ -131,27 +132,29 @@ class Customer {
     this.address = '',
     this.phone = '',
     this.email = '',
+    this.tin = '',
   });
 
   Customer copyWith({
     int? id, String? name, String? regNo, String? sstRegNo,
-    String? address, String? phone, String? email,
+    String? address, String? phone, String? email, String? tin,
   }) => Customer(
     id: id ?? this.id, name: name ?? this.name,
     regNo: regNo ?? this.regNo, sstRegNo: sstRegNo ?? this.sstRegNo,
     address: address ?? this.address, phone: phone ?? this.phone,
-    email: email ?? this.email,
+    email: email ?? this.email, tin: tin ?? this.tin,
   );
 
   Map<String, dynamic> toMap() => {
     'id': id, 'name': name, 'reg_no': regNo, 'sst_reg_no': sstRegNo,
-    'address': address, 'phone': phone, 'email': email,
+    'address': address, 'phone': phone, 'email': email, 'tin': tin,
   };
 
   factory Customer.fromMap(Map<String, dynamic> m) => Customer(
     id: m['id'] as int, name: m['name'] as String,
     regNo: m['reg_no'] ?? '', sstRegNo: m['sst_reg_no'] ?? '',
     address: m['address'] ?? '', phone: m['phone'] ?? '', email: m['email'] ?? '',
+    tin: m['tin'] ?? '',
   );
 }
 
@@ -236,6 +239,11 @@ class AppSettings {
   final String? logoBase64; // Company logo (data:image/png;base64,...)
   final String? sigBase64;  // Authorised signature (data:image/png;base64,...)
   final bool dark;          // Dark mode (device-local; not cloud-synced)
+  // ── MyInvois supplier profile (Phase 4 #28) ────────────────────────────────
+  // API credentials live in the cloud `myinvois_credentials` table (RLS), NOT
+  // here. These are the supplier classification fields required by the UBL doc.
+  final String msicCode;    // 5-digit MSIC industry code (e.g. "46900")
+  final String msicDesc;    // Business activity description
 
   const AppSettings({
     this.lang = 'en',
@@ -252,6 +260,8 @@ class AppSettings {
     this.logoBase64,
     this.sigBase64,
     this.dark = false,
+    this.msicCode = '',
+    this.msicDesc = '',
   });
 
   AppSettings copyWith({
@@ -260,6 +270,7 @@ class AppSettings {
     String? coEmail, String? displayCurrency,
     String? coTin, String? bankName, String? bankAcct,
     String? logoBase64, String? sigBase64, bool? dark,
+    String? msicCode, String? msicDesc,
     bool clearLogo = false, bool clearSig = false,
   }) => AppSettings(
     dark: dark ?? this.dark,
@@ -276,6 +287,8 @@ class AppSettings {
     bankAcct: bankAcct ?? this.bankAcct,
     logoBase64: clearLogo ? null : (logoBase64 ?? this.logoBase64),
     sigBase64:  clearSig  ? null : (sigBase64  ?? this.sigBase64),
+    msicCode: msicCode ?? this.msicCode,
+    msicDesc: msicDesc ?? this.msicDesc,
   );
 
   Map<String, dynamic> toMap() => {
@@ -284,6 +297,7 @@ class AppSettings {
     'co_email': coEmail, 'display_currency': displayCurrency,
     'co_tin': coTin, 'bank_name': bankName, 'bank_acct': bankAcct,
     'logo_base64': logoBase64, 'sig_base64': sigBase64,
+    'msic_code': msicCode, 'msic_desc': msicDesc,
   };
 
   factory AppSettings.fromMap(Map<String, dynamic> m) => AppSettings(
@@ -300,5 +314,7 @@ class AppSettings {
     bankAcct: m['bank_acct'] ?? '',
     logoBase64: m['logo_base64'] as String?,
     sigBase64:  m['sig_base64']  as String?,
+    msicCode: m['msic_code'] ?? '',
+    msicDesc: m['msic_desc'] ?? '',
   );
 }

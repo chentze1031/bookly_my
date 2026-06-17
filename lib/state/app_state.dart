@@ -862,6 +862,18 @@ class AppState extends ChangeNotifier {
     if (_cloudOn) _pushInvoicesCloud(list);
   }
 
+  /// Persist MyInvois submission fields onto a saved invoice record (#28).
+  Future<void> updateInvoiceMyInvois(String invNo, Map<String, dynamic> fields) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.invoices) ?? '[]') as List).cast<Map<String, dynamic>>();
+    final idx = list.indexWhere((e) => e['invNo'] == invNo);
+    if (idx < 0) return;
+    list[idx] = {...list[idx], ...fields};
+    await prefs.setString(StorageKeys.invoices, jsonEncode(list));
+    if (_cloudOn) _pushInvoicesCloud(list);
+    notifyListeners();
+  }
+
   Future<List<Map<String, dynamic>>> loadPayrolls() async {
     final prefs = await SharedPreferences.getInstance();
     return (jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List).cast<Map<String, dynamic>>();

@@ -18,6 +18,7 @@ import '../state/sub_state.dart';
 import '../utils.dart';
 import '../utils/invoice_pdf.dart';
 import '../widgets/common.dart';
+import '../services/myinvois_service.dart';
 import 'delivery_order_screen.dart';
 import 'credit_note_screen.dart';
 import 'payroll_reports_screen.dart';
@@ -49,6 +50,14 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
     try {
       final customer = Customer.fromMap(Map<String, dynamic>.from(inv['customer'] ?? {}));
       final items = (inv['items'] as List).map((e) => Map<String, String>.from(e)).toList();
+      // MyInvois validation QR (#28): only when the invoice is validated.
+      String? miUrl, miUuid;
+      if (inv['miStatus'] == 'Valid' && inv['miUuid'] != null && inv['miLongId'] != null) {
+        final creds = await MyInvoisService.loadCredentials();
+        final env = (creds?['env'] ?? 'sandbox') as String;
+        miUuid = inv['miUuid'] as String;
+        miUrl = MyInvoisService.validationUrl(env, miUuid, inv['miLongId'] as String);
+      }
       final bytes = await generateInvoicePdf(
         co: app.settings, customer: customer, rows: items,
         invNo: inv['invNo'] ?? '', invDate: inv['invDate'] ?? '',
@@ -57,6 +66,7 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
         terms:    (inv['terms']    ?? '').isNotEmpty ? inv['terms']    : null,
         bankName: (inv['bankName'] ?? '').isNotEmpty ? inv['bankName'] : null,
         bankAcct: (inv['bankAcct'] ?? '').isNotEmpty ? inv['bankAcct'] : null,
+        myInvoisUrl: miUrl, myInvoisUuid: miUuid,
       );
       final dir  = await getTemporaryDirectory();
       final safe = (inv['invNo'] ?? 'inv').replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '_');
@@ -345,6 +355,10 @@ class _InvoiceDetailScreen extends StatelessWidget {
             if ((inv['dueDate'] ?? '').isNotEmpty)
               _DetailRow('Due Date', inv['dueDate'], valueColor: kRed),
           ]),
+          const SizedBox(height: 12),
+
+          // ── MyInvois e-Invoice (Phase 4 #28) ───────────────────────────────
+          _MyInvoisTile(inv: inv),
           const SizedBox(height: 12),
 
           // ── Bill to ─────────────────────────────────────────────────
@@ -1096,4 +1110,117 @@ class _DetailRow extends StatelessWidget {
                     fontWeight: bold ? FontWeight.w700 : FontWeight.normal))),
           ]),
   );
+}
+
+
+// ─── MyInvois submit tile (Phase 4 #28) ──────────────────────────────────────
+class _MyInvoisTile extends StatefulWidget {
+  final Map<String, dynamic> inv;
+  const _MyInvoisTile({required this.inv});
+  @override State<_MyInvoisTile> createState() => _MyInvoisTileState();
+}
+
+class _MyInvoisTileState extends State<_MyInvoisTile> {
+  late String _status = (widget.inv['miStatus'] ?? 'none') as String;
+  late String? _uuid    = widget.inv['miUuid'] as String?;
+  late String? _longId  = widget.inv['miLongId'] as String?;
+  late String? _subUid  = widget.inv['miSubmissionUid'] as String?;
+  String? _error;
+  bool _busy = false;
+
+  Future<void> _submit() async {
+    final app = context.read<AppState>();
+    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+    setState(() { _busy = true; _error = null; });
+    final buyer = Customer.fromMap(Map<String, dynamic>.from(widget.inv['customer'] ?? {}));
+    final r = await MyInvoisService.submitInvoice(
+      invoice: widget.inv, supplier: app.settings, buyer: buyer);
+    await app.updateInvoiceMyInvois(widget.inv['invNo'] ?? '', {
+      'miStatus': r.status, 'miSubmissionUid': r.submissionUid,
+      'miUuid': r.uuid, 'miLongId': r.longId,
+    });
+    if (mounted) setState(() {
+      _busy = false; _status = r.status; _subUid = r.submissionUid;
+      _uuid = r.uuid; _error = r.error;
+    });
+  }
+
+  Future<void> _refresh() async {
+    if (_subUid == null) return;
+    final app = context.read<AppState>();
+    setState(() { _busy = true; _error = null; });
+    final r = await MyInvoisService.checkStatus(_subUid!);
+    await app.updateInvoiceMyInvois(widget.inv['invNo'] ?? '', {
+      'miStatus': r.status, 'miUuid': r.uuid, 'miLongId': r.longId,
+    });
+    if (mounted) setState(() {
+      _busy = false; _status = r.status; _uuid = r.uuid ?? _uuid;
+      _longId = r.longId ?? _longId; _error = r.error;
+    });
+  }
+
+  ({Color c, String label}) _badge(String lang) => switch (_status) {
+    'Valid'      => (c: kGreen, label: tr(lang, 'Validated', '已验证', 'Disahkan')),
+    'Invalid'    => (c: kRed,   label: tr(lang, 'Invalid', '无效', 'Tidak Sah')),
+    'InProgress' => (c: kGold,  label: tr(lang, 'In progress', '处理中', 'Diproses')),
+    'error'      => (c: kRed,   label: tr(lang, 'Error', '错误', 'Ralat')),
+    _            => (c: kMuted, label: tr(lang, 'Not submitted', '未提交', 'Belum hantar')),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = context.read<AppState>().settings.lang;
+    final loggedIn = MyInvoisService.isLoggedIn;
+    final b = _badge(lang);
+    return Container(
+      decoration: BoxDecoration(
+        color: kSurface, border: Border.all(color: kBorder),
+        borderRadius: BorderRadius.circular(12)),
+      padding: const EdgeInsets.all(14),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Text('🧾 ', style: TextStyle(fontSize: 15)),
+          Text('MyInvois', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+            decoration: BoxDecoration(color: b.c.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(99), border: Border.all(color: b.c.withValues(alpha: 0.4))),
+            child: Text(b.label, style: TextStyle(color: b.c, fontSize: 11, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        if (_uuid != null) ...[
+          const SizedBox(height: 8),
+          SelectableText('UUID: $_uuid', style: const TextStyle(fontSize: 11, color: kMuted)),
+        ],
+        if (_status == 'Valid' && _longId != null) ...[
+          const SizedBox(height: 4),
+          SelectableText('Long ID: $_longId', style: const TextStyle(fontSize: 11, color: kMuted)),
+        ],
+        if (_error != null) ...[
+          const SizedBox(height: 6),
+          Text(_error!, style: TextStyle(fontSize: 11, color: kRed)),
+        ],
+        const SizedBox(height: 12),
+        if (!loggedIn)
+          Text(tr(lang, 'Sign in + configure MyInvois in Settings to submit.',
+                  '请先登录并在设置里配置 MyInvois。', 'Log masuk + konfigur MyInvois di Tetapan.'),
+              style: const TextStyle(fontSize: 12, color: kMuted))
+        else
+          Row(children: [
+            Expanded(child: ElevatedButton(
+              onPressed: _busy ? null : (_status == 'InProgress' ? _refresh : _submit),
+              style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white),
+              child: _busy
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text(_status == 'InProgress'
+                    ? tr(lang, 'Refresh status', '刷新状态', 'Semak status')
+                    : _status == 'Valid'
+                      ? tr(lang, 'Re-submit', '重新提交', 'Hantar semula')
+                      : tr(lang, 'Submit to MyInvois', '提交 MyInvois', 'Hantar ke MyInvois')),
+            )),
+          ]),
+      ]),
+    );
+  }
 }

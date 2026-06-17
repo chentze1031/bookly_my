@@ -74,6 +74,8 @@ Future<Uint8List> generateInvoicePdf({
   String? paymentMethod,
   String? paymentTerms,
   String? latePenalty,
+  String? myInvoisUrl,  // LHDN validation link (#28) → QR on the invoice
+  String? myInvoisUuid,
 }) async {
 
   // ── CJK font (fix: fontFallback on every TextStyle) ───────────────────────
@@ -202,6 +204,19 @@ Future<Uint8List> generateInvoicePdf({
                 _metaRow('Due Date', dueDate, ts(8, c: _grey), ts(8, bold: true)),
               if (paymentTerms != null && paymentTerms.isNotEmpty)
                 _metaRow('Terms',    paymentTerms, ts(8, c: _grey), ts(8)),
+              // ── MyInvois validation QR (#28) ──────────────────────────────
+              if (myInvoisUrl != null && myInvoisUrl.isNotEmpty) ...[
+                gap(8),
+                pw.BarcodeWidget(
+                  barcode: pw.Barcode.qrCode(),
+                  data: myInvoisUrl,
+                  width: 64, height: 64,
+                ),
+                pw.Text('Validated by MyInvois', style: ts(6, c: _grey)),
+                if (myInvoisUuid != null && myInvoisUuid.isNotEmpty)
+                  pw.SizedBox(width: 96,
+                    child: pw.Text(myInvoisUuid, style: ts(5, c: _grey), maxLines: 2)),
+              ],
             ],
           ),
         ],
