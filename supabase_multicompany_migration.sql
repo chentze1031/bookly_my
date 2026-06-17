@@ -51,7 +51,7 @@ begin
       from pg_constraint c
       where c.conrelid = ('public.'||tbl)::regclass
         and c.contype in ('u','p')
-        and (select array_agg(a.attname order by a.attname)
+        and (select array_agg(a.attname::text order by a.attname::text)
              from unnest(c.conkey) k
              join pg_attribute a on a.attrelid = c.conrelid and a.attnum = k) = want
     loop
@@ -65,7 +65,7 @@ begin
       join pg_class i on i.oid = ix.indexrelid
       where ix.indrelid = ('public.'||tbl)::regclass
         and ix.indisunique and not ix.indisprimary
-        and (select array_agg(a.attname order by a.attname)
+        and (select array_agg(a.attname::text order by a.attname::text)
              from unnest(ix.indkey) k
              join pg_attribute a on a.attrelid = ix.indrelid and a.attnum = k) = want
     loop
