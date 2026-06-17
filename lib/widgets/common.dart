@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
+import '../services/myinvois_codes.dart';
 
 // --- Pro Badge ----------------------------------------------------------------
 class ProBadge extends StatelessWidget {
@@ -233,6 +234,51 @@ Future<bool?> showConfirmDialog({
     ],
   ),
 );
+// --- State Dropdown (MyInvois LHDN state code) --------------------------------
+class StateDropdown extends StatelessWidget {
+  final String lang;
+  final String value;
+  final ValueChanged<String> onChanged;
+  const StateDropdown({
+    super.key, required this.lang, required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = lang == 'zh' ? '州属 (MyInvois)' : (lang == 'ms' ? 'Negeri (MyInvois)' : 'State (MyInvois)');
+    final current = MyInvoisCodes.states.any((s) => s.code == value) ? value : '17';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(), style: const TextStyle(
+          fontSize: 10, fontWeight: FontWeight.w700, color: kMuted, letterSpacing: 0.5)),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 13),
+          decoration: BoxDecoration(
+            color: kBg,
+            borderRadius: BorderRadius.circular(11),
+            border: Border.all(color: kBorder, width: 1.5),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: current,
+              dropdownColor: kSurface,
+              style: TextStyle(fontSize: 14, color: kText),
+              items: [
+                for (final s in MyInvoisCodes.states)
+                  DropdownMenuItem(value: s.code, child: Text('${s.code} · ${s.name}')),
+              ],
+              onChanged: (v) { if (v != null) onChanged(v); },
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+}
+
 // --- Month Label --------------------------------------------------------------
 String monthLabel(String ym, String lang) {
   final d = DateTime.parse('$ym-01');

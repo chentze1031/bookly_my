@@ -700,6 +700,7 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
   final _secret   = TextEditingController();
   final _msic     = TextEditingController();
   final _msicDesc = TextEditingController();
+  final _class    = TextEditingController();
   String _env = 'sandbox';
   bool _secretSet = false;
   bool _saving = false;
@@ -713,6 +714,7 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
     final s = context.read<AppState>().settings;
     _msic.text = s.msicCode;
     _msicDesc.text = s.msicDesc;
+    _class.text = s.classCode;
     _load();
   }
 
@@ -873,6 +875,7 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
   @override
   void dispose() {
     _clientId.dispose(); _secret.dispose(); _msic.dispose(); _msicDesc.dispose();
+    _class.dispose();
     super.dispose();
   }
 
@@ -883,7 +886,8 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
       await MyInvoisService.saveCredentials(
         clientId: _clientId.text, clientSecret: _secret.text, env: _env);
       await app.updateSettings(app.settings.copyWith(
-        msicCode: _msic.text.trim(), msicDesc: _msicDesc.text.trim()));
+        msicCode: _msic.text.trim(), msicDesc: _msicDesc.text.trim(),
+        classCode: _class.text.trim().isEmpty ? '022' : _class.text.trim()));
       if (mounted) {
         _secret.clear();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -963,6 +967,8 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
         TextField(controller: _msic, keyboardType: TextInputType.number, style: TextStyle(fontSize: 13, color: kText), decoration: _dec('e.g. 46900')),
         label(tr(lang, 'BUSINESS ACTIVITY', '业务活动描述', 'AKTIVITI PERNIAGAAN')),
         TextField(controller: _msicDesc, style: TextStyle(fontSize: 13, color: kText), decoration: _dec(tr(lang, 'e.g. Wholesale trade', '例如：批发贸易', 'cth. Perdagangan borong'))),
+        label(tr(lang, 'DEFAULT CLASSIFICATION CODE', '默认商品分类码', 'KOD KLASIFIKASI LALAI')),
+        TextField(controller: _class, keyboardType: TextInputType.number, style: TextStyle(fontSize: 13, color: kText), decoration: _dec(tr(lang, 'e.g. 022 (Others)', '例如：022（其他）', 'cth. 022 (Lain-lain)'))),
 
         // ── Digital certificate (on-device signing, required for production) ──
         label(tr(lang, 'DIGITAL CERTIFICATE', '数字证书', 'SIJIL DIGITAL')),

@@ -23,7 +23,7 @@ class DbService {
     // companies get their own isolated SQLite file.
     final fileName = isDefaultCompany ? 'bookly.db' : 'bookly__$activeCompanyId.db';
     final path = join(await getDatabasesPath(), fileName);
-    return openDatabase(path, version: 8, onCreate: (db, v) async {
+    return openDatabase(path, version: 9, onCreate: (db, v) async {
       await db.execute('''CREATE TABLE transactions(
         id INTEGER PRIMARY KEY, type TEXT, cat_id TEXT,
         amount_myr REAL, orig_amount REAL, orig_currency TEXT,
@@ -33,7 +33,8 @@ class DbService {
       await db.execute('''CREATE TABLE customers(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT, reg_no TEXT, sst_reg_no TEXT,
-        address TEXT, phone TEXT, email TEXT, tin TEXT
+        address TEXT, phone TEXT, email TEXT, tin TEXT,
+        city TEXT, postcode TEXT, state TEXT
       )''');
       await db.execute('''CREATE TABLE employees(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,6 +101,12 @@ class DbService {
       if (oldV < 8) {
         // MyInvois (#28): buyer TIN on customers.
         try { await db.execute('ALTER TABLE customers ADD COLUMN tin TEXT'); } catch (_) {}
+      }
+      if (oldV < 9) {
+        // MyInvois (#28 v2): structured buyer address for UBL.
+        for (final c in ['city', 'postcode', 'state']) {
+          try { await db.execute('ALTER TABLE customers ADD COLUMN $c TEXT'); } catch (_) {}
+        }
       }
     });
   }

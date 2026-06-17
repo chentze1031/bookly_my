@@ -21,8 +21,8 @@ class MyInvoisUbl {
   static String _taxType(String key) => key == 'none' ? '06' : '01';
   // General-public TIN for buyers without their own TIN (B2C).
   static const generalPublicTin = 'EI00000000010';
-  // TODO: refine per real goods/services — "022" = Others on the CLASS list.
-  static const _defaultClassification = '022';
+  // Fallback classification when none configured ("022" = Others on CLASS list).
+  static const _fallbackClassification = '022';
 
   static List<Map<String, dynamic>> _v(Object? value) => [
         {'_': value}
@@ -44,6 +44,7 @@ class MyInvoisUbl {
     bool signed = false,
   }) {
     final version = signed ? '1.1' : '1.0';
+    final classCode = s.classCode.trim().isEmpty ? _fallbackClassification : s.classCode.trim();
     final rows = (inv['items'] as List).cast<Map<String, dynamic>>();
     double netOf(Map r) =>
         (double.tryParse('${r['qty'] ?? '1'}') ?? 1) * (double.tryParse('${r['price'] ?? '0'}') ?? 0);
@@ -85,7 +86,8 @@ class MyInvoisUbl {
             }
           ],
           'InvoiceLine': [
-            for (var i = 0; i < rows.length; i++) _line(i + 1, rows[i], netOf(rows[i]), sstOf(rows[i])),
+            for (var i = 0; i < rows.length; i++)
+              _line(i + 1, rows[i], netOf(rows[i]), sstOf(rows[i]), classCode),
           ],
           'TaxTotal': [
             {
@@ -120,7 +122,7 @@ class MyInvoisUbl {
             'ID': _vA(s.sstRegNo.isEmpty ? 'NA' : s.sstRegNo, {'schemeID': 'SST'})
           },
         ],
-        'PostalAddress': [_address(s.coAddr)],
+        'PostalAddress': [_address(s.coAddr, s.coCity, s.coPostcode, s.coState)],
         'PartyLegalEntity': [
           {
             'RegistrationName': _v(s.companyName)
@@ -146,7 +148,7 @@ class MyInvoisUbl {
             'ID': _vA(b.sstRegNo.isEmpty ? 'NA' : b.sstRegNo, {'schemeID': 'SST'})
           },
         ],
-        'PostalAddress': [_address(b.address)],
+        'PostalAddress': [_address(b.address, b.city, b.postcode, b.state)],
         'PartyLegalEntity': [
           {
             'RegistrationName': _v(b.name)
@@ -160,12 +162,14 @@ class MyInvoisUbl {
         ],
       };
 
-  // TODO: split into line/city/postcode/state and use the real LHDN state code
-  // list (01–17). For MVP the whole address is one line; country = MYS.
-  static Map<String, dynamic> _address(String addr) => {
-        'CityName': _v(''),
-        'PostalZone': _v(''),
-        'CountrySubentityCode': _v('17'), // TODO: 17 = "Not Applicable"; set real state
+  // Structured MyInvois address: line + city + postcode + LHDN state code.
+  // Country fixed to MYS (this build targets Malaysian taxpayers).
+  static Map<String, dynamic> _address(
+          String addr, String city, String postcode, String state) =>
+      {
+        'CityName': _v(city.isEmpty ? 'NA' : city),
+        'PostalZone': _v(postcode.isEmpty ? 'NA' : postcode),
+        'CountrySubentityCode': _v(state.isEmpty ? '17' : state),
         'AddressLine': [
           {
             'Line': _v(addr.isEmpty ? 'NA' : addr)
@@ -181,7 +185,8 @@ class MyInvoisUbl {
         ],
       };
 
-  static Map<String, dynamic> _line(int n, Map<String, dynamic> r, double net, double sst) {
+  static Map<String, dynamic> _line(
+      int n, Map<String, dynamic> r, double net, double sst, String classCode) {
     final key = (r['sst'] ?? 'none') as String;
     final pct = (_sstRate[key] ?? 0) * 100;
     final qty = double.tryParse('${r['qty'] ?? '1'}') ?? 1;
@@ -216,7 +221,7 @@ class MyInvoisUbl {
         {
           'CommodityClassification': [
             {
-              'ItemClassificationCode': _vA(_defaultClassification, {'listID': 'CLASS'})
+              'ItemClassificationCode': _vA(classCode, {'listID': 'CLASS'})
             }
           ],
           'Description': _v(r['desc'] ?? ''),

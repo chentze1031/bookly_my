@@ -27,11 +27,14 @@ begin
   end if;
 end $$;
 
--- 2) Buyer TIN on customers (matches the app's Customer.tin field) -------------
+-- 2) Buyer TIN + structured address on customers (match Customer fields) -------
 do $$
 begin
   if to_regclass('public.customers') is not null then
-    alter table public.customers add column if not exists tin text not null default '';
+    alter table public.customers add column if not exists tin      text not null default '';
+    alter table public.customers add column if not exists city     text not null default '';
+    alter table public.customers add column if not exists postcode text not null default '';
+    alter table public.customers add column if not exists state    text not null default '17';
   end if;
 end $$;
 
