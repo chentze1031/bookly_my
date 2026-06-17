@@ -18,6 +18,7 @@ import '../utils.dart';
 import '../widgets/common.dart';
 import '../services/inventory_service.dart';
 import '../services/low_stock_reminder.dart';
+import '../services/myinvois_codes.dart';
 import '../screens/inventory_screen.dart' show showInventoryPicker;
 import 'delivery_order_screen.dart' show DeliveryOrderSheet;
 import 'sub_screen.dart' show showSubSheet;
@@ -265,6 +266,24 @@ class _CustEditFormState extends State<_CustEditForm> {
                   value: _c.address,
                   multiline: true,
                   onChanged: (v) => _upd(_c.copyWith(address: v))),
+              Row(children: [
+                Expanded(
+                    child: FieldInput(
+                        label: tr(t.lang, 'City', '城市', 'Bandar'),
+                        value: _c.city,
+                        onChanged: (v) => _upd(_c.copyWith(city: v)))),
+                const SizedBox(width: 10),
+                Expanded(
+                    child: FieldInput(
+                        label: tr(t.lang, 'Postcode', '邮编', 'Poskod'),
+                        value: _c.postcode,
+                        keyboard: TextInputType.number,
+                        onChanged: (v) => _upd(_c.copyWith(postcode: v)))),
+              ]),
+              StateDropdown(
+                  lang: t.lang,
+                  value: _c.state,
+                  onChanged: (v) => _upd(_c.copyWith(state: v))),
               Row(children: [
                 Expanded(
                     child: FieldInput(

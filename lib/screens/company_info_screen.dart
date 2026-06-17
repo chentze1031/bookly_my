@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../constants.dart';
 import '../models.dart';
 import '../state/app_state.dart';
+import '../widgets/common.dart' show StateDropdown;
 
 // ════════════════════════════════════════════════════════════════════════════
 // COMPANY INFO SCREEN
@@ -25,8 +26,11 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
   final _phoneCtrl   = TextEditingController();
   final _emailCtrl   = TextEditingController();
   final _addrCtrl    = TextEditingController();
+  final _cityCtrl    = TextEditingController();
+  final _postCtrl    = TextEditingController();
   final _bankNmCtrl  = TextEditingController();
   final _bankAcCtrl  = TextEditingController();
+  String _state = '17';
 
   String? _logoB64;
   String? _sigB64;
@@ -44,13 +48,17 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
     _phoneCtrl.text  = s.coPhone;
     _emailCtrl.text  = s.coEmail;
     _addrCtrl.text   = s.coAddr;
+    _cityCtrl.text   = s.coCity;
+    _postCtrl.text   = s.coPostcode;
+    _state           = s.coState.isEmpty ? '17' : s.coState;
     _bankNmCtrl.text = s.bankName;
     _bankAcCtrl.text = s.bankAcct;
     _logoB64 = s.logoBase64;
     _sigB64  = s.sigBase64;
 
     for (final c in [_nameCtrl,_tinCtrl,_sstCtrl,_coRegCtrl,
-                     _phoneCtrl,_emailCtrl,_addrCtrl,_bankNmCtrl,_bankAcCtrl]) {
+                     _phoneCtrl,_emailCtrl,_addrCtrl,_cityCtrl,_postCtrl,
+                     _bankNmCtrl,_bankAcCtrl]) {
       c.addListener(() => setState(() => _dirty = true));
     }
   }
@@ -58,7 +66,8 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
   @override
   void dispose() {
     for (final c in [_nameCtrl,_tinCtrl,_sstCtrl,_coRegCtrl,
-                     _phoneCtrl,_emailCtrl,_addrCtrl,_bankNmCtrl,_bankAcCtrl]) {
+                     _phoneCtrl,_emailCtrl,_addrCtrl,_cityCtrl,_postCtrl,
+                     _bankNmCtrl,_bankAcCtrl]) {
       c.dispose();
     }
     super.dispose();
@@ -94,6 +103,9 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
       coPhone:     _phoneCtrl.text.trim(),
       coEmail:     _emailCtrl.text.trim(),
       coAddr:      _addrCtrl.text.trim(),
+      coCity:      _cityCtrl.text.trim(),
+      coPostcode:  _postCtrl.text.trim(),
+      coState:     _state,
       bankName:    _bankNmCtrl.text.trim(),
       bankAcct:    _bankAcCtrl.text.trim(),
       logoBase64:  _logoB64,
@@ -211,7 +223,25 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
             TextField(controller: _addrCtrl,
               maxLines: 3,
               style: TextStyle(fontSize: 14, color: kText),
-              decoration: _dec('e.g. No. 1, Jalan ABC, 50000 Kuala Lumpur'))),
+              decoration: _dec('e.g. No. 1, Jalan ABC'))),
+
+          Row(children: [
+            Expanded(child: _field(tr(lang, 'CITY', '城市', 'BANDAR'),
+              TextField(controller: _cityCtrl,
+                style: TextStyle(fontSize: 14, color: kText),
+                decoration: _dec('e.g. Kuala Lumpur')))),
+            const SizedBox(width: 12),
+            Expanded(child: _field(tr(lang, 'POSTCODE', '邮编', 'POSKOD'),
+              TextField(controller: _postCtrl,
+                keyboardType: TextInputType.number,
+                style: TextStyle(fontSize: 14, color: kText),
+                decoration: _dec('e.g. 50000')))),
+          ]),
+
+          // MyInvois state code (used in the e-Invoice UBL address).
+          StateDropdown(
+            lang: lang, value: _state,
+            onChanged: (v) => setState(() { _state = v; _dirty = true; })),
 
           const SizedBox(height: 8),
 

@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models.dart';
+import 'cert_service.dart';
+import 'myinvois_signer.dart';
 import 'myinvois_ubl.dart';
 
 /// Result of a MyInvois submit / status call.
@@ -65,12 +69,76 @@ class MyInvoisService {
     if (!isLoggedIn) {
       return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
     }
-    final doc = MyInvoisUbl.buildInvoice(inv: invoice, s: supplier, buyer: buyer);
+    final doc = MyInvoisUbl.buildInvoice(
+      inv: invoice, s: supplier, buyer: buyer, signed: await _hasCert());
+    return _signAndSubmit(doc, (invoice['invNo'] ?? '').toString());
+  }
+
+  // ── Submit a B2C consolidated e-Invoice (one doc for many small receipts) ───
+  static Future<MyInvoisResult> submitConsolidated({
+    required List<Map<String, dynamic>> invoices,
+    required AppSettings supplier,
+    required String consolidatedInvNo,
+  }) async {
+    if (!isLoggedIn) {
+      return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
+    }
+    // Flatten every selected invoice's line items, tagging each with its source
+    // invoice number so the consolidated doc preserves per-line tax exactly.
+    final items = <Map<String, dynamic>>[];
+    for (final inv in invoices) {
+      final no = (inv['invNo'] ?? '').toString();
+      final rows = (inv['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      for (final it in rows) {
+        items.add({...it, 'desc': '[$no] ${it['desc'] ?? ''}'.trim()});
+      }
+    }
+    if (items.isEmpty) {
+      return const MyInvoisResult(ok: false, status: 'error', error: 'No items to consolidate');
+    }
+    final consolidatedInv = <String, dynamic>{
+      'invNo': consolidatedInvNo,
+      'invDate': DateTime.now().toIso8601String().substring(0, 10),
+      'items': items,
+    };
+    final doc = MyInvoisUbl.buildInvoice(
+      inv: consolidatedInv, s: supplier,
+      buyer: const Customer(id: 0, name: 'General Public'),
+      signed: await _hasCert(), consolidated: true);
+    return _signAndSubmit(doc, consolidatedInvNo);
+  }
+
+  // ── Submit a self-billed e-Invoice (type 11; you issue on supplier's behalf) ─
+  static Future<MyInvoisResult> submitSelfBilled({
+    required Customer counterparty,
+    required Map<String, dynamic> invoice,
+    required AppSettings supplier,
+  }) async {
+    if (!isLoggedIn) {
+      return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
+    }
+    final doc = MyInvoisUbl.buildInvoice(
+      inv: invoice, s: supplier, buyer: counterparty,
+      signed: await _hasCert(), selfBilledSupplier: counterparty);
+    return _signAndSubmit(doc, (invoice['invNo'] ?? '').toString());
+  }
+
+  static Future<bool> _hasCert() async => (await CertService.load()) != null;
+
+  // Sign on-device when a certificate exists (production v1.1), else submit
+  // unsigned v1.0 (sandbox only). The private key never leaves the device. The
+  // exact serialized bytes we sign are what the Edge Function base64s + hashes,
+  // so the submitted document is byte-identical to what was signed.
+  static Future<MyInvoisResult> _signAndSubmit(
+      Map<String, dynamic> doc, String codeNumber) async {
+    final cert = await CertService.load();
+    final payload = cert != null ? MyInvoisSigner.sign(doc, cert) : doc;
+    final docString = jsonEncode(payload);
     try {
       final res = await _sb.functions.invoke('myinvois', body: {
         'action': 'submit',
-        'document': doc,
-        'codeNumber': invoice['invNo'] ?? '',
+        'documentString': docString,
+        'codeNumber': codeNumber,
       });
       final data = res.data as Map<String, dynamic>?;
       if (data == null || data['ok'] != true) {
@@ -127,6 +195,33 @@ class MyInvoisService {
       );
     } catch (e) {
       return MyInvoisResult(ok: false, status: 'error', error: e.toString());
+    }
+  }
+
+  // ── Cancel a validated document (LHDN allows this within 72h) ──────────────
+  static Future<MyInvoisResult> cancelInvoice(String uuid, String reason) async {
+    if (!isLoggedIn) {
+      return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
+    }
+    try {
+      final res = await _sb.functions.invoke('myinvois', body: {
+        'action': 'cancel',
+        'uuid': uuid,
+        'reason': reason,
+      });
+      final data = res.data as Map<String, dynamic>?;
+      if (data == null || data['ok'] != true) {
+        return MyInvoisResult(
+          ok: false, status: 'error', uuid: uuid,
+          error: _err(data) ?? 'Cancel failed (${res.status})',
+        );
+      }
+      final inner = data['data'] as Map<String, dynamic>? ?? {};
+      // LHDN echoes the new status ("Cancelled"); treat any ok response as done.
+      return MyInvoisResult(
+        ok: true, status: (inner['status'] ?? 'Cancelled').toString(), uuid: uuid);
+    } catch (e) {
+      return MyInvoisResult(ok: false, status: 'error', uuid: uuid, error: e.toString());
     }
   }
 

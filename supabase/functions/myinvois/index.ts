@@ -90,7 +90,12 @@ Deno.serve(async (req: Request) => {
 
     // ── 2a. Submit a document ──────────────────────────────────────────────────
     if (action === "submit") {
-      const docStr = JSON.stringify(body.document);
+      // Prefer the exact serialized string from the device (byte-identical to
+      // what was digitally signed). Fall back to stringifying the object for
+      // unsigned callers.
+      const docStr = typeof body.documentString === "string"
+        ? body.documentString
+        : JSON.stringify(body.document);
       const submitRes = await fetch(`${base}/api/v1.0/documentsubmissions/`, {
         method: "POST",
         headers: {
@@ -121,6 +126,25 @@ Deno.serve(async (req: Request) => {
       );
       const out = await stRes.json().catch(() => ({}));
       return json({ ok: stRes.ok, status: stRes.status, data: out });
+    }
+
+    // ── 2c. Cancel a validated document (within LHDN's 72h window) ──────────────
+    if (action === "cancel") {
+      const uuid = body.uuid as string;
+      const reason = (body.reason as string) || "Cancelled by issuer";
+      const cancelRes = await fetch(
+        `${base}/api/v1.0/documents/state/${uuid}/state`,
+        {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: "cancelled", reason }),
+        },
+      );
+      const out = await cancelRes.json().catch(() => ({}));
+      return json({ ok: cancelRes.ok, status: cancelRes.status, data: out });
     }
 
     return json({ error: "Unknown action" }, 400);

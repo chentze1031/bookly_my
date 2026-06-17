@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../constants.dart';
 import '../models.dart';
@@ -12,6 +13,9 @@ import '../utils.dart';
 import '../widgets/common.dart';
 import '../screens/auth_screen.dart';
 import '../services/myinvois_service.dart';
+import '../services/cert_service.dart';
+import 'consolidated_einvoice_screen.dart';
+import 'self_billed_einvoice_screen.dart';
 import 'company_info_screen.dart';
 import 'sst_report_screen.dart';
 import 'sub_screen.dart';
@@ -698,10 +702,13 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
   final _secret   = TextEditingController();
   final _msic     = TextEditingController();
   final _msicDesc = TextEditingController();
+  final _class    = TextEditingController();
   String _env = 'sandbox';
   bool _secretSet = false;
   bool _saving = false;
   bool _loaded = false;
+  CertInfo? _cert;
+  bool _certBusy = false;
 
   @override
   void initState() {
@@ -709,6 +716,7 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
     final s = context.read<AppState>().settings;
     _msic.text = s.msicCode;
     _msicDesc.text = s.msicDesc;
+    _class.text = s.classCode;
     _load();
   }
 
@@ -722,12 +730,154 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
         _secretSet = (creds['client_id'] ?? '').toString().isNotEmpty;
       }
     } catch (_) {}
+    await _loadCert();
     if (mounted) setState(() => _loaded = true);
+  }
+
+  Future<void> _loadCert() async {
+    try {
+      _cert = await CertService.info();
+    } catch (_) {
+      _cert = null;
+    }
+  }
+
+  Future<void> _importCert() async {
+    final lang = widget.lang;
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['p12', 'pfx', 'pem'],
+      withData: true,
+    );
+    if (picked == null || picked.files.isEmpty) return;
+    final f = picked.files.first;
+    final bytes = f.bytes;
+    if (bytes == null) return;
+
+    String? password;
+    final name = f.name.toLowerCase();
+    if (name.endsWith('.p12') || name.endsWith('.pfx')) {
+      password = await _askPassword();
+      if (password == null) return; // cancelled
+    }
+
+    setState(() => _certBusy = true);
+    final err = await CertService.importBytes(bytes, password: password, filename: f.name);
+    await _loadCert();
+    if (mounted) {
+      setState(() => _certBusy = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(err ??
+            tr(lang, 'Certificate imported', '证书已导入', 'Sijil diimport')),
+        backgroundColor: err == null ? kDark : kRed,
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
+  }
+
+  Future<String?> _askPassword() async {
+    final lang = widget.lang;
+    final ctrl = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr(lang, 'Certificate password', '证书密码', 'Kata laluan sijil'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: TextField(
+          controller: ctrl, obscureText: true, autofocus: true,
+          decoration: _dec(tr(lang, '.p12 / .pfx password', '.p12 / .pfx 密码', 'kata laluan .p12 / .pfx')),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(tr(lang, 'Cancel', '取消', 'Batal'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, ctrl.text),
+              child: Text(tr(lang, 'OK', '确定', 'OK'))),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeCert() async {
+    final lang = widget.lang;
+    final ok = await showConfirmDialog(
+      context: context,
+      title: tr(lang, 'Remove certificate?', '移除证书？', 'Buang sijil?'),
+      message: tr(lang,
+          'Invoices will be submitted unsigned (sandbox only) until you import a certificate again.',
+          '在重新导入证书前，发票将以未签名方式提交（仅限沙盒）。',
+          'Invois akan dihantar tanpa tandatangan (sandbox sahaja) sehingga sijil diimport semula.'),
+      confirmLabel: tr(lang, 'Remove', '移除', 'Buang'),
+    );
+    if (ok != true) return;
+    await CertService.clear();
+    await _loadCert();
+    if (mounted) setState(() {});
+  }
+
+  Widget _buildCertBox(String lang) {
+    if (_certBusy) {
+      return const Padding(padding: EdgeInsets.symmetric(vertical: 14),
+        child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))));
+    }
+    final c = _cert;
+    if (c == null) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(tr(lang,
+          'No certificate. Invoices submit unsigned (sandbox only). Import your LHDN-CA certificate (.p12/.pfx or .pem) to sign for production. The private key stays on this device.',
+          '未导入证书。发票将以未签名提交（仅限沙盒）。导入你的 LHDN 认可 CA 证书（.p12/.pfx 或 .pem）以便正式环境签名。私钥只保存在本机。',
+          'Tiada sijil. Invois dihantar tanpa tandatangan (sandbox sahaja). Import sijil CA LHDN anda (.p12/.pfx atau .pem) untuk tandatangan produksi. Kunci peribadi kekal di peranti ini.'),
+          style: const TextStyle(fontSize: 12, color: kMuted)),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: _importCert,
+          icon: const Icon(Icons.upload_file, size: 18),
+          style: OutlinedButton.styleFrom(foregroundColor: kBlue, side: BorderSide(color: kBlueBd)),
+          label: Text(tr(lang, 'Import certificate', '导入证书', 'Import sijil')),
+        ),
+      ]);
+    }
+    final bad = c.expired || c.notYetValid;
+    final soon = !bad && c.daysLeft <= 30;
+    final tone = bad ? kRed : (soon ? kGold : kGreen);
+    final toneBg = bad ? kRedBg : (soon ? kGoldBg : kGreenBg);
+    final until = '${c.notAfter.year}-${c.notAfter.month.toString().padLeft(2, '0')}-${c.notAfter.day.toString().padLeft(2, '0')}';
+    String statusTxt;
+    if (c.expired) {
+      statusTxt = tr(lang, 'EXPIRED', '已过期', 'TAMAT TEMPOH');
+    } else if (c.notYetValid) {
+      statusTxt = tr(lang, 'NOT YET VALID', '尚未生效', 'BELUM SAH');
+    } else if (soon) {
+      statusTxt = tr(lang, 'Expires in ${c.daysLeft} days', '${c.daysLeft} 天后过期', 'Tamat dalam ${c.daysLeft} hari');
+    } else {
+      statusTxt = tr(lang, 'Valid until $until', '有效至 $until', 'Sah hingga $until');
+    }
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: toneBg, border: Border.all(color: tone.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(10)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(bad ? Icons.error_outline : Icons.verified_user, size: 18, color: tone),
+          const SizedBox(width: 6),
+          Expanded(child: Text(statusTxt, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: tone))),
+        ]),
+        const SizedBox(height: 6),
+        Text(c.subject, style: const TextStyle(fontSize: 11, color: kMuted), maxLines: 2, overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 8),
+        Row(children: [
+          TextButton(onPressed: _importCert, child: Text(tr(lang, 'Replace', '替换', 'Ganti'))),
+          const SizedBox(width: 4),
+          TextButton(onPressed: _removeCert,
+            child: Text(tr(lang, 'Remove', '移除', 'Buang'), style: TextStyle(color: kRed))),
+        ]),
+      ]),
+    );
   }
 
   @override
   void dispose() {
     _clientId.dispose(); _secret.dispose(); _msic.dispose(); _msicDesc.dispose();
+    _class.dispose();
     super.dispose();
   }
 
@@ -738,7 +888,8 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
       await MyInvoisService.saveCredentials(
         clientId: _clientId.text, clientSecret: _secret.text, env: _env);
       await app.updateSettings(app.settings.copyWith(
-        msicCode: _msic.text.trim(), msicDesc: _msicDesc.text.trim()));
+        msicCode: _msic.text.trim(), msicDesc: _msicDesc.text.trim(),
+        classCode: _class.text.trim().isEmpty ? '022' : _class.text.trim()));
       if (mounted) {
         _secret.clear();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -818,6 +969,12 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
         TextField(controller: _msic, keyboardType: TextInputType.number, style: TextStyle(fontSize: 13, color: kText), decoration: _dec('e.g. 46900')),
         label(tr(lang, 'BUSINESS ACTIVITY', '业务活动描述', 'AKTIVITI PERNIAGAAN')),
         TextField(controller: _msicDesc, style: TextStyle(fontSize: 13, color: kText), decoration: _dec(tr(lang, 'e.g. Wholesale trade', '例如：批发贸易', 'cth. Perdagangan borong'))),
+        label(tr(lang, 'DEFAULT CLASSIFICATION CODE', '默认商品分类码', 'KOD KLASIFIKASI LALAI')),
+        TextField(controller: _class, keyboardType: TextInputType.number, style: TextStyle(fontSize: 13, color: kText), decoration: _dec(tr(lang, 'e.g. 022 (Others)', '例如：022（其他）', 'cth. 022 (Lain-lain)'))),
+
+        // ── Digital certificate (on-device signing, required for production) ──
+        label(tr(lang, 'DIGITAL CERTIFICATE', '数字证书', 'SIJIL DIGITAL')),
+        _buildCertBox(lang),
 
         const SizedBox(height: 14),
         SizedBox(width: double.infinity, child: ElevatedButton(
@@ -828,6 +985,20 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
             : Text(widget.isPro
                 ? tr(lang, 'Save', '保存', 'Simpan')
                 : '🔒 ${tr(lang, 'Pro feature', 'Pro 功能', 'Ciri Pro')}'),
+        )),
+        const SizedBox(height: 8),
+        SizedBox(width: double.infinity, child: OutlinedButton.icon(
+          onPressed: () => showConsolidatedSheet(context),
+          icon: const Icon(Icons.merge_type, size: 18),
+          style: OutlinedButton.styleFrom(foregroundColor: kText, side: BorderSide(color: kBorder)),
+          label: Text(tr(lang, 'Consolidated e-Invoice (B2C)', '合并发票 (B2C)', 'e-Invois Disatukan (B2C)')),
+        )),
+        const SizedBox(height: 8),
+        SizedBox(width: double.infinity, child: OutlinedButton.icon(
+          onPressed: () => showSelfBilledSheet(context),
+          icon: const Icon(Icons.swap_horiz, size: 18),
+          style: OutlinedButton.styleFrom(foregroundColor: kText, side: BorderSide(color: kBorder)),
+          label: Text(tr(lang, 'Self-billed e-Invoice', '自开发票', 'e-Invois Layan Diri')),
         )),
       ]),
     );

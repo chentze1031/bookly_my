@@ -123,6 +123,10 @@ class Customer {
   final String phone;
   final String email;
   final String tin; // LHDN buyer TIN (MyInvois #28); blank → general public
+  // MyInvois structured address (Phase 4 #28 v2): city + postcode + state code.
+  final String city;
+  final String postcode;
+  final String state; // LHDN state code (01–16, 17 = Not Applicable)
 
   const Customer({
     required this.id,
@@ -133,21 +137,28 @@ class Customer {
     this.phone = '',
     this.email = '',
     this.tin = '',
+    this.city = '',
+    this.postcode = '',
+    this.state = '17',
   });
 
   Customer copyWith({
     int? id, String? name, String? regNo, String? sstRegNo,
     String? address, String? phone, String? email, String? tin,
+    String? city, String? postcode, String? state,
   }) => Customer(
     id: id ?? this.id, name: name ?? this.name,
     regNo: regNo ?? this.regNo, sstRegNo: sstRegNo ?? this.sstRegNo,
     address: address ?? this.address, phone: phone ?? this.phone,
     email: email ?? this.email, tin: tin ?? this.tin,
+    city: city ?? this.city, postcode: postcode ?? this.postcode,
+    state: state ?? this.state,
   );
 
   Map<String, dynamic> toMap() => {
     'id': id, 'name': name, 'reg_no': regNo, 'sst_reg_no': sstRegNo,
     'address': address, 'phone': phone, 'email': email, 'tin': tin,
+    'city': city, 'postcode': postcode, 'state': state,
   };
 
   factory Customer.fromMap(Map<String, dynamic> m) => Customer(
@@ -155,6 +166,7 @@ class Customer {
     regNo: m['reg_no'] ?? '', sstRegNo: m['sst_reg_no'] ?? '',
     address: m['address'] ?? '', phone: m['phone'] ?? '', email: m['email'] ?? '',
     tin: m['tin'] ?? '',
+    city: m['city'] ?? '', postcode: m['postcode'] ?? '', state: m['state'] ?? '17',
   );
 }
 
@@ -244,6 +256,11 @@ class AppSettings {
   // here. These are the supplier classification fields required by the UBL doc.
   final String msicCode;    // 5-digit MSIC industry code (e.g. "46900")
   final String msicDesc;    // Business activity description
+  // Supplier structured address + default classification (MyInvois UBL).
+  final String coCity;      // City name
+  final String coPostcode;  // Postal zone
+  final String coState;     // LHDN state code (01–16, 17 = Not Applicable)
+  final String classCode;   // Default e-Invoice item classification code
 
   const AppSettings({
     this.lang = 'en',
@@ -262,6 +279,10 @@ class AppSettings {
     this.dark = false,
     this.msicCode = '',
     this.msicDesc = '',
+    this.coCity = '',
+    this.coPostcode = '',
+    this.coState = '17',
+    this.classCode = '022',
   });
 
   AppSettings copyWith({
@@ -271,6 +292,7 @@ class AppSettings {
     String? coTin, String? bankName, String? bankAcct,
     String? logoBase64, String? sigBase64, bool? dark,
     String? msicCode, String? msicDesc,
+    String? coCity, String? coPostcode, String? coState, String? classCode,
     bool clearLogo = false, bool clearSig = false,
   }) => AppSettings(
     dark: dark ?? this.dark,
@@ -289,6 +311,10 @@ class AppSettings {
     sigBase64:  clearSig  ? null : (sigBase64  ?? this.sigBase64),
     msicCode: msicCode ?? this.msicCode,
     msicDesc: msicDesc ?? this.msicDesc,
+    coCity: coCity ?? this.coCity,
+    coPostcode: coPostcode ?? this.coPostcode,
+    coState: coState ?? this.coState,
+    classCode: classCode ?? this.classCode,
   );
 
   Map<String, dynamic> toMap() => {
@@ -298,6 +324,8 @@ class AppSettings {
     'co_tin': coTin, 'bank_name': bankName, 'bank_acct': bankAcct,
     'logo_base64': logoBase64, 'sig_base64': sigBase64,
     'msic_code': msicCode, 'msic_desc': msicDesc,
+    'co_city': coCity, 'co_postcode': coPostcode, 'co_state': coState,
+    'class_code': classCode,
   };
 
   factory AppSettings.fromMap(Map<String, dynamic> m) => AppSettings(
@@ -316,5 +344,9 @@ class AppSettings {
     sigBase64:  m['sig_base64']  as String?,
     msicCode: m['msic_code'] ?? '',
     msicDesc: m['msic_desc'] ?? '',
+    coCity: m['co_city'] ?? '',
+    coPostcode: m['co_postcode'] ?? '',
+    coState: m['co_state'] ?? '17',
+    classCode: m['class_code'] ?? '022',
   );
 }
