@@ -6,10 +6,12 @@ import 'package:sqflite/sqflite.dart' hide Transaction;
 import 'package:path/path.dart';
 import '../models.dart';
 import '../constants.dart';
+import '../utils.dart';
 import '../services/db_service.dart';
 import '../services/fx_service.dart';
 import '../services/settings_service.dart';
 import '../services/supabase_service.dart';
+import '../services/widget_service.dart';
 
 enum SyncStatus { idle, pulling, pushing, done, error }
 enum FxStatus   { idle, loading, ok, error }
@@ -93,6 +95,7 @@ class AppState extends ChangeNotifier {
     // FIX: 不在 init 里调 pullCloud()，避免与 AuthGate.syncOnLogin() 并发竞跑。
     // 云端同步统一由 AuthGate 在 signedIn / initialSession 事件后触发。
     if (_cloudOn) await _flushQueue();
+    await updateHomeWidget();
   }
 
   // ── Multi-company registry (Phase 4 #24) ──────────────────────────────────────
@@ -150,6 +153,7 @@ class AppState extends ChangeNotifier {
     await DbService.reset();            // reopen the right SQLite file
     await _reloadCompanyData();
     notifyListeners();
+    await updateHomeWidget();
     // Merge this company's cloud data (all rows are company_id-scoped now).
     if (_cloudOn) { await _flushQueue(); await pullCloud(); }
   }
@@ -274,6 +278,7 @@ class AppState extends ChangeNotifier {
     await SettingsService.save(s);
     await _syncActiveCompanyName(); // reflect company-name change in the switcher
     notifyListeners();
+    await updateHomeWidget(); // company name / language may have changed
     if (_cloudOn) _pushSettingsCloud();
   }
 
@@ -306,6 +311,7 @@ class AppState extends ChangeNotifier {
     }
     txs.sort((a, b) => b.date.compareTo(a.date));
     notifyListeners();
+    await updateHomeWidget();
     if (_cloudOn) {
       final ok = await _tryPushTxCloud(tx);
       if (!ok) _enqueue(_QueuedOp(table: 'transactions', op: 'upsert', data: tx.toMap()));
@@ -316,6 +322,7 @@ class AppState extends ChangeNotifier {
     await DbService.deleteTx(id);
     txs = txs.where((t) => t.id != id).toList();
     notifyListeners();
+    await updateHomeWidget();
     if (_cloudOn) {
       final ok = await _tryDeleteTxCloud(id);
       if (!ok) _enqueue(_QueuedOp(table: 'transactions', op: 'delete', id: id));
@@ -502,6 +509,7 @@ class AppState extends ChangeNotifier {
 
       syncStatus = SyncStatus.done;
       notifyListeners();
+      await updateHomeWidget();
       return true;
     } catch (e) {
       // FIX: 拉取失败时不改动 txs/customers/employees，保留现有本地数据
@@ -630,6 +638,36 @@ class AppState extends ChangeNotifier {
   }
   Future<void> _pushSettingsCloud() async {
     try { await SupabaseService.saveSettings(settings.toMap()); } catch (_) {}
+  }
+
+  // ── Home-screen widget (Phase 4 #26) ───────────────────────────────────────
+  /// Push the active company's CURRENT-MONTH summary to the Android widget.
+  /// Uses the real calendar month (independent of the UI date-range filter) so
+  /// the "This month" label is always accurate.
+  Future<void> updateHomeWidget() async {
+    final cm = currentMonth; // yyyy-MM
+    double income = 0, expense = 0;
+    for (final t in txs) {
+      if (!t.date.startsWith(cm)) continue;
+      if (t.type == 'income') {
+        income += t.amountMYR;
+      } else if (t.type == 'expense') {
+        expense += t.amountMYR;
+      }
+    }
+    final net  = income - expense;
+    final lang = settings.lang;
+    await WidgetService.update(
+      company:    activeCompanyObj.name,
+      net:        '${net >= 0 ? '+' : '-'}${fmtShort(net.abs())}',
+      income:     fmtShort(income),
+      expense:    fmtShort(expense),
+      lblNet:     tr(lang, 'This month', '本月净利', 'Bulan ini'),
+      lblIncome:  tr(lang, 'Income', '收入', 'Masuk'),
+      lblExpense: tr(lang, 'Expense', '支出', 'Keluar'),
+      btnIncome:  tr(lang, '+ Income', '+ 收入', '+ Masuk'),
+      btnExpense: tr(lang, '+ Expense', '+ 支出', '+ Keluar'),
+    );
   }
 
   // ── Ledger ────────────────────────────────────────────────────────────────────

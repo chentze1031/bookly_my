@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/w_company"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="#6B7280"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:text="Bookly MY" />
+
+    <TextView
+        android:id="@+id/w_net_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textColor="#9CA3AF"
+        android:textSize="10sp"
+        android:text="This month" />
+
+    <TextView
+        android:id="@+id/w_net"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#18160F"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:text="RM 0.00" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="6dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/w_income_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#9CA3AF"
+                android:textSize="10sp"
+                android:text="Income" />
+            <TextView
+                android:id="@+id/w_income"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#15803D"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:text="RM 0.00" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/w_expense_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#9CA3AF"
+                android:textSize="10sp"
+                android:text="Expense" />
+            <TextView
+                android:id="@+id/w_expense"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#B91C1C"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:text="RM 0.00" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:id="@+id/w_btn_income"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/widget_btn_income"
+            android:gravity="center"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:text="+ Income" />
+
+        <TextView
+            android:id="@+id/w_btn_expense"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/widget_btn_expense"
+            android:gravity="center"
+            android:paddingTop="9dp"
+            android:paddingBottom="9dp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:text="+ Expense" />
+    </LinearLayout>
+</LinearLayout>

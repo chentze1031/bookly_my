@@ -1,6 +1,8 @@
-﻿import 'dart:convert';
+﻿import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -144,6 +146,33 @@ class _AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<_AppShell> {
+  StreamSubscription<Uri?>? _widgetClickSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Home-screen widget (Phase 4 #26): the "+ Income / + Expense" buttons
+    // deep-link via bookly://add?type=income|expense.
+    HomeWidget.initiallyLaunchedFromHomeWidget().then(_onWidgetUri);
+    _widgetClickSub = HomeWidget.widgetClicked.listen(_onWidgetUri);
+  }
+
+  @override
+  void dispose() {
+    _widgetClickSub?.cancel();
+    super.dispose();
+  }
+
+  void _onWidgetUri(Uri? uri) {
+    if (uri == null || uri.host != 'add') return;
+    final type = uri.queryParameters['type'];
+    if (type != 'income' && type != 'expense') return;
+    // Open the add-tx sheet once the shell has mounted its first frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _showAddTx(type: type);
+    });
+  }
+
   void _showPaywall() => showSubSheet(context);
 
   void _showAddTx({String? type, Transaction? edit}) {
