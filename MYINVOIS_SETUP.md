@@ -98,8 +98,12 @@ The error names the offending area — share it and we adjust precisely:
 - [ ] One real invoice submitted → `Validated` in the production portal.
 - [ ] App release build has `_debugProMode = false`.
 
-## Not included yet
+## Also available
 
-- Consolidated e-Invoices (B2C aggregation) and self-billed e-Invoices.
-- Certificate stored per active company — switching companies needs each
+- **Consolidated e-Invoice (B2C)** and **Self-billed e-Invoice** — both launched
+  from the MyInvois settings card.
+
+## Notes
+
+- Certificate is stored per active company — switching companies needs each
   company's own certificate imported.
