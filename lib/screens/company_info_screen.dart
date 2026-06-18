@@ -31,6 +31,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
   final _bankNmCtrl  = TextEditingController();
   final _bankAcCtrl  = TextEditingController();
   String _state = '17';
+  String _regType = 'BRN'; // BRN | NRIC | PASSPORT | ARMY
 
   String? _logoB64;
   String? _sigB64;
@@ -51,6 +52,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
     _cityCtrl.text   = s.coCity;
     _postCtrl.text   = s.coPostcode;
     _state           = s.coState.isEmpty ? '17' : s.coState;
+    _regType         = s.regType.isEmpty ? 'BRN' : s.regType;
     _bankNmCtrl.text = s.bankName;
     _bankAcCtrl.text = s.bankAcct;
     _logoB64 = s.logoBase64;
@@ -106,6 +108,7 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
       coCity:      _cityCtrl.text.trim(),
       coPostcode:  _postCtrl.text.trim(),
       coState:     _state,
+      regType:     _regType,
       bankName:    _bankNmCtrl.text.trim(),
       bankAcct:    _bankAcCtrl.text.trim(),
       logoBase64:  _logoB64,
@@ -202,10 +205,32 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
               style: TextStyle(fontSize: 14, color: kText),
               decoration: _dec('e.g. W10-1234-56789012'))),
 
-          _field('COMPANY REG NO.',
-            TextField(controller: _coRegCtrl,
-              style: TextStyle(fontSize: 14, color: kText),
-              decoration: _dec('e.g. 202301012345'))),
+          // Registration ID: companies use BRN; individuals/sole proprietors
+          // MUST use NRIC (MyKad) — LHDN validates TIN + this number together.
+          _field(tr(lang, 'REGISTRATION ID (BRN / NRIC)', '登记号 (BRN 公司 / NRIC 个人)', 'ID PENDAFTARAN (BRN / NRIC)'),
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(color: kBg, borderRadius: BorderRadius.circular(10), border: Border.all(color: kBorder)),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _regType, dropdownColor: kSurface,
+                    style: TextStyle(fontSize: 13, color: kText),
+                    items: const [
+                      DropdownMenuItem(value: 'BRN', child: Text('BRN')),
+                      DropdownMenuItem(value: 'NRIC', child: Text('NRIC')),
+                      DropdownMenuItem(value: 'PASSPORT', child: Text('Passport')),
+                      DropdownMenuItem(value: 'ARMY', child: Text('Army')),
+                    ],
+                    onChanged: (v) => setState(() { _regType = v ?? 'BRN'; _dirty = true; }),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: TextField(controller: _coRegCtrl,
+                style: TextStyle(fontSize: 14, color: kText),
+                decoration: _dec(_regType == 'NRIC' ? 'MyKad e.g. 900101011234' : 'e.g. 202301012345'))),
+            ])),
 
           _field('PHONE',
             TextField(controller: _phoneCtrl,

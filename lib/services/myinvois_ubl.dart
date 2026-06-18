@@ -143,13 +143,14 @@ class MyInvoisUbl {
     required String email,
     String msicCode = '',
     String msicDesc = '',
+    String regScheme = 'BRN', // BRN | NRIC | PASSPORT | ARMY
   }) =>
       {
         if (msicCode.isNotEmpty)
           'IndustryClassificationCode': _vA(msicCode, {'name': msicDesc}),
         'PartyIdentification': [
           {'ID': _vA(tin, {'schemeID': 'TIN'})},
-          {'ID': _vA(brn.isEmpty ? 'NA' : brn, {'schemeID': 'BRN'})},
+          {'ID': _vA(brn.isEmpty ? 'NA' : brn, {'schemeID': regScheme})},
           {'ID': _vA(sst.isEmpty ? 'NA' : sst, {'schemeID': 'SST'})},
         ],
         'PostalAddress': [_address(addr, city, postcode, state)],
@@ -169,6 +170,7 @@ class MyInvoisUbl {
         addr: s.coAddr, city: s.coCity, postcode: s.coPostcode, state: s.coState,
         phone: s.coPhone, email: s.coEmail,
         msicCode: s.msicCode, msicDesc: s.msicDesc,
+        regScheme: s.regType,
       );
 
   // Your own company as the BUYER (self-billed): same fields, no MSIC.
@@ -176,6 +178,7 @@ class MyInvoisUbl {
         name: s.companyName, tin: s.coTin, brn: s.coReg, sst: s.sstRegNo,
         addr: s.coAddr, city: s.coCity, postcode: s.coPostcode, state: s.coState,
         phone: s.coPhone, email: s.coEmail,
+        regScheme: s.regType,
       );
 
   static Map<String, dynamic> _buyerParty(Customer b, String tin) => _party(

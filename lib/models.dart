@@ -261,6 +261,10 @@ class AppSettings {
   final String coPostcode;  // Postal zone
   final String coState;     // LHDN state code (01–16, 17 = Not Applicable)
   final String classCode;   // Default e-Invoice item classification code
+  // Supplier registration ID scheme: BRN (company) | NRIC | PASSPORT | ARMY.
+  // For individuals/sole proprietors LHDN requires NRIC (the MyKad number goes
+  // into coReg), not BRN — otherwise TIN validation fails.
+  final String regType;
 
   const AppSettings({
     this.lang = 'en',
@@ -283,6 +287,7 @@ class AppSettings {
     this.coPostcode = '',
     this.coState = '17',
     this.classCode = '022',
+    this.regType = 'BRN',
   });
 
   AppSettings copyWith({
@@ -293,6 +298,7 @@ class AppSettings {
     String? logoBase64, String? sigBase64, bool? dark,
     String? msicCode, String? msicDesc,
     String? coCity, String? coPostcode, String? coState, String? classCode,
+    String? regType,
     bool clearLogo = false, bool clearSig = false,
   }) => AppSettings(
     dark: dark ?? this.dark,
@@ -315,6 +321,7 @@ class AppSettings {
     coPostcode: coPostcode ?? this.coPostcode,
     coState: coState ?? this.coState,
     classCode: classCode ?? this.classCode,
+    regType: regType ?? this.regType,
   );
 
   Map<String, dynamic> toMap() => {
@@ -325,7 +332,7 @@ class AppSettings {
     'logo_base64': logoBase64, 'sig_base64': sigBase64,
     'msic_code': msicCode, 'msic_desc': msicDesc,
     'co_city': coCity, 'co_postcode': coPostcode, 'co_state': coState,
-    'class_code': classCode,
+    'class_code': classCode, 'reg_type': regType,
   };
 
   factory AppSettings.fromMap(Map<String, dynamic> m) => AppSettings(
@@ -348,5 +355,6 @@ class AppSettings {
     coPostcode: m['co_postcode'] ?? '',
     coState: m['co_state'] ?? '17',
     classCode: m['class_code'] ?? '022',
+    regType: m['reg_type'] ?? 'BRN',
   );
 }
