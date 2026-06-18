@@ -17,6 +17,8 @@ const _black  = PdfColors.black;
 const _ink    = PdfColor.fromInt(0xFF18160F); // warm near-black (kText/kDark)
 const _accent = PdfColor.fromInt(0xFF92400E); // brand amber/gold (kGold)
 const _cream  = PdfColor.fromInt(0xFFFBF6EC); // light warm tint for cards
+const _tan    = PdfColor.fromInt(0xFFF1EBDD); // table header fill
+const _cardBd = PdfColor.fromInt(0xFFE8E3D8); // soft card border
 const _grey   = PdfColor.fromInt(0xFF555555);
 const _light  = PdfColor.fromInt(0xFF888888);
 const _rule   = PdfColor.fromInt(0xFFBBBBBB);
@@ -170,10 +172,6 @@ Future<Uint8List> generateInvoicePdf({
     ),
     build: (ctx) => [
 
-      // ══ TOP ACCENT BAR ═══════════════════════════════════════════════════
-      pw.Container(height: 4, color: _accent),
-      gap(16),
-
       // ══ HEADER ══════════════════════════════════════════════════════════
       pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -206,9 +204,7 @@ Future<Uint8List> generateInvoicePdf({
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
               pw.Text(isTax ? 'TAX INVOICE' : 'INVOICE', style: ts(22, bold: true, c: _ink)),
-              gap(5),
-              pw.Container(width: 92, height: 3, color: _accent),
-              gap(10),
+              gap(12),
               pw.Container(
                 width: 205,
                 padding: const pw.EdgeInsets.symmetric(horizontal: 11, vertical: 9),
@@ -225,19 +221,6 @@ Future<Uint8List> generateInvoicePdf({
                     _metaRow('Terms',    paymentTerms, ts(8, c: _grey), ts(8, c: _ink)),
                 ]),
               ),
-              // ── MyInvois validation QR (#28) ──────────────────────────────
-              if (myInvoisUrl != null && myInvoisUrl.isNotEmpty) ...[
-                gap(8),
-                pw.BarcodeWidget(
-                  barcode: pw.Barcode.qrCode(),
-                  data: myInvoisUrl,
-                  width: 60, height: 60,
-                ),
-                pw.Text('Validated by MyInvois', style: ts(6, c: _grey)),
-                if (myInvoisUuid != null && myInvoisUuid.isNotEmpty)
-                  pw.SizedBox(width: 96,
-                    child: pw.Text(myInvoisUuid, style: ts(5, c: _light), maxLines: 2)),
-              ],
             ],
           ),
         ],
@@ -278,38 +261,39 @@ Future<Uint8List> generateInvoicePdf({
 
       gap(16),
 
-      // ══ TABLE HEADER (filled bar) ═════════════════════════════════════════
+      // ══ TABLE HEADER (soft tan, rounded top) ══════════════════════════════
       pw.Container(
-        decoration: pw.BoxDecoration(
-          color: _ink,
-          borderRadius: pw.BorderRadius.circular(4),
+        decoration: const pw.BoxDecoration(
+          color: _tan,
+          borderRadius: pw.BorderRadius.only(
+            topLeft: pw.Radius.circular(7), topRight: pw.Radius.circular(7)),
         ),
-        padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: pw.Row(children: [
           pw.SizedBox(width: 20,
-              child: pw.Text('NO',          style: ts(7.5, c: _white, bold: true))),
+              child: pw.Text('NO',          style: ts(7.5, c: _ink, bold: true))),
           pw.Expanded(flex: 5,
-              child: pw.Text('DESCRIPTION', style: ts(7.5, c: _white, bold: true))),
+              child: pw.Text('DESCRIPTION', style: ts(7.5, c: _ink, bold: true))),
           pw.SizedBox(width: 36,
-              child: pw.Text('QTY',         style: ts(7.5, c: _white, bold: true),
+              child: pw.Text('QTY',         style: ts(7.5, c: _ink, bold: true),
                   textAlign: pw.TextAlign.right)),
           pw.SizedBox(width: 68,
-              child: pw.Text('UNIT PRICE',  style: ts(7.5, c: _white, bold: true),
+              child: pw.Text('UNIT PRICE',  style: ts(7.5, c: _ink, bold: true),
                   textAlign: pw.TextAlign.right)),
           pw.SizedBox(width: 36,
-              child: pw.Text('DISC%',       style: ts(7.5, c: _white, bold: true),
+              child: pw.Text('DISC%',       style: ts(7.5, c: _ink, bold: true),
                   textAlign: pw.TextAlign.right)),
           if (hasSst)
             pw.SizedBox(width: 52,
-                child: pw.Text('SST',       style: ts(7.5, c: _white, bold: true),
+                child: pw.Text('SST',       style: ts(7.5, c: _ink, bold: true),
                     textAlign: pw.TextAlign.right)),
           pw.SizedBox(width: 68,
-              child: pw.Text('AMOUNT',      style: ts(7.5, c: _white, bold: true),
+              child: pw.Text('AMOUNT',      style: ts(7.5, c: _ink, bold: true),
                   textAlign: pw.TextAlign.right)),
         ]),
       ),
 
-      // ══ TABLE ROWS ════════════════════════════════════════════════════════
+      // ══ TABLE ROWS (zebra, side+bottom borders → rounded card) ════════════
       ...rows.asMap().entries.map((e) {
         final i     = e.key;
         final r     = e.value;
@@ -319,54 +303,64 @@ Future<Uint8List> generateInvoicePdf({
         final price = double.tryParse(r['price'] ?? '0') ?? 0;
         final qty   = double.tryParse(r['qty']   ?? '1') ?? 1;
         final sstKey = r['sst'] ?? 'none';
+        final isLast = i == rows.length - 1;
         return pw.Container(
-          color: i.isOdd ? _rowAlt : _white,
-          child: pw.Padding(
-            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.SizedBox(width: 20,
-                    child: pw.Text('${i + 1}', style: ts(9, c: _grey))),
-                pw.Expanded(flex: 5, child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(r['desc'] ?? '', style: ts(9, bold: true, c: _ink)),
-                    if ((r['note'] ?? '').isNotEmpty)
-                      pw.Text(r['note']!, style: ts(7.5, c: _grey)),
-                  ],
-                )),
-                pw.SizedBox(width: 36,
-                    child: pw.Text(
-                      qty % 1 == 0 ? qty.toInt().toString() : qty.toStringAsFixed(2),
-                      style: ts(9), textAlign: pw.TextAlign.right)),
-                pw.SizedBox(width: 68,
-                    child: pw.Text(rm(price), style: ts(9),
-                        textAlign: pw.TextAlign.right)),
-                pw.SizedBox(width: 36,
-                    child: pw.Text(
-                      disc > 0
-                          ? '${disc.toStringAsFixed(disc % 1 == 0 ? 0 : 1)}%'
-                          : '—',
-                      style: ts(9, c: disc > 0 ? _grey : _light),
+          decoration: pw.BoxDecoration(
+            color: i.isOdd ? _rowAlt : _white,
+            // pdf forbids borderRadius with a partial border, so: hairline
+            // divider on non-last rows; rounded bottom (no border) on the last.
+            border: isLast
+                ? null
+                : const pw.Border(bottom: pw.BorderSide(color: _cardBd, width: 0.5)),
+            borderRadius: isLast
+                ? const pw.BorderRadius.only(
+                    bottomLeft: pw.Radius.circular(7),
+                    bottomRight: pw.Radius.circular(7))
+                : null,
+          ),
+          padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          child: pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.SizedBox(width: 20,
+                  child: pw.Text('${i + 1}', style: ts(9, c: _grey))),
+              pw.Expanded(flex: 5, child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(r['desc'] ?? '', style: ts(9, bold: true, c: _ink)),
+                  if ((r['note'] ?? '').isNotEmpty)
+                    pw.Text(r['note']!, style: ts(7.5, c: _grey)),
+                ],
+              )),
+              pw.SizedBox(width: 36,
+                  child: pw.Text(
+                    qty % 1 == 0 ? qty.toInt().toString() : qty.toStringAsFixed(2),
+                    style: ts(9), textAlign: pw.TextAlign.right)),
+              pw.SizedBox(width: 68,
+                  child: pw.Text(rm(price), style: ts(9),
                       textAlign: pw.TextAlign.right)),
-                if (hasSst)
-                  pw.SizedBox(width: 52,
-                      child: pw.Text(
-                        sstKey != 'none' ? _sstLabel[sstKey]! : 'Exempt',
-                        style: ts(8, c: _grey),
-                        textAlign: pw.TextAlign.right)),
-                pw.SizedBox(width: 68,
-                    child: pw.Text(rm(n + s), style: ts(9, bold: true, c: _ink),
-                        textAlign: pw.TextAlign.right)),
-              ],
-            ),
+              pw.SizedBox(width: 36,
+                  child: pw.Text(
+                    disc > 0
+                        ? '${disc.toStringAsFixed(disc % 1 == 0 ? 0 : 1)}%'
+                        : '—',
+                    style: ts(9, c: disc > 0 ? _grey : _light),
+                    textAlign: pw.TextAlign.right)),
+              if (hasSst)
+                pw.SizedBox(width: 52,
+                    child: pw.Text(
+                      sstKey != 'none' ? _sstLabel[sstKey]! : 'Exempt',
+                      style: ts(8, c: _grey),
+                      textAlign: pw.TextAlign.right)),
+              pw.SizedBox(width: 68,
+                  child: pw.Text(rm(n + s), style: ts(9, bold: true, c: _ink),
+                      textAlign: pw.TextAlign.right)),
+            ],
           ),
         );
       }),
 
-      rule(thick: 0.5, color: _rule),
-      gap(10),
+      gap(12),
 
       // ══ SST BREAKDOWN + TOTALS ════════════════════════════════════════════
       pw.Row(
@@ -477,18 +471,17 @@ Future<Uint8List> generateInvoicePdf({
       rule(),
       gap(12),
 
-      // ══ PAYMENT INFO + NOTES ══════════════════════════════════════════════
+      // ══ PAYMENT / NOTES (left)  +  MYINVOIS QR (right) ════════════════════
       pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          // Payment
-          if (bankName != null && bankName.isNotEmpty)
-            pw.Expanded(
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('PAYMENT INFORMATION',
-                      style: ts(7, c: _accent, bold: true)),
+          pw.Expanded(
+            flex: 3,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                if (bankName != null && bankName.isNotEmpty) ...[
+                  pw.Text('PAYMENT INFORMATION', style: ts(7, c: _accent, bold: true)),
                   gap(5),
                   if (paymentMethod != null && paymentMethod.isNotEmpty)
                     _infoLine('Method',       paymentMethod, ts(8, c: _grey), ts(8)),
@@ -507,14 +500,8 @@ Future<Uint8List> generateInvoicePdf({
                   if (bankAcct != null && bankAcct.isNotEmpty)
                     _infoLine('Account No.', bankAcct,     ts(8, c: _grey), ts(8, bold: true)),
                   _infoLine('Reference',    invNo,         ts(8, c: _grey), ts(8)),
+                  gap(10),
                 ],
-              ),
-            ),
-          // Notes + Terms
-          pw.Expanded(
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
                 if (notes != null && notes.isNotEmpty) ...[
                   pw.Text('NOTES', style: ts(7, c: _accent, bold: true)),
                   gap(3),
@@ -522,8 +509,7 @@ Future<Uint8List> generateInvoicePdf({
                   gap(8),
                 ],
                 if (terms != null && terms.isNotEmpty) ...[
-                  pw.Text('TERMS & CONDITIONS',
-                      style: ts(7, c: _accent, bold: true)),
+                  pw.Text('TERMS & CONDITIONS', style: ts(7, c: _accent, bold: true)),
                   gap(3),
                   pw.Text(terms, style: ts(7.5, c: _grey)),
                   gap(6),
@@ -533,6 +519,40 @@ Future<Uint8List> generateInvoicePdf({
               ],
             ),
           ),
+          // MyInvois validation card (cream, no border) — moved from the header
+          if (myInvoisUrl != null && myInvoisUrl.isNotEmpty) ...[
+            pw.SizedBox(width: 16),
+            pw.Container(
+              width: 152,
+              padding: const pw.EdgeInsets.all(11),
+              decoration: pw.BoxDecoration(
+                color: _cream,
+                borderRadius: pw.BorderRadius.circular(6),
+              ),
+              child: pw.Column(children: [
+                pw.Text('MYINVOIS E-INVOICE', style: ts(7, c: _accent, bold: true)),
+                gap(8),
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(4),
+                  decoration: pw.BoxDecoration(
+                    color: _white,
+                    borderRadius: pw.BorderRadius.circular(3),
+                  ),
+                  child: pw.BarcodeWidget(
+                    barcode: pw.Barcode.qrCode(),
+                    data: myInvoisUrl,
+                    width: 92, height: 92,
+                  ),
+                ),
+                gap(6),
+                pw.Text('Validated by MyInvois', style: ts(6.5, c: _grey),
+                    textAlign: pw.TextAlign.center),
+                if (myInvoisUuid != null && myInvoisUuid.isNotEmpty)
+                  pw.Text(myInvoisUuid, style: ts(5, c: _light),
+                      maxLines: 2, textAlign: pw.TextAlign.center),
+              ]),
+            ),
+          ],
         ],
       ),
 
