@@ -637,10 +637,13 @@ pw.Widget _metaRow(String label, String value,
     pw.TextStyle ls, pw.TextStyle vs) =>
     pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 2),
-      child: pw.Row(children: [
-        pw.SizedBox(width: 72, child: pw.Text(label, style: ls)),
-        pw.Text(value, style: vs),
-      ]),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(label, style: ls),
+          pw.Text(value, style: vs),
+        ],
+      ),
     );
 
 pw.Widget _totalLine(String label, String value,
