@@ -206,8 +206,8 @@ Future<Uint8List> generateInvoicePdf({
               pw.Text(isTax ? 'TAX INVOICE' : 'INVOICE', style: ts(22, bold: true, c: _ink)),
               gap(12),
               pw.Container(
-                width: 205,
-                padding: const pw.EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+                width: 160,
+                padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: pw.BoxDecoration(
                   color: _cream,
                   borderRadius: pw.BorderRadius.circular(5),
@@ -637,13 +637,10 @@ pw.Widget _metaRow(String label, String value,
     pw.TextStyle ls, pw.TextStyle vs) =>
     pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 2),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Text(label, style: ls),
-          pw.Text(value, style: vs),
-        ],
-      ),
+      child: pw.Row(children: [
+        pw.SizedBox(width: 62, child: pw.Text(label, style: ls)),
+        pw.Text(value, style: vs),
+      ]),
     );
 
 pw.Widget _totalLine(String label, String value,
