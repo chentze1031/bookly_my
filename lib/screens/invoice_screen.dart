@@ -215,7 +215,11 @@ class _CustEditFormState extends State<_CustEditForm> {
     _c = widget.customer;
   }
 
+  // Dropdown / button need a rebuild to reflect the change.
   void _upd(Customer c) => setState(() => _c = c);
+  // Text fields manage their own display — update the model WITHOUT setState so
+  // typing doesn't rebuild the whole form (was causing keyboard/input lag).
+  void _set(Customer c) => _c = c;
 
   @override
   Widget build(BuildContext context) {
@@ -243,42 +247,42 @@ class _CustEditFormState extends State<_CustEditForm> {
               FieldInput(
                   label: t.custName,
                   value: _c.name,
-                  onChanged: (v) => _upd(_c.copyWith(name: v))),
+                  onChanged: (v) => _set(_c.copyWith(name: v))),
               Row(children: [
                 Expanded(
                     child: FieldInput(
                         label: t.custReg,
                         value: _c.regNo,
-                        onChanged: (v) => _upd(_c.copyWith(regNo: v)))),
+                        onChanged: (v) => _set(_c.copyWith(regNo: v)))),
                 const SizedBox(width: 10),
                 Expanded(
                     child: FieldInput(
                         label: t.custSST,
                         value: _c.sstRegNo,
-                        onChanged: (v) => _upd(_c.copyWith(sstRegNo: v)))),
+                        onChanged: (v) => _set(_c.copyWith(sstRegNo: v)))),
               ]),
               FieldInput(
                   label: tr(t.lang, 'TIN (MyInvois)', 'TIN (税号, MyInvois)', 'TIN (MyInvois)'),
                   value: _c.tin,
-                  onChanged: (v) => _upd(_c.copyWith(tin: v))),
+                  onChanged: (v) => _set(_c.copyWith(tin: v))),
               FieldInput(
                   label: t.custAddr,
                   value: _c.address,
                   multiline: true,
-                  onChanged: (v) => _upd(_c.copyWith(address: v))),
+                  onChanged: (v) => _set(_c.copyWith(address: v))),
               Row(children: [
                 Expanded(
                     child: FieldInput(
                         label: tr(t.lang, 'City', '城市', 'Bandar'),
                         value: _c.city,
-                        onChanged: (v) => _upd(_c.copyWith(city: v)))),
+                        onChanged: (v) => _set(_c.copyWith(city: v)))),
                 const SizedBox(width: 10),
                 Expanded(
                     child: FieldInput(
                         label: tr(t.lang, 'Postcode', '邮编', 'Poskod'),
                         value: _c.postcode,
                         keyboard: TextInputType.number,
-                        onChanged: (v) => _upd(_c.copyWith(postcode: v)))),
+                        onChanged: (v) => _set(_c.copyWith(postcode: v)))),
               ]),
               StateDropdown(
                   lang: t.lang,
@@ -290,22 +294,29 @@ class _CustEditFormState extends State<_CustEditForm> {
                         label: t.custPhone,
                         value: _c.phone,
                         keyboard: TextInputType.phone,
-                        onChanged: (v) => _upd(_c.copyWith(phone: v)))),
+                        onChanged: (v) => _set(_c.copyWith(phone: v)))),
                 const SizedBox(width: 10),
                 Expanded(
                     child: FieldInput(
                         label: t.custEmail,
                         value: _c.email,
                         keyboard: TextInputType.emailAddress,
-                        onChanged: (v) => _upd(_c.copyWith(email: v)))),
+                        onChanged: (v) => _set(_c.copyWith(email: v)))),
               ]),
               const SizedBox(height: 4),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _c.name.isEmpty || _saving
+                  onPressed: _saving
                       ? null
                       : () async {
+                          if (_c.name.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(tr(t.lang, 'Customer name is required',
+                                  '请填写客户名称', 'Nama pelanggan diperlukan')),
+                              backgroundColor: kRed));
+                            return;
+                          }
                           setState(() => _saving = true);
                           await widget.onSave(_c);
                         },
