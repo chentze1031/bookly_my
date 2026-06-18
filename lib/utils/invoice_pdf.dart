@@ -12,13 +12,16 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../models.dart';
 
-// ── Palette ───────────────────────────────────────────────────────────────────
+// ── Palette (brand: warm ink + amber/gold, matching the app) ───────────────────
 const _black  = PdfColors.black;
+const _ink    = PdfColor.fromInt(0xFF18160F); // warm near-black (kText/kDark)
+const _accent = PdfColor.fromInt(0xFF92400E); // brand amber/gold (kGold)
+const _cream  = PdfColor.fromInt(0xFFFBF6EC); // light warm tint for cards
 const _grey   = PdfColor.fromInt(0xFF555555);
 const _light  = PdfColor.fromInt(0xFF888888);
 const _rule   = PdfColor.fromInt(0xFFBBBBBB);
 const _white  = PdfColors.white;
-const _rowAlt = PdfColor.fromInt(0xFFF7F7F7);
+const _rowAlt = PdfColor.fromInt(0xFFFAF9F6); // warm row stripe
 
 // ── SST maps ──────────────────────────────────────────────────────────────────
 const _sstRate = {
@@ -167,6 +170,10 @@ Future<Uint8List> generateInvoicePdf({
     ),
     build: (ctx) => [
 
+      // ══ TOP ACCENT BAR ═══════════════════════════════════════════════════
+      pw.Container(height: 4, color: _accent),
+      gap(16),
+
       // ══ HEADER ══════════════════════════════════════════════════════════
       pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -176,10 +183,11 @@ Future<Uint8List> generateInvoicePdf({
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 if (logo != null) ...[
-                  pw.Image(logo, height: 44, fit: pw.BoxFit.contain),
-                  gap(6),
+                  pw.Image(logo, height: 46, fit: pw.BoxFit.contain),
+                  gap(8),
                 ],
-                pw.Text(co.companyName, style: ts(11, bold: true)),
+                pw.Text(co.companyName, style: ts(13, bold: true, c: _ink)),
+                gap(2),
                 if (co.coReg.isNotEmpty)
                   pw.Text('SSM/Reg No: ${co.coReg}',    style: ts(8, c: _grey)),
                 if (co.sstRegNo.isNotEmpty)
@@ -193,117 +201,113 @@ Future<Uint8List> generateInvoicePdf({
               ],
             ),
           ),
+          pw.SizedBox(width: 16),
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
-              pw.Text(isTax ? 'TAX INVOICE' : 'INVOICE', style: ts(20, bold: true)),
+              pw.Text(isTax ? 'TAX INVOICE' : 'INVOICE', style: ts(22, bold: true, c: _ink)),
+              gap(5),
+              pw.Container(width: 92, height: 3, color: _accent),
               gap(10),
-              _metaRow('Invoice No', invNo,   ts(8, c: _grey), ts(8, bold: true)),
-              _metaRow('Date',       invDate, ts(8, c: _grey), ts(8)),
-              if (dueDate != null && dueDate.isNotEmpty)
-                _metaRow('Due Date', dueDate, ts(8, c: _grey), ts(8, bold: true)),
-              if (paymentTerms != null && paymentTerms.isNotEmpty)
-                _metaRow('Terms',    paymentTerms, ts(8, c: _grey), ts(8)),
+              pw.Container(
+                width: 205,
+                padding: const pw.EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+                decoration: pw.BoxDecoration(
+                  color: _cream,
+                  borderRadius: pw.BorderRadius.circular(5),
+                ),
+                child: pw.Column(children: [
+                  _metaRow('Invoice No', invNo,   ts(8, c: _grey), ts(8, bold: true, c: _ink)),
+                  _metaRow('Date',       invDate, ts(8, c: _grey), ts(8, c: _ink)),
+                  if (dueDate != null && dueDate.isNotEmpty)
+                    _metaRow('Due Date', dueDate, ts(8, c: _grey), ts(8, bold: true, c: _accent)),
+                  if (paymentTerms != null && paymentTerms.isNotEmpty)
+                    _metaRow('Terms',    paymentTerms, ts(8, c: _grey), ts(8, c: _ink)),
+                ]),
+              ),
               // ── MyInvois validation QR (#28) ──────────────────────────────
               if (myInvoisUrl != null && myInvoisUrl.isNotEmpty) ...[
                 gap(8),
                 pw.BarcodeWidget(
                   barcode: pw.Barcode.qrCode(),
                   data: myInvoisUrl,
-                  width: 64, height: 64,
+                  width: 60, height: 60,
                 ),
                 pw.Text('Validated by MyInvois', style: ts(6, c: _grey)),
                 if (myInvoisUuid != null && myInvoisUuid.isNotEmpty)
                   pw.SizedBox(width: 96,
-                    child: pw.Text(myInvoisUuid, style: ts(5, c: _grey), maxLines: 2)),
+                    child: pw.Text(myInvoisUuid, style: ts(5, c: _light), maxLines: 2)),
               ],
             ],
           ),
         ],
       ),
 
-      gap(20),
-      rule(thick: 1.0, color: _black),
-      gap(14),
+      gap(18),
 
-      // ══ BILL TO + SHIP TO ════════════════════════════════════════════════
+      // ══ BILL TO + SHIP TO (cards) ════════════════════════════════════════
       pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Expanded(
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text('BILL TO', style: ts(7, c: _light, bold: true)),
-                gap(4),
-                pw.Text(customer.name, style: ts(10, bold: true)),
-                if (customer.regNo.isNotEmpty)
-                  pw.Text('SSM /Reg No: ${customer.regNo}',    style: ts(8, c: _grey)),
-                if (customer.sstRegNo.isNotEmpty)
-                  pw.Text('SST: ${customer.sstRegNo}', style: ts(8, c: _grey)),
-                if (customer.address.isNotEmpty)
-                  pw.Text(customer.address,            style: ts(8, c: _grey)),
-                if (customer.phone.isNotEmpty)
-                  pw.Text(customer.phone,              style: ts(8, c: _grey)),
-                if (customer.email.isNotEmpty)
-                  pw.Text(customer.email,              style: ts(8, c: _grey)),
-              ],
-            ),
-          ),
-          pw.Expanded(
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              children: [
-                pw.Text('SHIP TO', style: ts(7, c: _light, bold: true)),
-                gap(4),
-                if (shipToName != null && shipToName.isNotEmpty) ...[
-                  pw.Text(shipToName, style: ts(10, bold: true),
-                      textAlign: pw.TextAlign.right),
-                  if (shipToAddr != null && shipToAddr.isNotEmpty)
-                    pw.Text(shipToAddr, style: ts(8, c: _grey),
-                        textAlign: pw.TextAlign.right),
-                ] else ...[
-                  pw.Text(customer.name, style: ts(10, bold: true),
-                      textAlign: pw.TextAlign.right),
-                  pw.Text('Same as billing address', style: ts(8, c: _light),
-                      textAlign: pw.TextAlign.right),
-                ],
-              ],
-            ),
-          ),
+          pw.Expanded(child: _partyCard('BILL TO', ts, [
+            pw.Text(customer.name, style: ts(10, bold: true, c: _ink)),
+            if (customer.regNo.isNotEmpty)
+              pw.Text('Reg No: ${customer.regNo}', style: ts(8, c: _grey)),
+            if (customer.sstRegNo.isNotEmpty)
+              pw.Text('SST: ${customer.sstRegNo}', style: ts(8, c: _grey)),
+            if (customer.address.isNotEmpty)
+              pw.Text(customer.address, style: ts(8, c: _grey)),
+            if (customer.phone.isNotEmpty)
+              pw.Text(customer.phone, style: ts(8, c: _grey)),
+            if (customer.email.isNotEmpty)
+              pw.Text(customer.email, style: ts(8, c: _grey)),
+          ])),
+          pw.SizedBox(width: 12),
+          pw.Expanded(child: _partyCard('SHIP TO', ts, [
+            if (shipToName != null && shipToName.isNotEmpty) ...[
+              pw.Text(shipToName, style: ts(10, bold: true, c: _ink)),
+              if (shipToAddr != null && shipToAddr.isNotEmpty)
+                pw.Text(shipToAddr, style: ts(8, c: _grey)),
+            ] else ...[
+              pw.Text(customer.name, style: ts(10, bold: true, c: _ink)),
+              pw.Text('Same as billing address', style: ts(8, c: _light)),
+            ],
+          ])),
         ],
       ),
 
-      gap(18),
-      rule(thick: 1.0, color: _black),
+      gap(16),
 
-      // ══ TABLE HEADER ══════════════════════════════════════════════════════
-      pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(vertical: 6),
+      // ══ TABLE HEADER (filled bar) ═════════════════════════════════════════
+      pw.Container(
+        decoration: pw.BoxDecoration(
+          color: _ink,
+          borderRadius: pw.BorderRadius.circular(4),
+        ),
+        padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         child: pw.Row(children: [
           pw.SizedBox(width: 20,
-              child: pw.Text('NO',          style: ts(7.5, c: _grey, bold: true))),
+              child: pw.Text('NO',          style: ts(7.5, c: _white, bold: true))),
           pw.Expanded(flex: 5,
-              child: pw.Text('DESCRIPTION', style: ts(7.5, c: _grey, bold: true))),
+              child: pw.Text('DESCRIPTION', style: ts(7.5, c: _white, bold: true))),
           pw.SizedBox(width: 36,
-              child: pw.Text('QTY',         style: ts(7.5, c: _grey, bold: true),
+              child: pw.Text('QTY',         style: ts(7.5, c: _white, bold: true),
                   textAlign: pw.TextAlign.right)),
           pw.SizedBox(width: 68,
-              child: pw.Text('UNIT PRICE',  style: ts(7.5, c: _grey, bold: true),
+              child: pw.Text('UNIT PRICE',  style: ts(7.5, c: _white, bold: true),
                   textAlign: pw.TextAlign.right)),
           pw.SizedBox(width: 36,
-              child: pw.Text('DISC%',       style: ts(7.5, c: _grey, bold: true),
+              child: pw.Text('DISC%',       style: ts(7.5, c: _white, bold: true),
                   textAlign: pw.TextAlign.right)),
           if (hasSst)
             pw.SizedBox(width: 52,
-                child: pw.Text('SST',       style: ts(7.5, c: _grey, bold: true),
+                child: pw.Text('SST',       style: ts(7.5, c: _white, bold: true),
                     textAlign: pw.TextAlign.right)),
           pw.SizedBox(width: 68,
-              child: pw.Text('AMOUNT',      style: ts(7.5, c: _grey, bold: true),
+              child: pw.Text('AMOUNT',      style: ts(7.5, c: _white, bold: true),
                   textAlign: pw.TextAlign.right)),
         ]),
       ),
-      rule(thick: 1.0, color: _black),
 
       // ══ TABLE ROWS ════════════════════════════════════════════════════════
       ...rows.asMap().entries.map((e) {
@@ -318,7 +322,7 @@ Future<Uint8List> generateInvoicePdf({
         return pw.Container(
           color: i.isOdd ? _rowAlt : _white,
           child: pw.Padding(
-            padding: const pw.EdgeInsets.symmetric(vertical: 6),
+            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             child: pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
@@ -327,7 +331,7 @@ Future<Uint8List> generateInvoicePdf({
                 pw.Expanded(flex: 5, child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text(r['desc'] ?? '', style: ts(9, bold: true)),
+                    pw.Text(r['desc'] ?? '', style: ts(9, bold: true, c: _ink)),
                     if ((r['note'] ?? '').isNotEmpty)
                       pw.Text(r['note']!, style: ts(7.5, c: _grey)),
                   ],
@@ -353,7 +357,7 @@ Future<Uint8List> generateInvoicePdf({
                         style: ts(8, c: _grey),
                         textAlign: pw.TextAlign.right)),
                 pw.SizedBox(width: 68,
-                    child: pw.Text(rm(n + s), style: ts(9, bold: true),
+                    child: pw.Text(rm(n + s), style: ts(9, bold: true, c: _ink),
                         textAlign: pw.TextAlign.right)),
               ],
             ),
@@ -361,7 +365,7 @@ Future<Uint8List> generateInvoicePdf({
         );
       }),
 
-      rule(thick: 1.0, color: _black),
+      rule(thick: 0.5, color: _rule),
       gap(10),
 
       // ══ SST BREAKDOWN + TOTALS ════════════════════════════════════════════
@@ -376,7 +380,7 @@ Future<Uint8List> generateInvoicePdf({
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text('SST BREAKDOWN',
-                          style: ts(7, c: _light, bold: true)),
+                          style: ts(7, c: _accent, bold: true)),
                       gap(5),
                       pw.Row(children: [
                         pw.Expanded(child: pw.SizedBox()),
@@ -428,32 +432,42 @@ Future<Uint8List> generateInvoicePdf({
                 _totalLine('Total SST', rm(totalSST),
                     ts(9, c: _grey), ts(9, bold: true)),
               ],
-              gap(6),
-              rule(thick: 1.0, color: _black),
-              gap(6),
-              _totalLine('TOTAL DUE', rm(grand),
-                  ts(11, bold: true), ts(11, bold: true)),
+              gap(8),
+              pw.Container(
+                padding: const pw.EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+                decoration: pw.BoxDecoration(
+                  color: _ink,
+                  borderRadius: pw.BorderRadius.circular(5),
+                ),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('TOTAL DUE', style: ts(11, bold: true, c: _white)),
+                    pw.Text(rm(grand), style: ts(12.5, bold: true, c: _white)),
+                  ],
+                ),
+              ),
             ]),
           ),
         ],
       ),
 
-      gap(10),
+      gap(12),
 
       // ══ AMOUNT IN WORDS ══════════════════════════════════════════════════
       pw.Container(
-        padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        padding: const pw.EdgeInsets.symmetric(horizontal: 11, vertical: 8),
         decoration: pw.BoxDecoration(
-          border: pw.Border.all(color: _rule),
-          borderRadius: pw.BorderRadius.circular(3),
+          color: _cream,
+          borderRadius: pw.BorderRadius.circular(4),
         ),
         child: pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('Amount in Words:  ', style: ts(7.5, c: _light, bold: true)),
+            pw.Text('Amount in Words:  ', style: ts(7.5, c: _accent, bold: true)),
             pw.Expanded(
               child: pw.Text(_amountInWords(grand),
-                  style: ts(7.5, c: _grey, bold: true)),
+                  style: ts(7.5, c: _ink, bold: true)),
             ),
           ],
         ),
@@ -474,7 +488,7 @@ Future<Uint8List> generateInvoicePdf({
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text('PAYMENT INFORMATION',
-                      style: ts(7, c: _light, bold: true)),
+                      style: ts(7, c: _accent, bold: true)),
                   gap(5),
                   if (paymentMethod != null && paymentMethod.isNotEmpty)
                     _infoLine('Method',       paymentMethod, ts(8, c: _grey), ts(8)),
@@ -485,7 +499,7 @@ Future<Uint8List> generateInvoicePdf({
                   if (latePenalty != null && latePenalty.isNotEmpty)
                     _infoLine('Late Fee',     latePenalty,   ts(8, c: _grey), ts(8)),
                   gap(6),
-                  pw.Text('BANK TRANSFER', style: ts(7, c: _light, bold: true)),
+                  pw.Text('BANK TRANSFER', style: ts(7, c: _accent, bold: true)),
                   gap(4),
                   _infoLine('Bank',         bankName,      ts(8, c: _grey), ts(8, bold: true)),
                   if (bankAcctName != null && bankAcctName.isNotEmpty)
@@ -502,14 +516,14 @@ Future<Uint8List> generateInvoicePdf({
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 if (notes != null && notes.isNotEmpty) ...[
-                  pw.Text('NOTES', style: ts(7, c: _light, bold: true)),
+                  pw.Text('NOTES', style: ts(7, c: _accent, bold: true)),
                   gap(3),
                   pw.Text(notes, style: ts(8, c: _grey)),
                   gap(8),
                 ],
                 if (terms != null && terms.isNotEmpty) ...[
                   pw.Text('TERMS & CONDITIONS',
-                      style: ts(7, c: _light, bold: true)),
+                      style: ts(7, c: _accent, bold: true)),
                   gap(3),
                   pw.Text(terms, style: ts(7.5, c: _grey)),
                   gap(6),
@@ -534,7 +548,7 @@ Future<Uint8List> generateInvoicePdf({
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text('DECLARATION', style: ts(7, c: _light, bold: true)),
+                pw.Text('DECLARATION', style: ts(7, c: _accent, bold: true)),
                 gap(3),
                 pw.Text(
                   'This is a computer-generated ${isTax ? "Tax Invoice" : "Invoice"} '
@@ -577,6 +591,28 @@ Future<Uint8List> generateInvoicePdf({
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+pw.Widget _partyCard(
+  String title,
+  pw.TextStyle Function(double, {PdfColor? c, bool bold}) ts,
+  List<pw.Widget> children,
+) =>
+    pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        color: _cream,
+        borderRadius: pw.BorderRadius.circular(5),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(title, style: ts(7, c: _accent, bold: true)),
+          pw.SizedBox(height: 5),
+          ...children,
+        ],
+      ),
+    );
+
 pw.Widget _metaRow(String label, String value,
     pw.TextStyle ls, pw.TextStyle vs) =>
     pw.Padding(
