@@ -66,6 +66,9 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
         terms:    (inv['terms']    ?? '').isNotEmpty ? inv['terms']    : null,
         bankName: (inv['bankName'] ?? '').isNotEmpty ? inv['bankName'] : null,
         bankAcct: (inv['bankAcct'] ?? '').isNotEmpty ? inv['bankAcct'] : null,
+        // Company logo + authorised signature (were missing on history export).
+        logoBase64: app.settings.logoBase64,
+        sigBase64:  app.settings.sigBase64,
         myInvoisUrl: miUrl, myInvoisUuid: miUuid,
       );
       final dir  = await getTemporaryDirectory();
