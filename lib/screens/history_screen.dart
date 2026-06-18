@@ -1205,6 +1205,7 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
     'Invalid'    => (c: kRed,   label: tr(lang, 'Invalid', '无效', 'Tidak Sah')),
     'InProgress' => (c: kGold,  label: tr(lang, 'In progress', '处理中', 'Diproses')),
     'Cancelled'  => (c: kMuted, label: tr(lang, 'Cancelled', '已取消', 'Dibatalkan')),
+    'Consolidated' => (c: kBlue, label: tr(lang, 'Consolidated', '已合并', 'Disatukan')),
     'error'      => (c: kRed,   label: tr(lang, 'Error', '错误', 'Ralat')),
     _            => (c: kMuted, label: tr(lang, 'Not submitted', '未提交', 'Belum hantar')),
   };
@@ -1252,6 +1253,12 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
         else if (_status == 'Cancelled')
           Text(tr(lang, 'This e-Invoice was cancelled.', '此电子发票已取消。', 'e-Invois ini telah dibatalkan.'),
               style: const TextStyle(fontSize: 12, color: kMuted))
+        else if (_status == 'Consolidated')
+          Text(tr(lang,
+              'Included in a consolidated e-Invoice${widget.inv['miConsolidatedNo'] != null ? ' (${widget.inv['miConsolidatedNo']})' : ''}.',
+              '已并入合并发票${widget.inv['miConsolidatedNo'] != null ? '（${widget.inv['miConsolidatedNo']}）' : ''}。',
+              'Termasuk dalam e-Invois disatukan${widget.inv['miConsolidatedNo'] != null ? ' (${widget.inv['miConsolidatedNo']})' : ''}.'),
+              style: TextStyle(fontSize: 12, color: kBlue))
         else if (_status == 'Valid')
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             OutlinedButton.icon(
