@@ -1213,6 +1213,7 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
   Widget build(BuildContext context) {
     final lang = context.read<AppState>().settings.lang;
     final loggedIn = MyInvoisService.isLoggedIn;
+    final buyerHasTin = ((widget.inv['customer'] as Map?)?['tin'] ?? '').toString().trim().isNotEmpty;
     final b = _badge(lang);
     return Container(
       decoration: BoxDecoration(
@@ -1268,16 +1269,32 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
                 'Pembatalan hanya dibenarkan dalam 72 jam selepas pengesahan.'),
                 style: const TextStyle(fontSize: 11, color: kMuted)),
           ])
-        else
+        else if (_status == 'InProgress')
           Row(children: [
             Expanded(child: ElevatedButton(
-              onPressed: _busy ? null : (_status == 'InProgress' ? _refresh : _submit),
+              onPressed: _busy ? null : _refresh,
               style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white),
               child: _busy
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : Text(_status == 'InProgress'
-                    ? tr(lang, 'Refresh status', '刷新状态', 'Semak status')
-                    : tr(lang, 'Submit to MyInvois', '提交 MyInvois', 'Hantar ke MyInvois')),
+                : Text(tr(lang, 'Refresh status', '刷新状态', 'Semak status')),
+            )),
+          ])
+        else if (!buyerHasTin)
+          // B2C without a buyer TIN can't be a standalone e-Invoice — LHDN
+          // requires these to go through the monthly consolidated submission.
+          Text(tr(lang,
+              'B2C invoice (no buyer TIN) → submit via Settings → MyInvois → Consolidated e-Invoice.',
+              '该 B2C 发票（无买方 TIN）→ 请用「设置 → MyInvois → 合并发票」提交。',
+              'Invois B2C (tiada TIN pembeli) → hantar di Tetapan → MyInvois → e-Invois Disatukan.'),
+              style: const TextStyle(fontSize: 12, color: kMuted))
+        else
+          Row(children: [
+            Expanded(child: ElevatedButton(
+              onPressed: _busy ? null : _submit,
+              style: ElevatedButton.styleFrom(backgroundColor: kDark, foregroundColor: Colors.white),
+              child: _busy
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : Text(tr(lang, 'Submit to MyInvois', '提交 MyInvois', 'Hantar ke MyInvois')),
             )),
           ]),
       ]),

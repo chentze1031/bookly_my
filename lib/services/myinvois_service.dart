@@ -192,6 +192,8 @@ class MyInvoisService {
         submissionUid: submissionUid,
         uuid: doc?['uuid'] as String?,
         longId: doc?['longId'] as String?,
+        // When Invalid, the Edge Function attaches the LHDN validation reasons.
+        error: overall == 'Invalid' ? data['validationError'] as String? : null,
       );
     } catch (e) {
       return MyInvoisResult(ok: false, status: 'error', error: e.toString());

@@ -125,7 +125,30 @@ Deno.serve(async (req: Request) => {
         { headers: { "Authorization": `Bearer ${token}` } },
       );
       const out = await stRes.json().catch(() => ({}));
-      return json({ ok: stRes.ok, status: stRes.status, data: out });
+      // When a document is Invalid, fetch its validation details so the app can
+      // show WHY (the submission summary alone doesn't carry the reasons).
+      let validationError: string | null = null;
+      const docs = (out?.documentSummary ?? []) as Array<Record<string, unknown>>;
+      const bad = docs.find((d) => d.status === "Invalid");
+      if (bad?.uuid) {
+        try {
+          const dRes = await fetch(
+            `${base}/api/v1.0/documents/${bad.uuid}/details`,
+            { headers: { "Authorization": `Bearer ${token}` } },
+          );
+          const dJson = await dRes.json().catch(() => ({}));
+          const vr = dJson?.validationResults;
+          const steps = (vr?.validationSteps ?? []) as Array<Record<string, unknown>>;
+          const errs = steps
+            .filter((s) => (s.status as string) === "Invalid")
+            .map((s) => JSON.stringify((s as Record<string, unknown>).error ?? s.name))
+            .join(" | ");
+          validationError = errs || JSON.stringify(vr ?? "Invalid");
+        } catch (_) {
+          validationError = "Invalid (details unavailable)";
+        }
+      }
+      return json({ ok: stRes.ok, status: stRes.status, data: out, validationError });
     }
 
     // ── 2c. Cancel a validated document (within LHDN's 72h window) ──────────────

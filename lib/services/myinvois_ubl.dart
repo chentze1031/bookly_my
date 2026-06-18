@@ -59,10 +59,12 @@ class MyInvoisUbl {
     final classCode = consolidated
         ? '004' // "Consolidated e-Invoice" on the CLASS list
         : (s.classCode.trim().isEmpty ? _fallbackClassification : s.classCode.trim());
-    // General public (B2C): consolidated, or any buyer without a TIN. LHDN then
-    // requires the buyer name to be exactly "General Public", TIN EI00000000010,
-    // registration "NA" — using the real customer name fails CF333.
-    final generalPublic = consolidated || buyer.tin.trim().isEmpty;
+    // General public (name "General Public", TIN EI00000000010, reg NA, state 17)
+    // is ONLY valid for a consolidated e-Invoice (classification 004). LHDN
+    // rejects it on a normal invoice (CV317/ERR236), so a normal invoice must
+    // carry a real, identified buyer — B2C without buyer details goes through
+    // the consolidated flow instead.
+    final generalPublic = consolidated;
     final effBuyer = generalPublic
         ? const Customer(id: 0, name: 'General Public', regNo: 'NA')
         : buyer;
