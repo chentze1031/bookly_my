@@ -59,8 +59,11 @@ class MyInvoisUbl {
     final classCode = consolidated
         ? '004' // "Consolidated e-Invoice" on the CLASS list
         : (s.classCode.trim().isEmpty ? _fallbackClassification : s.classCode.trim());
-    // For a consolidated invoice the buyer is always the general public.
-    final effBuyer = consolidated
+    // General public (B2C): consolidated, or any buyer without a TIN. LHDN then
+    // requires the buyer name to be exactly "General Public", TIN EI00000000010,
+    // registration "NA" — using the real customer name fails CF333.
+    final generalPublic = consolidated || buyer.tin.trim().isEmpty;
+    final effBuyer = generalPublic
         ? const Customer(id: 0, name: 'General Public', regNo: 'NA')
         : buyer;
     final rows = (inv['items'] as List).cast<Map<String, dynamic>>();
@@ -79,9 +82,7 @@ class MyInvoisUbl {
     final issueTime =
         '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}Z';
 
-    final buyerTin = consolidated
-        ? generalPublicTin
-        : (effBuyer.tin.trim().isEmpty ? generalPublicTin : effBuyer.tin.trim());
+    final buyerTin = generalPublic ? generalPublicTin : effBuyer.tin.trim();
 
     return {
       '_D': 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
