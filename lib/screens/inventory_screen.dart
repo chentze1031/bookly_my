@@ -895,6 +895,8 @@ class _ItemFormSheetState extends State<_ItemFormSheet> {
   }
 
   Future<void> _pickImage(ImageSource src) async {
+    // Pro feature: free users can't add/replace product images.
+    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
     try {
       final f = await ImagePicker().pickImage(
         source: src, maxWidth: 800, maxHeight: 800, imageQuality: 80);

@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../constants.dart';
 import '../models.dart';
 import '../state/app_state.dart';
+import '../state/sub_state.dart';
+import 'sub_screen.dart' show showSubSheet;
 import '../widgets/common.dart' show StateDropdown;
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -78,6 +80,8 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
   // ── Image helpers ─────────────────────────────────────────────────────────
 
   Future<void> _pickLogo() async {
+    // Pro feature: free users can't add/replace the company logo.
+    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
     final img = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 60);
     if (img == null) return;
     final bytes = await img.readAsBytes();

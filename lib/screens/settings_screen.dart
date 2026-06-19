@@ -950,7 +950,7 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
         // Environment toggle
         label(tr(lang, 'ENVIRONMENT', '环境', 'PERSEKITARAN')),
         Row(children: [
-          for (final e in [('sandbox', tr(lang, 'Sandbox', '沙盒', 'Sandbox')), ('prod', tr(lang, 'Production', '生产', 'Produksi'))])
+          for (final e in [('sandbox', tr(lang, 'Test Mode', '测试模式', 'Mod Ujian')), ('prod', tr(lang, 'Live Mode', '正式模式', 'Mod Sebenar'))])
             Padding(padding: const EdgeInsets.only(right: 8),
               child: GestureDetector(
                 onTap: () => setState(() => _env = e.$1),
@@ -964,6 +964,22 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
                 ),
               )),
         ]),
+        // Mode hint — switches with the selected environment.
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            _env == 'prod'
+              ? tr(lang,
+                  'Live mode — this runs your real business. All data is genuinely submitted to LHDN (the tax authority).',
+                  '此模式为实际业务运行，所有数据将真实提交给税局。',
+                  'Mod sebenar — operasi perniagaan sebenar. Semua data dihantar betul-betul kepada LHDN (pihak cukai).')
+              : tr(lang,
+                  'For functional testing only. Data has no legal effect and is not submitted to LHDN.',
+                  '此模式仅供功能测试，数据不具有法律效力，不会提交给税局。',
+                  'Untuk ujian fungsi sahaja. Data tiada kesan undang-undang dan tidak dihantar kepada LHDN.'),
+            style: TextStyle(fontSize: 11, color: _env == 'prod' ? kRed : kMuted, height: 1.4),
+          ),
+        ),
 
         label('CLIENT ID'),
         TextField(controller: _clientId, style: TextStyle(fontSize: 13, color: kText), decoration: _dec('xxxxxxxx-xxxx-...')),

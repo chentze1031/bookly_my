@@ -449,7 +449,7 @@ class _ReportsState extends State<ReportsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(color: kSurface, border: Border.all(color: kBorder), borderRadius: BorderRadius.circular(9)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.download_outlined, size: 15, color: kText),
+                  Icon(Icons.ios_share, size: 15, color: kText),
                   const SizedBox(width: 5),
                   Text(tr(lang, 'Export', '导出', 'Eksport'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kText)),
                   if (!sub.hasAccess) Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 13, color: kPro)),

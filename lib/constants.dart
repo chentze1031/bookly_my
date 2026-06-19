@@ -59,13 +59,32 @@ const sstRates = <String, SstRate>{
   'service8': SstRate('Service Tax 8%', '服务税 8%',   0.08),
 };
 
-// ─── EPF / SOCSO / EIS (2026) ─────────────────────────────────────────────────
+// ─── EPF / SOCSO / EIS — Malaysia statutory contributions ─────────────────────
+// PERKESO insured-wage ceiling raised to RM6,000/month from 1 Oct 2024.
+//
+// EPF (KWSP): percentage basis. Employee 11%; Employer 13% (wage ≤ RM5,000) or
+// 12% (> RM5,000).
 double epfEe(double g)   => g * 0.11;
 double epfEr(double g)   => g <= 5000 ? g * 0.13 : g * 0.12;
-double socsoEe(double g) => (g * 0.005).clamp(0, 14.10);
-double socsoEr(double g) => (g * 0.0175).clamp(0, 49.40);
-double eisEe(double g)   => (g * 0.002).clamp(0, 3.90);
-double eisEr(double g)   => (g * 0.004).clamp(0, 7.90);
+
+// SOCSO & EIS follow PERKESO's RM100 wage-band contribution table. Each band's
+// contribution = rate × band MIDPOINT (lower+50), rounded to the nearest 5 sen.
+// This reproduces the published table at the anchor points, e.g.:
+//   wage 4,000 → band 3,900.01–4,000 → mid 3,950 → EIS 0.2% = RM7.90
+//   top band 5,900.01–6,000 → mid 5,950 → SOCSO Ee 0.5% = RM29.75, Er 1.75% = RM104.15
+// Ceiling RM6,000. For sen-perfect statutory filing, cross-check the official
+// PERKESO table.
+double _round5sen(double v) => (v / 0.05).round() * 0.05;
+double _bandMid(double g) {
+  final w = g.clamp(0, 6000.0);
+  if (w <= 0) return 0;
+  final lower = ((w - 0.01) / 100).floor() * 100.0; // RM100 band lower bound
+  return lower + 50.0;                               // representative = midpoint
+}
+double socsoEe(double g) => _round5sen(_bandMid(g) * 0.005);   // Cat 1 employee 0.5%
+double socsoEr(double g) => _round5sen(_bandMid(g) * 0.0175);  // Cat 1 employer 1.75%
+double eisEe(double g)   => _round5sen(_bandMid(g) * 0.002);   // EIS employee 0.2%
+double eisEr(double g)   => _round5sen(_bandMid(g) * 0.002);   // EIS employer 0.2%
 
 // ─── Statutory annual leave (Malaysia Employment Act) ─────────────────────────
 // Entitlement by completed years of service: <2y → 8, 2–5y → 12, >5y → 16 days.

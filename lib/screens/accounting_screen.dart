@@ -1,12 +1,31 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../constants.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../state/accounting_state.dart';
+import '../state/sub_state.dart';
 import '../accounting_models.dart';
+import '../utils/payroll_report_pdf.dart';
+import 'sub_screen.dart' show showSubSheet;
+
+// Shared: write a generated PDF to a temp file and open the share sheet.
+// Gated as a Pro feature (matches the Reports export). Returns silently if free.
+Future<void> _exportAcctPdf(BuildContext context, Future<Uint8List> Function() build, String name) async {
+  if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+  final bytes = await build();
+  final dir = await getTemporaryDirectory();
+  final file = File('${dir.path}/$name');
+  await file.writeAsBytes(bytes);
+  await Share.shareXFiles([XFile(file.path, mimeType: 'application/pdf')], subject: name);
+  if (context.mounted) context.read<SubState>().onShareAction();
+}
 
 // ── Account type from code prefix ────────────────────────────────────────────
 String _accType(String code) {
@@ -1115,6 +1134,42 @@ class _TrialBalanceTab extends StatelessWidget {
     }
 
     final balanced = (totalDr - totalCr).abs() < 0.01;
+    final lang = app.settings.lang;
+
+    // Build the Trial Balance as a PDF (same grouping as on screen).
+    Future<void> doExport() => _exportAcctPdf(context, () {
+      final f = NumberFormat('#,##0.00');
+      const groupName = {
+        'Asset': ['Assets', '资产', 'Aset'], 'Liability': ['Liabilities', '负债', 'Liabiliti'],
+        'Equity': ['Equity', '权益', 'Ekuiti'], 'Revenue': ['Revenue', '收入', 'Hasil'],
+        'Expense': ['Expenses', '费用', 'Belanja'],
+      };
+      final rows = <List<String>>[];
+      for (final group in ['Asset', 'Liability', 'Equity', 'Revenue', 'Expense']) {
+        final gl = groups[group];
+        if (gl == null) continue;
+        bool hdr = false;
+        for (final e in gl) {
+          final acc = accounts[e.key]!;
+          final isNormal = acc.normal == 'Dr';
+          final dr = isNormal && e.value > 0 ? e.value : (!isNormal && e.value < 0 ? e.value.abs() : 0.0);
+          final cr = !isNormal && e.value > 0 ? e.value : (isNormal && e.value < 0 ? e.value.abs() : 0.0);
+          if (dr == 0 && cr == 0) continue;
+          if (!hdr) { rows.add(['— ${tr(lang, groupName[group]![0], groupName[group]![1], groupName[group]![2])} —', '', '']); hdr = true; }
+          rows.add([acc.name, dr > 0 ? f.format(dr) : '', cr > 0 ? f.format(cr) : '']);
+        }
+      }
+      return generateTableReportPdf(
+        co: app.settings,
+        title: tr(lang, 'Trial Balance', '试算表', 'Imbangan Duga'),
+        subtitle: '${tr(lang, 'As of', '截至', 'Sehingga')} ${DateFormat('d MMM yyyy').format(DateTime.now())}',
+        headers: [tr(lang, 'Account', '科目', 'Akaun'), tr(lang, 'Debit (RM)', '借方 (RM)', 'Debit (RM)'), tr(lang, 'Credit (RM)', '贷方 (RM)', 'Kredit (RM)')],
+        flex: [5, 3, 3], rightCols: [false, true, true],
+        rows: rows,
+        totals: [tr(lang, 'TOTAL', '合计', 'JUMLAH'), f.format(totalDr), f.format(totalCr)],
+        note: balanced ? null : tr(lang, 'Books are not balanced.', '账目不平衡。', 'Buku tidak seimbang.'),
+      );
+    }, 'TrialBalance_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -1138,6 +1193,11 @@ class _TrialBalanceTab extends StatelessWidget {
               Text('As of ${DateFormat('d MMM yyyy').format(DateTime.now())}',
                 style: const TextStyle(fontSize: 12, color: kMuted)),
             ])),
+            IconButton(
+              tooltip: tr(lang, 'Export PDF', '导出 PDF', 'Eksport PDF'),
+              icon: Icon(Icons.ios_share, size: 20, color: balanced ? kGreen : kRed),
+              onPressed: doExport,
+            ),
           ]),
         ),
         const SizedBox(height: 16),
@@ -1243,6 +1303,36 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
       ).toList()
       ..sort((a, b) => b.tx.date.compareTo(a.tx.date));
 
+    final lang = app.settings.lang;
+
+    // Export the full general ledger (every active account + its entries) → PDF.
+    Future<void> doExport() => _exportAcctPdf(context, () {
+      final f = NumberFormat('#,##0.00');
+      final rows = <List<String>>[];
+      for (final ae in activeAccounts) {
+        final acc = accounts[ae.key]!;
+        final entries = app.txs.expand<_GlEntry>((tx) => tx.entries
+            .where((e) => e.acc == ae.key).map((e) => _GlEntry(tx: tx, entry: e)))
+            .toList()..sort((a, b) => a.tx.date.compareTo(b.tx.date));
+        if (entries.isEmpty) continue;
+        rows.add(['【 ${acc.name} 】', '', '', '']);
+        for (final gl in entries) {
+          final isDr = gl.entry.dc == 'Dr';
+          final desc = lang == 'zh' ? gl.tx.descZH : gl.tx.descEN;
+          rows.add([gl.tx.date, desc, isDr ? f.format(gl.entry.val) : '', !isDr ? f.format(gl.entry.val) : '']);
+        }
+      }
+      return generateTableReportPdf(
+        co: app.settings,
+        title: tr(lang, 'General Ledger', '总账', 'Lejar Am'),
+        subtitle: '${tr(lang, 'As of', '截至', 'Sehingga')} ${DateFormat('d MMM yyyy').format(DateTime.now())}',
+        headers: [tr(lang, 'Date', '日期', 'Tarikh'), tr(lang, 'Description', '摘要', 'Keterangan'), tr(lang, 'Debit', '借方', 'Debit'), tr(lang, 'Credit', '贷方', 'Kredit')],
+        flex: [3, 5, 2, 2], rightCols: [false, false, true, true],
+        rows: rows,
+        note: tr(lang, 'Generated by Bookly MY for reference.', '由 Bookly MY 生成，仅供参考。', 'Dijana oleh Bookly MY untuk rujukan.'),
+      );
+    }, 'GeneralLedger_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf');
+
     return Row(children: [
       // Left panel — account list
       Container(
@@ -1253,8 +1343,17 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-            child: Text(t.accounts2.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: kMuted, letterSpacing: 0.6)),
+            padding: const EdgeInsets.fromLTRB(12, 10, 4, 6),
+            child: Row(children: [
+              Expanded(child: Text(t.accounts2.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: kMuted, letterSpacing: 0.6))),
+              InkWell(
+                onTap: activeAccounts.isEmpty ? null : doExport,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(Icons.ios_share, size: 16, color: activeAccounts.isEmpty ? kBorder : kText),
+                ),
+              ),
+            ]),
           ),
           Expanded(child: ListView(children: activeAccounts.map((e) {
             final acc     = accounts[e.key]!;

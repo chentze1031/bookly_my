@@ -1058,7 +1058,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
                       onChanged: (v) => setState(() => _useEIS = v),
                     ),
                     ToggleRow(
-                      label: 'PCB/MTD — Tax: \${fmtMYR(_pcb)}',
+                      label: 'PCB/MTD — Tax: ${fmtMYR(_pcb)}',
                       value: _usePCB, activeColor: const Color(0xFFF59E0B),
                       onChanged: (v) => setState(() => _usePCB = v),
                     ),
@@ -1282,7 +1282,10 @@ double calcPcbMonthly(double monthlyGross, {bool isMale = true}) {
 
   // Personal relief: RM9,000
   const relief = 9000.0;
-  final chargeable = (annual - relief).clamp(0, double.infinity);
+  // EPF / approved-fund relief: employee EPF, capped at RM4,000/year (LHDN MTD
+  // deducts this before computing tax — omitting it overstates PCB).
+  final epfRelief = (epfEe(monthlyGross) * 12).clamp(0, 4000.0);
+  final chargeable = (annual - relief - epfRelief).clamp(0, double.infinity);
 
   // 2024 Tax brackets
   double tax = 0;
