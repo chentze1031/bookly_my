@@ -73,18 +73,7 @@ class _SettingsState extends State<SettingsScreen> {
             ]),
           ),
 
-        // ── Account block ────────────────────────────────────────────────
-        SectionCard(
-          title: '👤 Account',
-          child: uid != null
-            ? _LoggedInTile(app: app, t: t)
-            : _GuestTile(app: app, t: t),
-        ),
-
-        // ── Company ledgers (Phase 4 #24, Pro) ───────────────────────────
-        _CompanyBlock(app: app, t: t, isPro: sub.isPro),
-
-        // ── Subscription block ──────────────────────────────────────────
+        // ── Bookly PRO (moved to top — user request) ─────────────────────
         if (sub.isPro)
           _ProBlock(sub: sub, t: t)
         else
@@ -117,39 +106,18 @@ class _SettingsState extends State<SettingsScreen> {
             ),
           ),
 
-        // ── Company Info ────────────────────────────────────────────────
+        // ── Account block ────────────────────────────────────────────────
         SectionCard(
-          title: '🏢 ${t.coName}',
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            leading: s.logoBase64 != null
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.memory(
-                    base64Decode(s.logoBase64!.split(',').last),
-                    width: 40, height: 40, fit: BoxFit.cover,
-                    errorBuilder: (_,__,___) =>
-                        const Text('🏢', style: TextStyle(fontSize: 28)),
-                  ),
-                )
-              : const Text('🏢', style: TextStyle(fontSize: 28)),
-            title: Text(
-              s.companyName.isNotEmpty ? s.companyName
-                : (tr(t.lang, 'Not set', '未设置', 'Tidak ditetapkan')),
-              style: TextStyle(
-                fontWeight: FontWeight.w600, fontSize: 14,
-                color: s.companyName.isNotEmpty ? kText : kMuted),
-            ),
-            subtitle: Text(
-              s.coPhone.isNotEmpty ? s.coPhone
-                : (tr(t.lang, 'Tap to edit company info', '点击编辑公司资料', 'Ketik untuk sunting maklumat syarikat')),
-              style: const TextStyle(fontSize: 12, color: kMuted),
-            ),
-            trailing: const Icon(Icons.chevron_right, color: kMuted),
-            onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const CompanyInfoScreen())),
-          ),
+          title: '👤 Account',
+          child: uid != null
+            ? _LoggedInTile(app: app, t: t)
+            : _GuestTile(app: app, t: t),
         ),
+
+        // ── Company: ledgers + active-company profile merged (Phase 4 #24)
+        // 当前公司显示业务名/logo/电话+使用中，点击 → 编辑公司资料；
+        // 其他公司点击切换；底部 + 添加公司。
+        _CompanyBlock(app: app, t: t, isPro: sub.isPro),
 
         // ── SST-02 Report ────────────────────────────────────────────────
         SectionCard(
@@ -389,21 +357,60 @@ class _CompanyBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = app.settings;
     return SectionCard(
-      title: '🏢 ${tr(t.lang, 'Company Ledgers', '公司账本', 'Lejar Syarikat')}',
+      title: '🏢 ${tr(t.lang, 'Company', '公司', 'Syarikat')}',
       child: Column(children: [
         ...app.companies.map((c) {
           final active = c.id == app.activeCompany;
+          if (active) {
+            // 当前公司 = 业务资料卡：logo + 业务名 + 电话 + 使用中，点击进编辑。
+            final hasName = s.companyName.isNotEmpty;
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              leading: s.logoBase64 != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.memory(
+                      base64Decode(s.logoBase64!.split(',').last),
+                      width: 40, height: 40, fit: BoxFit.cover,
+                      errorBuilder: (_,__,___) =>
+                          const Text('🏢', style: TextStyle(fontSize: 28)),
+                    ),
+                  )
+                : const Text('🏢', style: TextStyle(fontSize: 28)),
+              title: Text(
+                hasName ? s.companyName : c.name,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: 14,
+                  color: hasName ? kText : kMuted)),
+              subtitle: Text(
+                s.coPhone.isNotEmpty ? s.coPhone
+                  : tr(t.lang, 'Tap to edit company info', '点击编辑公司资料', 'Ketik untuk sunting maklumat'),
+                style: const TextStyle(fontSize: 12, color: kMuted)),
+              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: kGreenBg, borderRadius: BorderRadius.circular(99),
+                    border: Border.all(color: kGreenBd)),
+                  child: Text('●  ${tr(t.lang, 'Active', '使用中', 'Aktif')}',
+                    style: TextStyle(fontSize: 10, color: kGreen, fontWeight: FontWeight.w700)),
+                ),
+                const Icon(Icons.chevron_right, color: kMuted),
+              ]),
+              onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const CompanyInfoScreen())),
+            );
+          }
+          // 其他公司：点击切换；非默认账本可重命名/删除。
           return ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-            leading: Icon(active ? Icons.check_circle : Icons.business_outlined,
-                color: active ? kGreen : kMuted),
+            leading: Icon(Icons.business_outlined, color: kMuted),
             title: Text(c.name,
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText)),
-            subtitle: active
-                ? Text(tr(t.lang, 'Active', '使用中', 'Aktif'),
-                    style: TextStyle(fontSize: 11, color: kGreen, fontWeight: FontWeight.w600))
-                : null,
+            subtitle: Text(tr(t.lang, 'Tap to switch', '点击切换', 'Ketik untuk tukar'),
+                style: const TextStyle(fontSize: 11, color: kMuted)),
             onTap: () => _switch(context, c.id),
             trailing: c.isDefault
                 ? null
