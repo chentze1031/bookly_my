@@ -33,9 +33,11 @@
 | **App activity → 其他动作**（用量）| 可选 ✅ | — | 分析/App 功能 |
 | **App info & performance → Crash logs** | ✅ | — | 稳定性 |
 | **App info & performance → Diagnostics** | ✅ | — | 稳定性 |
-| **Device or other IDs**（广告 ID）| ✅（若开广告）| ✅ | 广告（仅免费版）|
+| **Device or other IDs**（广告 ID）| ✅ | ✅ | 广告（仅免费版，已接入 AdMob）|
 
-> 若你**决定不放广告**（现在是占位符 ID，不显示），则「Device or other IDs / 广告」可不勾。
+> 本 App **已接入 AdMob 插屏广告**（仅免费版显示，Pro 无广告）。因此：
+> - Play「包含广告 (Contains ads)」选 **Yes**
+> - 「Device or other IDs / 广告 ID」**要勾**（Collected + Shared，用途选 Advertising）
 
 ---
 
