@@ -29,15 +29,23 @@
 
 ---
 
-## 3. ⚠️ 个人 / 独资经营者特别注意
+## 3. ⚠️ 砂拉越 (Sarawak) / 个人独资户特别说明
 
-你目前是**个人身份（IG… TIN，无 SSM 登记号）**。但机构证书要求证书里带 **SERIALNUMBER = BRN（业务登记号）**。所以：
+本案例：业主在**砂拉越**，个人身份（**IG… TIN**）。
 
-- **先到 SSM 注册独资/合伙业务**（Borang A / 业务登记），拿到 **业务登记号 (BRN)**；
-- CA 会把这个 BRN 写进证书的 SERIALNUMBER，把你的 TIN 写进 OI；
-- 没有 BRN，机构证书无法正确签发 → 无法做正式 ERP 报税。
+**砂拉越业务登记走 LHDN，不走 SSM。** 业主手上的 **Borang 1（Business, Professions and
+Trade Licensing Ordinance, Sarawak Cap. 33）就是砂拉썩业务登记/执照**——上面的号即等同
+BRN，**无需再去 SSM 注册**（SSM/ezBiz 只适用西马）。
 
-> 如果只想继续用**未签名沙盒**测试 / 演示，则不需要证书。正式对外开 e-Invoice 才需要走这一步。
+- **e-Invoice 本身**：个人独资户的供应商身份用 **TIN(IG) + NRIC(MyKad)** 即可（App 里
+  公司信息 → Registration ID 选 NRIC + 填 MyKad）。沙盒已 **Validated**，开发票不卡 BRN。
+- **正式上线前两步**：
+  1. MyTax 注册成 **「Business Owner」**，把 IG TIN 关联到业务（用 Borang 1 的登记号；
+     若无正式注册证，可上传 **IC** 代替）。
+  2. 办**机构数字证书**时，向 CA（Pos Digicert）**直接确认**：「砂拉越 Borang 1 业务登记
+     的独资户能否办 e-Invoice 机构证书、哪个号写进证书 SERIALNUMBER」。此步以 CA 答复为准。
+
+> 沙盒（未签名 v1.0）测试/演示**不需要证书**；正式对外报税才需要 v1.1 签名 + 真证书。
 
 ---
 
