@@ -23,11 +23,12 @@ const _prodMonthly       = 'bookly_pro_monthly';
 const _prodYearly        = 'bookly_pro_yearly';
 
 // ══════════════════════════════
-// 🔧 DEBUG: 设为 true 关闭所有付费限制（仅限开发测试）
-// FIX #8: release 模式下 assert 防止误提交为 true
-//
-// ⚠️ 本地试用专用，请勿提交/推送。测试完改回 false。
-const _debugProMode = true;
+// 🔧 DEBUG: 本地试用时临时设 true 解锁所有 Pro（仅开发测试）。
+// 即使误留 true，release 构建也会强制忽略——见下方 _proBypass。
+const _debugProMode = false;
+// release 永久安全闸：_proBypass 在 release 构建里恒为 false（kReleaseMode 是
+// 编译期 const），所以绝不会把 Pro 免费送给正式用户。代码里一律用 _proBypass。
+const _proBypass = _debugProMode && !kReleaseMode;
 // ══════════════════════════════
 // ── Ad trigger settings ───────────────────────────────────────────────────────
 // 每隔多少分钟可以触发一次广告（保存/分享动作）
@@ -38,7 +39,7 @@ const _adMaxRetries      = 5;
 class SubState extends ChangeNotifier {
   // FIX #7: 添加初始化状态，防止 PRO 用户在启动时短暂看到免费版界面
   bool       _initialized = false;
-  bool       isPro        = _debugProMode;
+  bool       isPro        = _proBypass;
   String?    proExpires;
   // FIX #6: 记录 RevenueCat 初始化错误，供 UI 展示
   String?    initError;
@@ -61,7 +62,8 @@ class SubState extends ChangeNotifier {
 
   // ── Init ──────────────────────────────────────────────────────────────────
   Future<void> init() async {
-    // FIX #8: release 模式下禁止 _debugProMode=true，防止误提交
+    // FIX #8: dev 守卫——若误把 _debugProMode 设 true 又跑 release 语义，立即报错。
+    // （即便没触发，_proBypass 在 release 也恒为 false，Pro 不会泄漏。）
     assert(() { if (kReleaseMode && _debugProMode) throw FlutterError('_debugProMode must be false in release mode'); return true; }());
 
     // RevenueCat
@@ -102,7 +104,7 @@ class SubState extends ChangeNotifier {
   }
 
   void _applyInfo(CustomerInfo info) {
-    if (_debugProMode) return;
+    if (_proBypass) return;
     final ent  = info.entitlements.active[_rcEntitlement];
     isPro      = ent != null;
     proExpires = ent?.expirationDate;
@@ -111,7 +113,7 @@ class SubState extends ChangeNotifier {
   }
 
   Future<void> identifyUser(String? uid) async {
-    if (_debugProMode || !_configured || uid == null || uid == _appUserId) return;
+    if (_proBypass || !_configured || uid == null || uid == _appUserId) return;
     try {
       final result = await Purchases.logIn(uid);
       _appUserId = uid;
@@ -124,7 +126,7 @@ class SubState extends ChangeNotifier {
   }
 
   Future<void> forgetUser() async {
-    if (_debugProMode || !_configured) return;
+    if (_proBypass || !_configured) return;
     try {
       final info = await Purchases.logOut();
       _appUserId = null;
