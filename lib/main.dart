@@ -96,6 +96,15 @@ final _shellNavKey = GlobalKey<NavigatorState>();
 
 GoRouter _buildRouter() => GoRouter(
   initialLocation: '/home',
+  // The home-screen widget cold-launches the app with bookly://add?type=...,
+  // which has no go_router route (it's handled by _onWidgetUri opening a sheet).
+  // Without this, a cold start from the widget 404s ("no routes for location").
+  // Catch the deep link and land on /home; the add-tx sheet still opens via
+  // HomeWidget.initiallyLaunchedFromHomeWidget() once the shell mounts.
+  redirect: (context, state) {
+    if (state.uri.scheme == 'bookly' || state.uri.host == 'add') return '/home';
+    return null;
+  },
   routes: [
     ShellRoute(
       navigatorKey: _shellNavKey,
