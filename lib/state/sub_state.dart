@@ -15,8 +15,9 @@ String get _rcKey => kReleaseMode ? _rcKeyProd : _rcKeyTest;
 // ── AdMob Ad Unit IDs ───────────────────────────────────────────────────────
 // FIX #2: 插屏广告 ID 使用 '/' 分隔符（广告单元），而非 '~'（应用 ID）。
 //         '~' 格式的应用 ID 仅用于 AdMob 初始化，广告加载必须用广告单元 ID。
-// 插屏广告单元（AdMob app ① ~3532564824，已链 Google Play）。
-const _admobInterstitial = 'ca-app-pub-1544282175684415/4562575468';
+// TODO: 在 AdMob app ① (~3532564824) 建一个「插页式 Interstitial」单元后替换。
+// 注意：/4562575468 是横幅单元（首页 _admobBanner 用），不能拿来当插屏。
+const _admobInterstitial = 'ca-app-pub-1544282175684415/INTERSTITIAL_PLACEHOLDER';
 
 const _rcEntitlement     = 'pro';
 const _prodMonthly       = 'bookly_pro_monthly';
