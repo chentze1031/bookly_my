@@ -1,9 +1,9 @@
 # Privacy Policy — Bookly MY
 
-**Effective date:** _[fill in, e.g. 1 July 2026]_
+**Effective date:** 19 June 2026
 **App:** Bookly MY (Malaysia Business Accounting)
-**Developer / Data controller:** _[your registered business name]_
-**Contact:** _[your support email, e.g. support@bookly.my]_
+**Developer / Data controller:** BooklyMY
+**Contact:** bookly.malaysia@gmail.com
 
 This Privacy Policy explains what information Bookly MY ("the app", "we") collects,
 how we use it, and who we share it with. By using the app you agree to this policy.
@@ -143,5 +143,5 @@ the app or on this page, with an updated effective date.
 
 ## 11. Contact
 
-_[your registered business name]_
-Email: _[your support email]_
+BooklyMY
+Email: bookly.malaysia@gmail.com
