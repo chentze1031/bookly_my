@@ -24,3 +24,4 @@ ios/Pods/
 .idea/
 .vscode/
 *.swp
+.claude/
