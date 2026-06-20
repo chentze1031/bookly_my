@@ -281,6 +281,7 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
         useEPF:   _useEPF,
         useSOCSO: _useSOCSO,
         useEIS:   _useEIS,
+        pcb:      _pcb,
       );
       if (mounted) {
         // FIX #3: 触发保存动作广告

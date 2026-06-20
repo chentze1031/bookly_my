@@ -414,22 +414,121 @@ class AppState extends ChangeNotifier {
     required List<Map<String, String>> earnings,
     required List<Map<String, String>> deductions,
     required bool useEPF, required bool useSOCSO, required bool useEIS,
+    double pcb = 0,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final list  = (jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List)
         .cast<Map<String, dynamic>>();
     final key = '${emp.id}_${year}_$month';
+    final idx = list.indexWhere((e) => e['key'] == key);
+    final wasPaid = idx >= 0 && list[idx]['paid'] == true; // keep paid state on re-save
     final record = {
       'key': key, 'empId': emp.id, 'empName': emp.name,
       'month': month, 'year': year,
       'earnings': earnings, 'deductions': deductions,
       'useEPF': useEPF, 'useSOCSO': useSOCSO, 'useEIS': useEIS,
+      'pcb': pcb, 'paid': wasPaid,
       'savedAt': DateTime.now().toIso8601String(),
     };
-    final idx = list.indexWhere((e) => e['key'] == key);
     if (idx >= 0) { list[idx] = record; } else { list.insert(0, record); }
     await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
     if (_cloudOn) _pushPayrollsCloud(list);
+    // Phase 4 #C: post the accrual journal (+ settlement if already paid).
+    await _postPayrollJournal(record);
+  }
+
+  // ── Payroll → accounting (Phase 4 #C) ──────────────────────────────────────
+  // Deterministic tx ids so re-saving the same payslip replaces (idempotent).
+  // hashCode.abs() stays < 2^31, well below the millisecond ids of normal txs.
+  int _payrollAccrualId(String key) => 'payroll:$key'.hashCode.abs();
+  int _payrollSettleId(String key)  => 'payroll_pay:$key'.hashCode.abs();
+
+  Map<String, double> _payrollAmounts(Map<String, dynamic> r) {
+    double sum(dynamic l) => (l as List? ?? const []).fold(0.0,
+        (s, m) => s + (double.tryParse(((m as Map)['amount'] ?? '0').toString()) ?? 0));
+    final gross    = sum(r['earnings']);
+    final otherDed = sum(r['deductions']);
+    final useEPF = r['useEPF'] == true, useSOCSO = r['useSOCSO'] == true, useEIS = r['useEIS'] == true;
+    final eeEPF = useEPF ? epfEe(gross) : 0.0,   erEPF = useEPF ? epfEr(gross) : 0.0;
+    final eeSSO = useSOCSO ? socsoEe(gross) : 0.0, erSSO = useSOCSO ? socsoEr(gross) : 0.0;
+    final eeEIS = useEIS ? eisEe(gross) : 0.0,   erEIS = useEIS ? eisEr(gross) : 0.0;
+    final pcb   = (r['pcb'] as num?)?.toDouble() ?? 0.0;
+    final netPay = gross - eeEPF - eeSSO - eeEIS - pcb - otherDed;
+    final cost   = gross + erEPF + erSSO + erEIS; // total employer cash cost
+    return {'gross': gross, 'otherDed': otherDed, 'eeEPF': eeEPF, 'erEPF': erEPF,
+            'eeSSO': eeSSO, 'erSSO': erSSO, 'eeEIS': eeEIS, 'erEIS': erEIS,
+            'pcb': pcb, 'netPay': netPay, 'cost': cost};
+  }
+
+  // Posts (or refreshes) the accrual journal for a payroll record, and the
+  // settlement journal when paid==true (else removes any prior settlement).
+  Future<void> _postPayrollJournal(Map<String, dynamic> r) async {
+    final key = r['key'] as String;
+    final a = _payrollAmounts(r);
+    final month = (r['month'] as int).clamp(1, 12);
+    final year  = r['year'] as int;
+    final mm = month.toString().padLeft(2, '0');
+    final dd = DateTime(year, month + 1, 0).day.toString().padLeft(2, '0');
+    final name = (r['empName'] ?? '').toString();
+    double s(String k) => a[k]!;
+
+    // Accrual: Dr expenses (gross + employer statutory) / Cr payables. Shows in
+    // records & P&L as the salary expense (= total employer cost).
+    final accrual = <JournalEntry>[
+      JournalEntry(acc: '5100', dc: 'Dr', val: s('gross')),
+      if (s('erEPF') > 0) JournalEntry(acc: '5101', dc: 'Dr', val: s('erEPF')),
+      if (s('erSSO') > 0) JournalEntry(acc: '5102', dc: 'Dr', val: s('erSSO')),
+      if (s('erEIS') > 0) JournalEntry(acc: '5103', dc: 'Dr', val: s('erEIS')),
+      JournalEntry(acc: '2110', dc: 'Cr', val: s('netPay')),
+      if (s('eeEPF') + s('erEPF') > 0) JournalEntry(acc: '2120', dc: 'Cr', val: s('eeEPF') + s('erEPF')),
+      if (s('eeSSO') + s('erSSO') > 0) JournalEntry(acc: '2130', dc: 'Cr', val: s('eeSSO') + s('erSSO')),
+      if (s('eeEIS') + s('erEIS') > 0) JournalEntry(acc: '2140', dc: 'Cr', val: s('eeEIS') + s('erEIS')),
+      if (s('pcb') > 0) JournalEntry(acc: '2150', dc: 'Cr', val: s('pcb')),
+      if (s('otherDed') > 0) JournalEntry(acc: '2160', dc: 'Cr', val: s('otherDed')),
+    ];
+    await addOrUpdateTx(Transaction(
+      id: _payrollAccrualId(key), type: 'expense', catId: 'salary',
+      amountMYR: s('cost'), origAmount: s('cost'), origCurrency: 'MYR',
+      sstKey: 'none', sstMYR: 0,
+      descEN: 'Payroll: $name $mm/$year', descZH: '薪资计提：$name $year-$mm',
+      date: '$year-$mm-$dd', entries: accrual,
+    ));
+
+    if (r['paid'] == true) {
+      // Settlement: Dr payables / Cr bank. type 'transfer' so it posts to the
+      // ledger/balance sheet but is excluded from income/expense totals.
+      final settle = <JournalEntry>[
+        JournalEntry(acc: '2110', dc: 'Dr', val: s('netPay')),
+        if (s('eeEPF') + s('erEPF') > 0) JournalEntry(acc: '2120', dc: 'Dr', val: s('eeEPF') + s('erEPF')),
+        if (s('eeSSO') + s('erSSO') > 0) JournalEntry(acc: '2130', dc: 'Dr', val: s('eeSSO') + s('erSSO')),
+        if (s('eeEIS') + s('erEIS') > 0) JournalEntry(acc: '2140', dc: 'Dr', val: s('eeEIS') + s('erEIS')),
+        if (s('pcb') > 0) JournalEntry(acc: '2150', dc: 'Dr', val: s('pcb')),
+        if (s('otherDed') > 0) JournalEntry(acc: '2160', dc: 'Dr', val: s('otherDed')),
+        JournalEntry(acc: '1020', dc: 'Cr', val: s('cost')),
+      ];
+      await addOrUpdateTx(Transaction(
+        id: _payrollSettleId(key), type: 'transfer', catId: 'salary',
+        amountMYR: s('cost'), origAmount: s('cost'), origCurrency: 'MYR',
+        sstKey: 'none', sstMYR: 0,
+        descEN: 'Payroll paid: $name $mm/$year', descZH: '薪资支付：$name $year-$mm',
+        date: '$year-$mm-$dd', entries: settle,
+      ));
+    } else {
+      await deleteTx(_payrollSettleId(key));
+    }
+  }
+
+  // Toggle a saved payslip's paid state and post/remove the settlement journal.
+  Future<void> setPayrollPaid(String key, bool paid) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (jsonDecode(prefs.getString(StorageKeys.payrolls) ?? '[]') as List)
+        .cast<Map<String, dynamic>>();
+    final idx = list.indexWhere((e) => e['key'] == key);
+    if (idx < 0) return;
+    list[idx]['paid'] = paid;
+    await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
+    if (_cloudOn) _pushPayrollsCloud(list);
+    await _postPayrollJournal(list[idx]);
   }
 
   // ── Cloud pull ───────────────────────────────────────────────────────────────
@@ -885,6 +984,9 @@ class AppState extends ChangeNotifier {
     list.removeWhere((e) => e['key'] == key);
     await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
     if (_cloudOn) _pushPayrollsCloud(list);
+    // Phase 4 #C: remove the accrual + settlement journal entries too.
+    await deleteTx(_payrollAccrualId(key));
+    await deleteTx(_payrollSettleId(key));
   }
 
   // ── Warehouses / stores (Phase 4 #25) ─────────────────────────────────────────

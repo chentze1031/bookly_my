@@ -641,15 +641,9 @@ class _PayrollHistoryState extends State<PayrollHistoryScreen> {
   }
 
   Future<void> _togglePaid(Map<String, dynamic> r) async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw   = prefs.getString(StorageKeys.payrolls) ?? '[]';
-    final list  = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
-    final key   = r['key'];
-    final idx   = list.indexWhere((e) => e['key'] == key);
-    if (idx >= 0) {
-      list[idx]['paid'] = !(r['paid'] == true);
-      await prefs.setString(StorageKeys.payrolls, jsonEncode(list));
-    }
+    // Phase 4 #C: routes through AppState so the settlement journal
+    // (Dr payables / Cr bank) is posted when paid, removed when unpaid.
+    await context.read<AppState>().setPayrollPaid((r['key'] ?? '').toString(), !(r['paid'] == true));
     _load();
   }
 }
