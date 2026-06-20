@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
+import '../utils.dart';
 import '../services/myinvois_codes.dart';
 
 // --- Pro Badge ----------------------------------------------------------------
@@ -183,7 +184,8 @@ class AmountDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-    '${isIncome ? '+' : '-'}${amount >= 1000 ? 'RM ${(amount/1000).toStringAsFixed(1)}k' : 'RM ${amount.toStringAsFixed(2)}'}',
+    '${isIncome ? '+' : '-'}${fmtMYR(amount)}', // exact amount (no "k" abbreviation)
+    maxLines: 1,
     style: TextStyle(
       fontSize: 14, fontWeight: FontWeight.w800,
       color: isIncome ? kGreen : kRed,

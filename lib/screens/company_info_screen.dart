@@ -117,6 +117,9 @@ class _CompanyInfoScreenState extends State<CompanyInfoScreen> {
       bankAcct:    _bankAcCtrl.text.trim(),
       logoBase64:  _logoB64,
       sigBase64:   _sigB64,
+      // copyWith keeps the old value on null, so removal needs the clear flags.
+      clearLogo:   _logoB64 == null,
+      clearSig:    _sigB64 == null,
     ));
     if (mounted) {
       setState(() { _saving = false; _dirty = false; });

@@ -76,7 +76,8 @@ class HomeScreen extends StatelessWidget {
               children: [
                 // ── Hero ───────────────────────────────────────────────────
                 Container(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 26),
+                  // Top inset clears the status-bar clock under Android 15 edge-to-edge.
+                  padding: EdgeInsets.fromLTRB(24, MediaQuery.paddingOf(context).top + 14, 24, 26),
                   decoration: BoxDecoration(
                     color: kDark,
                     borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
@@ -118,12 +119,17 @@ class HomeScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        '${net >= 0 ? '+' : '-'}${fmtShort(net.abs())}',
-                        style: TextStyle(
-                          color: net >= 0 ? const Color(0xFF4ADE80) : const Color(0xFFF87171),
-                          fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: -2,
-                          fontFamily: 'Georgia',
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '${net >= 0 ? '+' : '-'}${fmtMYR(net.abs())}', // exact amount
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: net >= 0 ? const Color(0xFF4ADE80) : const Color(0xFFF87171),
+                            fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: -2,
+                            fontFamily: 'Georgia',
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -272,8 +278,9 @@ class HomeScreen extends StatelessWidget {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('${e.cat.icon} ${e.cat.label(lang)}', style: TextStyle(fontSize: 13, color: kText)),
-                                  Text('-${fmtShort(e.total)}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kRed)),
+                                  Expanded(child: Text('${e.cat.icon} ${e.cat.label(lang)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: kText))),
+                                  const SizedBox(width: 8),
+                                  Text('-${fmtMYR(e.total)}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kRed)),
                                 ],
                               ),
                               const SizedBox(height: 4),
@@ -482,8 +489,12 @@ class _HeroCard extends StatelessWidget {
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(label, style: const TextStyle(color: Color(0xFF6B6860), fontSize: 11)),
       const SizedBox(height: 2),
-      Text('$sign${fmtShort(value)}',
-        style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Georgia')),
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text('$sign${fmtMYR(value)}', maxLines: 1, // exact amount
+          style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Georgia')),
+      ),
     ]),
   );
 }
