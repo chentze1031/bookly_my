@@ -15,6 +15,7 @@ import '../screens/auth_screen.dart';
 import '../services/myinvois_service.dart';
 import '../services/cert_service.dart';
 import 'consolidated_einvoice_screen.dart';
+import 'myinvois_submissions_screen.dart';
 import 'self_billed_einvoice_screen.dart';
 import 'company_info_screen.dart';
 import 'sst_report_screen.dart';
@@ -1015,6 +1016,14 @@ class _MyInvoisCardState extends State<_MyInvoisCard> {
           icon: const Icon(Icons.merge_type, size: 18),
           style: OutlinedButton.styleFrom(foregroundColor: kText, side: BorderSide(color: kBorder)),
           label: Text(tr(lang, 'Consolidated e-Invoice (B2C)', '合并发票 (B2C)', 'e-Invois Disatukan (B2C)')),
+        )),
+        const SizedBox(height: 8),
+        SizedBox(width: double.infinity, child: OutlinedButton.icon(
+          onPressed: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const MyInvoisSubmissionsScreen())),
+          icon: const Icon(Icons.receipt_long, size: 18),
+          style: OutlinedButton.styleFrom(foregroundColor: kText, side: BorderSide(color: kBorder)),
+          label: Text(tr(lang, 'Consolidated submissions (status / cancel / QR)', '合并发票提交记录（状态/取消/QR）', 'Penghantaran disatukan')),
         )),
         const SizedBox(height: 8),
         SizedBox(width: double.infinity, child: OutlinedButton.icon(

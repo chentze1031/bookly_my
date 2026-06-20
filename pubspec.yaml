@@ -36,6 +36,7 @@ dependencies:
 
   # PDF & Print
   pdf: ^3.11.1
+  qr_flutter: ^4.1.0
   file_picker: ^8.0.0
 
   # Share

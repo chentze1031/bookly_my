@@ -989,6 +989,35 @@ class AppState extends ChangeNotifier {
     await deleteTx(_payrollSettleId(key));
   }
 
+  // ── MyInvois consolidated (B2C) submissions ───────────────────────────────
+  // Device-local tracking so a consolidated e-Invoice can be polled for status,
+  // cancelled within 72h, and given a validation QR — like a normal invoice.
+  Future<List<Map<String, dynamic>>> loadConsolidated() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (jsonDecode(prefs.getString(StorageKeys.miConsolidated) ?? '[]') as List)
+        .cast<Map<String, dynamic>>();
+  }
+
+  Future<void> saveConsolidated(Map<String, dynamic> record) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = await loadConsolidated();
+    final sid = record['submissionUid'];
+    final idx = sid == null ? -1 : list.indexWhere((e) => e['submissionUid'] == sid);
+    if (idx >= 0) { list[idx] = {...list[idx], ...record}; } else { list.insert(0, record); }
+    await prefs.setString(StorageKeys.miConsolidated, jsonEncode(list));
+    notifyListeners();
+  }
+
+  Future<void> updateConsolidated(String submissionUid, Map<String, dynamic> fields) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = await loadConsolidated();
+    final idx = list.indexWhere((e) => e['submissionUid'] == submissionUid);
+    if (idx < 0) return;
+    list[idx] = {...list[idx], ...fields};
+    await prefs.setString(StorageKeys.miConsolidated, jsonEncode(list));
+    notifyListeners();
+  }
+
   // ── Warehouses / stores (Phase 4 #25) ─────────────────────────────────────────
   // Self-contained local store so the synced inventory model is untouched.
   // Shape: { "list": [ {id, name} ], "assign": { "<itemId>": <warehouseId> } }

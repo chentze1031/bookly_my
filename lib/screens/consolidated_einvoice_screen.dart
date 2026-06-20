@@ -114,6 +114,15 @@ class _ConsolidatedSheetState extends State<ConsolidatedSheet> {
         await app.updateInvoiceMyInvois((inv['invNo'] ?? '').toString(),
             {'miStatus': 'Consolidated', 'miConsolidatedNo': consNo});
       }
+      // Track the consolidated document so it can be polled / cancelled / QR'd.
+      final creds = await MyInvoisService.loadCredentials();
+      await app.saveConsolidated({
+        'consNo': consNo, 'uuid': r.uuid, 'submissionUid': r.submissionUid,
+        'longId': r.longId, 'status': r.status,
+        'env': (creds?['env'] ?? 'sandbox').toString(),
+        'count': picked.length, 'month': _month,
+        'createdAt': DateTime.now().toIso8601String(),
+      });
     }
     if (mounted) setState(() {
       _busy = false;

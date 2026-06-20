@@ -299,6 +299,8 @@ abstract class StorageKeys {
   static String get settings       => coKey('bly_settings');
   static String get invoices       => coKey('bly_invoices');
   static String get payrolls       => coKey('bly_payrolls');
+  // MyInvois consolidated (B2C) submissions — tracked for status/cancel/QR.
+  static String get miConsolidated => coKey('bly_mi_consolidated');
   static String get arInvoices     => coKey('bly_ar_invoices');
   static String get quotations     => coKey('bly_quotations');
   static String get deliveryOrders => coKey('bly_delivery_orders');
