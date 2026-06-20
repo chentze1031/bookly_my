@@ -601,6 +601,16 @@ class AppState extends ChangeNotifier {
         await prefs.setString(StorageKeys.payrolls, jsonEncode(payRow['payrolls']));
       }
 
+      // ── MyInvois consolidated submissions ─────────────────────────────────
+      try {
+        final consRow = await _sb.from('user_data').select('mi_consolidated')
+            .eq('user_id', uid).eq('company_id', activeCompany).maybeSingle();
+        if (consRow != null && consRow['mi_consolidated'] != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(StorageKeys.miConsolidated, jsonEncode(consRow['mi_consolidated']));
+        }
+      } catch (_) {} // tolerate the column not existing yet
+
       // ── Settings ──────────────────────────────────────────────────────────
       final remoteS = await SupabaseService.loadSettings();
       // Keep dark mode (device-local) — the cloud map doesn't carry it.
@@ -1005,6 +1015,7 @@ class AppState extends ChangeNotifier {
     final idx = sid == null ? -1 : list.indexWhere((e) => e['submissionUid'] == sid);
     if (idx >= 0) { list[idx] = {...list[idx], ...record}; } else { list.insert(0, record); }
     await prefs.setString(StorageKeys.miConsolidated, jsonEncode(list));
+    if (_cloudOn) _pushConsolidatedCloud(list);
     notifyListeners();
   }
 
@@ -1015,7 +1026,17 @@ class AppState extends ChangeNotifier {
     if (idx < 0) return;
     list[idx] = {...list[idx], ...fields};
     await prefs.setString(StorageKeys.miConsolidated, jsonEncode(list));
+    if (_cloudOn) _pushConsolidatedCloud(list);
     notifyListeners();
+  }
+
+  Future<void> _pushConsolidatedCloud(List list) async {
+    try {
+      await _sb.from('user_data').upsert({
+        'user_id': _uid, 'company_id': activeCompany,
+        'mi_consolidated': list, 'updated_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'user_id,company_id');
+    } catch (_) {}
   }
 
   // ── Warehouses / stores (Phase 4 #25) ─────────────────────────────────────────
