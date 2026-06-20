@@ -33,6 +33,8 @@ class _SelfBilledSheetState extends State<SelfBilledSheet> {
   final _tin = TextEditingController();
   final _brn = TextEditingController();
   final _addr = TextEditingController();
+  final _phone = TextEditingController(); // supplier phone (LHDN CF414: ≥8 chars)
+  final _msic = TextEditingController();  // supplier MSIC (LHDN CF360)
   String _state = '17';
   final List<({TextEditingController desc, TextEditingController amt})> _lines = [
     (desc: TextEditingController(), amt: TextEditingController()),
@@ -43,7 +45,7 @@ class _SelfBilledSheetState extends State<SelfBilledSheet> {
 
   @override
   void dispose() {
-    for (final c in [_name, _tin, _brn, _addr]) {
+    for (final c in [_name, _tin, _brn, _addr, _phone, _msic]) {
       c.dispose();
     }
     for (final l in _lines) { l.desc.dispose(); l.amt.dispose(); }
@@ -71,9 +73,14 @@ class _SelfBilledSheetState extends State<SelfBilledSheet> {
       return;
     }
     setState(() { _busy = true; _result = null; });
+    // LHDN requires a valid supplier phone (≥8) + MSIC; fall back to the
+    // company's own (valid) values when the user leaves them blank.
+    final supPhone = _phone.text.trim().isNotEmpty ? _phone.text.trim() : app.settings.coPhone;
+    final supMsic  = _msic.text.trim().isNotEmpty  ? _msic.text.trim()  : app.settings.msicCode;
     final counterparty = Customer(
       id: 0, name: _name.text.trim(), tin: _tin.text.trim(),
-      regNo: _brn.text.trim(), address: _addr.text.trim(), state: _state);
+      regNo: _brn.text.trim(), address: _addr.text.trim(), state: _state,
+      phone: supPhone);
     final invNo = 'SB-${DateTime.now().millisecondsSinceEpoch}';
     final invoice = {
       'invNo': invNo,
@@ -81,7 +88,8 @@ class _SelfBilledSheetState extends State<SelfBilledSheet> {
       'items': items,
     };
     final r = await MyInvoisService.submitSelfBilled(
-      counterparty: counterparty, invoice: invoice, supplier: app.settings);
+      counterparty: counterparty, invoice: invoice, supplier: app.settings,
+      supplierMsic: supMsic, supplierMsicDesc: app.settings.msicDesc);
     if (mounted) setState(() {
       _busy = false; _ok = r.ok;
       _result = r.ok
@@ -126,6 +134,8 @@ class _SelfBilledSheetState extends State<SelfBilledSheet> {
                 _ctrlField(tr(lang, 'Supplier TIN (blank = foreign EI00000000020)', '供应商 TIN（留空=外国 EI00000000020）', 'TIN pembekal (kosong = asing EI00000000020)'), _tin),
                 _ctrlField(tr(lang, 'Supplier BRN (optional)', '供应商注册号（可选）', 'BRN pembekal (pilihan)'), _brn),
                 _ctrlField(tr(lang, 'Supplier address', '供应商地址', 'Alamat pembekal'), _addr),
+                _ctrlField(tr(lang, 'Supplier phone (blank = use yours)', '供应商电话（留空=用本公司）', 'Telefon pembekal (kosong = guna anda)'), _phone),
+                _ctrlField(tr(lang, 'Supplier MSIC (blank = use yours)', '供应商 MSIC（留空=用本公司）', 'MSIC pembekal (kosong = guna anda)'), _msic),
                 StateDropdown(lang: lang, value: _state, onChanged: (v) => setState(() => _state = v)),
 
                 const SizedBox(height: 6),

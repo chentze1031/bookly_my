@@ -50,6 +50,8 @@ class MyInvoisUbl {
     bool consolidated = false,
     String invoiceTypeCode = '01',
     Customer? selfBilledSupplier,
+    String selfBilledMsic = '',
+    String selfBilledMsicDesc = '',
   }) {
     // Self-billed (type 11): you issue on the supplier's behalf, so the roles
     // swap — the counterparty is the supplier and your company is the buyer.
@@ -100,7 +102,7 @@ class MyInvoisUbl {
           'TaxCurrencyCode': _v('MYR'),
           'AccountingSupplierParty': [
             {
-              'Party': [selfBilled ? _customerAsSupplier(selfBilledSupplier) : _supplierParty(s)]
+              'Party': [selfBilled ? _customerAsSupplier(selfBilledSupplier, selfBilledMsic, selfBilledMsicDesc) : _supplierParty(s)]
             }
           ],
           'AccountingCustomerParty': [
@@ -190,13 +192,16 @@ class MyInvoisUbl {
         phone: b.phone, email: b.email,
       );
 
-  // The counterparty as the SUPPLIER (self-billed). MSIC unknown → omitted.
-  static Map<String, dynamic> _customerAsSupplier(Customer c) => _party(
+  // The counterparty as the SUPPLIER (self-billed). LHDN requires a valid MSIC
+  // (CF360) + phone (CF414); these are supplied (falling back to the company's).
+  static Map<String, dynamic> _customerAsSupplier(Customer c,
+          [String msicCode = '', String msicDesc = '']) => _party(
         name: c.name,
         tin: c.tin.trim().isEmpty ? generalForeignTin : c.tin.trim(),
         brn: c.regNo, sst: c.sstRegNo,
         addr: c.address, city: c.city, postcode: c.postcode, state: c.state,
         phone: c.phone, email: c.email,
+        msicCode: msicCode, msicDesc: msicDesc,
       );
 
   // Structured MyInvois address: line + city + postcode + LHDN state code.

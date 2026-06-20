@@ -113,13 +113,16 @@ class MyInvoisService {
     required Customer counterparty,
     required Map<String, dynamic> invoice,
     required AppSettings supplier,
+    String supplierMsic = '',
+    String supplierMsicDesc = '',
   }) async {
     if (!isLoggedIn) {
       return const MyInvoisResult(ok: false, status: 'error', error: 'Sign in required');
     }
     final doc = MyInvoisUbl.buildInvoice(
       inv: invoice, s: supplier, buyer: counterparty,
-      signed: await _hasCert(), selfBilledSupplier: counterparty);
+      signed: await _hasCert(), selfBilledSupplier: counterparty,
+      selfBilledMsic: supplierMsic, selfBilledMsicDesc: supplierMsicDesc);
     return _signAndSubmit(doc, (invoice['invNo'] ?? '').toString());
   }
 
