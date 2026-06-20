@@ -194,6 +194,23 @@ class AmountDisplay extends StatelessWidget {
   );
 }
 
+/// 🧪 TEST / ✅ LIVE badge showing which MyInvois environment a document was
+/// submitted to. env == 'prod' → LIVE, anything else → TEST.
+Widget miEnvBadge(String? env) {
+  if (env == null || env.isEmpty) return const SizedBox.shrink();
+  final live = env == 'prod';
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+    decoration: BoxDecoration(
+      color: live ? kGreenBg : kGoldBg,
+      borderRadius: BorderRadius.circular(99),
+      border: Border.all(color: live ? kGreenBd : kGoldBd),
+    ),
+    child: Text(live ? '✅ LIVE' : '🧪 TEST',
+      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: live ? kGreen : kGold)),
+  );
+}
+
 // --- Bottom Sheet wrapper -----------------------------------------------------
 Future<T?> showAppSheet<T>({
   required BuildContext context,

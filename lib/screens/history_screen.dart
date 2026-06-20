@@ -54,7 +54,9 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
       String? miUrl, miUuid;
       if (inv['miStatus'] == 'Valid' && inv['miUuid'] != null && inv['miLongId'] != null) {
         final creds = await MyInvoisService.loadCredentials();
-        final env = (creds?['env'] ?? 'sandbox') as String;
+        // Prefer the env stored at submission; fall back to the current setting
+        // for invoices submitted before miEnv was tracked.
+        final env = (inv['miEnv'] ?? creds?['env'] ?? 'sandbox') as String;
         miUuid = inv['miUuid'] as String;
         miUrl = MyInvoisService.validationUrl(env, miUuid, inv['miLongId'] as String);
       }
@@ -1122,6 +1124,7 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
   late String? _uuid    = widget.inv['miUuid'] as String?;
   late String? _longId  = widget.inv['miLongId'] as String?;
   late String? _subUid  = widget.inv['miSubmissionUid'] as String?;
+  late String? _env     = widget.inv['miEnv'] as String?; // environment at submit time
   String? _error;
   bool _busy = false;
 
@@ -1132,13 +1135,17 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
     final buyer = Customer.fromMap(Map<String, dynamic>.from(widget.inv['customer'] ?? {}));
     final r = await MyInvoisService.submitInvoice(
       invoice: widget.inv, supplier: app.settings, buyer: buyer);
+    // Record the environment this invoice was submitted to (test vs live), so
+    // the badge and validation QR always reflect the real submission target.
+    final creds = await MyInvoisService.loadCredentials();
+    final env = (creds?['env'] ?? 'sandbox').toString();
     await app.updateInvoiceMyInvois(widget.inv['invNo'] ?? '', {
       'miStatus': r.status, 'miSubmissionUid': r.submissionUid,
-      'miUuid': r.uuid, 'miLongId': r.longId,
+      'miUuid': r.uuid, 'miLongId': r.longId, 'miEnv': env,
     });
     if (mounted) setState(() {
       _busy = false; _status = r.status; _subUid = r.submissionUid;
-      _uuid = r.uuid; _error = r.error;
+      _uuid = r.uuid; _env = env; _error = r.error;
     });
   }
 
@@ -1223,6 +1230,7 @@ class _MyInvoisTileState extends State<_MyInvoisTile> {
           const Text('🧾 ', style: TextStyle(fontSize: 15)),
           Text('MyInvois', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: kText)),
           const Spacer(),
+          if (_status != 'none') ...[ miEnvBadge(_env), const SizedBox(width: 6) ],
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
             decoration: BoxDecoration(color: b.c.withValues(alpha: 0.12),
