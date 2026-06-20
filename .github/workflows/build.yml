@@ -60,10 +60,10 @@ jobs:
           EOF
 
       - name: Build APK (for sideload testing)
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define=GEMINI_KEY=${{ secrets.GEMINI_KEY }}
 
       - name: Build App Bundle (for Play Store)
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --dart-define=GEMINI_KEY=${{ secrets.GEMINI_KEY }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
