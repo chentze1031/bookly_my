@@ -284,8 +284,8 @@ class StateDropdown extends StatelessWidget {
 // --- Month Label --------------------------------------------------------------
 String monthLabel(String ym, String lang) {
   final d = DateTime.parse('$ym-01');
-  final months = lang == 'zh'
-    ? ['??','??','??','??','??','??','??','??','??','??','???','???']
-    : ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  return '${months[d.month - 1]} ${d.year}';
+  if (lang == 'zh') return '${d.year}年${d.month}月';
+  const en = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const ms = ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
+  return '${(lang == 'ms' ? ms : en)[d.month - 1]} ${d.year}';
 }

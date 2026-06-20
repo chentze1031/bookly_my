@@ -1206,10 +1206,10 @@ class _TrialBalanceTab extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(color: kDark, borderRadius: BorderRadius.circular(8)),
-          child: Row(children: [
-            const Expanded(flex: 3, child: Text('Account', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12))),
-            const Expanded(child: Text('Debit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12), textAlign: TextAlign.right)),
-            const Expanded(child: Text('Credit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12), textAlign: TextAlign.right)),
+          child: Row(children: const [
+            Expanded(child: Text('Account', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12))),
+            SizedBox(width: 96, child: Text('Debit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11), textAlign: TextAlign.right)),
+            SizedBox(width: 96, child: Text('Credit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11), textAlign: TextAlign.right)),
           ]),
         ),
         const SizedBox(height: 8),
@@ -1235,16 +1235,12 @@ class _TrialBalanceTab extends StatelessWidget {
                   color: kSurface, borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: kBorder)),
                 child: Row(children: [
-                  Expanded(flex: 3, child: Text(acc.name,
+                  Expanded(child: Text(acc.name, maxLines: 1, overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12, color: kText))),
-                  Expanded(child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight,
-                    child: Text(dr > 0 ? fmt.format(dr) : '—', maxLines: 1,
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                        color: dr > 0 ? kText : kMuted)))),
-                  Expanded(child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight,
-                    child: Text(cr > 0 ? fmt.format(cr) : '—', maxLines: 1,
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-                        color: cr > 0 ? kText : kMuted)))),
+                  SizedBox(width: 96, child: Text(dr > 0 ? fmt.format(dr) : '—', maxLines: 1, textAlign: TextAlign.right,
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: dr > 0 ? kText : kMuted))),
+                  SizedBox(width: 96, child: Text(cr > 0 ? fmt.format(cr) : '—', maxLines: 1, textAlign: TextAlign.right,
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cr > 0 ? kText : kMuted))),
                 ]),
               );
             }),
@@ -1257,14 +1253,12 @@ class _TrialBalanceTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(color: kBg, borderRadius: BorderRadius.circular(8)),
           child: Row(children: [
-            Expanded(flex: 3, child: Text('TOTAL',
+            Expanded(child: Text('TOTAL',
               style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: kText))),
-            Expanded(child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight,
-              child: Text('RM ${fmt.format(totalDr)}', maxLines: 1,
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kText)))),
-            Expanded(child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight,
-              child: Text('RM ${fmt.format(totalCr)}', maxLines: 1,
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: kText)))),
+            SizedBox(width: 96, child: Text(fmt.format(totalDr), maxLines: 1, textAlign: TextAlign.right,
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: kText))),
+            SizedBox(width: 96, child: Text(fmt.format(totalCr), maxLines: 1, textAlign: TextAlign.right,
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: kText))),
           ]),
         ),
         const SizedBox(height: 24),
@@ -1338,7 +1332,7 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
     return Row(children: [
       // Left panel — account list
       Container(
-        width: 140,
+        width: 120,
         decoration: BoxDecoration(
           color: kSurface,
           border: Border(right: BorderSide(color: kBorder)),
@@ -1394,10 +1388,9 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               color: kBg,
               child: Row(children: const [
-                Expanded(flex: 2, child: Text('Date', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted))),
-                Expanded(flex: 3, child: Text('Description', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted))),
-                Expanded(child: Text('Dr', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted), textAlign: TextAlign.right)),
-                Expanded(child: Text('Cr', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted), textAlign: TextAlign.right)),
+                Expanded(flex: 3, child: Text('Date', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted))),
+                Expanded(flex: 5, child: Text('Description', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted))),
+                SizedBox(width: 104, child: Text('Amount (Dr/Cr)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: kMuted), textAlign: TextAlign.right)),
               ]),
             ),
             Expanded(child: selectedTxs.isEmpty
@@ -1412,19 +1405,16 @@ class _GeneralLedgerTabState extends State<_GeneralLedgerTab> {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(children: [
-                        Expanded(flex: 2, child: Text(gl.tx.date,
+                        Expanded(flex: 3, child: Text(gl.tx.date.length >= 10 ? gl.tx.date.substring(5) : gl.tx.date,
                           style: const TextStyle(fontSize: 11, color: kMuted))),
-                        Expanded(flex: 3, child: Text(gl.tx.descEN,
+                        Expanded(flex: 5, child: Text(gl.tx.descEN,
                           style: TextStyle(fontSize: 11, color: kText),
                           maxLines: 2, overflow: TextOverflow.ellipsis)),
-                        Expanded(child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight,
-                          child: Text(isDr ? fmt.format(gl.entry.val) : '—', maxLines: 1,
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                              color: isDr ? kText : kMuted)))),
-                        Expanded(child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight,
-                          child: Text(!isDr ? fmt.format(gl.entry.val) : '—', maxLines: 1,
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                              color: !isDr ? kText : kMuted)))),
+                        // Single amount column (each ledger row is one-sided): Dr dark, Cr red.
+                        SizedBox(width: 104, child: Text('${fmt.format(gl.entry.val)} ${isDr ? 'Dr' : 'Cr'}',
+                          maxLines: 1, textAlign: TextAlign.right,
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+                            color: isDr ? kText : kRed))),
                       ]),
                     );
                   },
