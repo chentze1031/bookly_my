@@ -396,6 +396,10 @@ class _AddTxSheetState extends State<AddTxSheet> {
     } else if (widget.prefillType != null) {
       _type = widget.prefillType;
       _step = 2;
+    } else {
+      // No type passed (the old type-chooser step is gone) — default to expense.
+      _type = 'expense';
+      _step = 2;
     }
   }
 
@@ -519,45 +523,36 @@ class _AddTxSheetState extends State<AddTxSheet> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
                 child: Column(
                   children: [
-                    // STEP 1 — type
-                    if (_step == 1) ...[
-                      Row(children: [
-                        _TypeCard(icon: '📥', label: t.moneyIn, color: kGreen, bg: kGreenBg, bd: kGreenBd, onTap: () => setState(() { _type='income'; _step=2; })),
-                        const SizedBox(width: 12),
-                        _TypeCard(icon: '📤', label: t.moneyOut, color: kRed, bg: kRedBg, bd: kRedBd, onTap: () => setState(() { _type='expense'; _step=2; })),
-                      ]),
-                      const SizedBox(height: 14),
-                      // Receipt OCR shortcut (Pro) — snap a receipt to auto-fill an expense.
-                      GestureDetector(
-                        onTap: _scanning ? null : () => _scanReceipt(),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            color: kBg, border: Border.all(color: kBorder, width: 1.5),
-                            borderRadius: BorderRadius.circular(13)),
-                          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            if (_scanning)
-                              SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: kText))
-                            else
-                              const Text('📷', style: TextStyle(fontSize: 18)),
-                            const SizedBox(width: 8),
-                            Text(_scanning
-                                ? tr(app.settings.lang, 'Scanning…', '识别中…', 'Mengimbas…')
-                                : tr(app.settings.lang, 'Scan receipt', '扫描收据', 'Imbas resit'),
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
-                            const SizedBox(width: 6),
-                            const Text('✨', style: TextStyle(fontSize: 13)),
-                            if (!context.watch<SubState>().isPro)
-                              Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 14, color: kPro)),
-                          ]),
-                        ),
-                      ),
-                    ],
-
-                    // STEP 2 — category
+                    // STEP 2 — category (type is set by the Home income/expense buttons)
                     if (_step == 2) ...[
                       if (_type == 'expense' && _cat == null) ...[
+                        // Receipt OCR (Pro) — snap a receipt to auto-fill this expense.
+                        GestureDetector(
+                          onTap: _scanning ? null : () => _scanReceipt(),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              color: kBg, border: Border.all(color: kBorder, width: 1.5),
+                              borderRadius: BorderRadius.circular(13)),
+                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                              if (_scanning)
+                                SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: kText))
+                              else
+                                const Text('📷', style: TextStyle(fontSize: 18)),
+                              const SizedBox(width: 8),
+                              Text(_scanning
+                                  ? tr(app.settings.lang, 'Scanning…', '识别中…', 'Mengimbas…')
+                                  : tr(app.settings.lang, 'Scan receipt', '扫描收据', 'Imbas resit'),
+                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: kText)),
+                              const SizedBox(width: 6),
+                              const Text('✨', style: TextStyle(fontSize: 13)),
+                              if (!context.watch<SubState>().isPro)
+                                Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.lock_outline, size: 14, color: kPro)),
+                            ]),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         // Unified expense category list (clean — no payment-mode variants)
                         GridView.count(
                           shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
@@ -577,7 +572,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                           )).toList(),
                         ),
                         const SizedBox(height: 14),
-                        _BackBtn(label: t.back, onTap: () => setState(() => _step = 1)),
+                        _BackBtn(label: t.back, onTap: () => Navigator.pop(context)),
                       ] else if (_type == 'expense' && _cat != null) ...[
                         // Payment status for the chosen category
                         Container(
@@ -637,7 +632,7 @@ class _AddTxSheetState extends State<AddTxSheet> {
                             )).toList(),
                         ),
                         const SizedBox(height: 14),
-                        _BackBtn(label: t.back, onTap: () => setState(() => _step = 1)),
+                        _BackBtn(label: t.back, onTap: () => Navigator.pop(context)),
                       ],
                     ],
 
@@ -900,26 +895,6 @@ class _AddTxSheetState extends State<AddTxSheet> {
       ),
     );
   }
-}
-
-class _TypeCard extends StatelessWidget {
-  final String icon, label; final Color color, bg, bd; final VoidCallback onTap;
-  const _TypeCard({required this.icon, required this.label, required this.color, required this.bg, required this.bd, required this.onTap});
-  @override
-  Widget build(BuildContext context) => Expanded(
-    child: GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
-        decoration: BoxDecoration(color: bg, border: Border.all(color: bd, width: 2), borderRadius: BorderRadius.circular(18)),
-        child: Column(children: [
-          Text(icon, style: const TextStyle(fontSize: 44)),
-          const SizedBox(height: 12),
-          Text(label, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: color)),
-        ]),
-      ),
-    ),
-  );
 }
 
 class _BackBtn extends StatelessWidget {
