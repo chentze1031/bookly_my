@@ -183,12 +183,12 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
   }
 
   void _confirmDelete(BuildContext ctx, String invNo, VoidCallback onConfirm) {
-    showDialog(context: ctx, builder: (_) => AlertDialog(
+    showDialog(context: ctx, builder: (dctx) => AlertDialog(
       title: const Text('Delete Invoice?'),
       content: Text('Delete $invNo? This cannot be undone.'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-        TextButton(onPressed: () { Navigator.pop(ctx); onConfirm(); },
+        TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
+        TextButton(onPressed: () { Navigator.pop(dctx); onConfirm(); },
             child: Text('Delete', style: TextStyle(color: kRed))),
       ],
     ));
@@ -627,12 +627,12 @@ class _PayrollHistoryState extends State<PayrollHistoryScreen> {
 
   void _confirmDelete(BuildContext ctx, Map p, _PayrollCalc c, VoidCallback onConfirm) {
     final month = (p['month'] as int? ?? 1).clamp(1, 12);
-    showDialog(context: ctx, builder: (_) => AlertDialog(
+    showDialog(context: ctx, builder: (dctx) => AlertDialog(
       title: const Text('Delete Payslip?'),
       content: Text('Delete payslip for ${p['empName']} (${_months[month - 1]} ${p['year']})?'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-        TextButton(onPressed: () { Navigator.pop(ctx); onConfirm(); },
+        TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
+        TextButton(onPressed: () { Navigator.pop(dctx); onConfirm(); },
             child: Text('Delete', style: TextStyle(color: kRed))),
       ],
     ));

@@ -99,13 +99,13 @@ class _QuotHistState extends State<QuotationHistoryScreen> {
   }
 
   void _confirmDelete(String quotNo) {
-    showDialog(context: context, builder: (_) => AlertDialog(
+    showDialog(context: context, builder: (dctx) => AlertDialog(
       title: const Text('Delete Quotation?'),
       content: Text('Delete $quotNo? This cannot be undone.'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancel')),
         TextButton(
-          onPressed: () { Navigator.pop(context); _delete(quotNo); },
+          onPressed: () { Navigator.pop(dctx); _delete(quotNo); },
           child: Text('Delete', style: TextStyle(color: kRed)),
         ),
       ],
