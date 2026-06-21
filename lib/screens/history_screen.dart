@@ -42,6 +42,11 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
 
   Future<void> _load() async {
     final list = await context.read<AppState>().loadInvoices();
+    // Newest invoice on top: by invoice date desc, then invoice no desc.
+    list.sort((a, b) {
+      final d = (b['invDate'] ?? '').toString().compareTo((a['invDate'] ?? '').toString());
+      return d != 0 ? d : (b['invNo'] ?? '').toString().compareTo((a['invNo'] ?? '').toString());
+    });
     if (mounted) setState(() { _invoices = list; _loading = false; });
   }
 

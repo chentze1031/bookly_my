@@ -123,7 +123,7 @@ class _MyInvoisSubmissionsScreenState extends State<MyInvoisSubmissionsScreen> {
   void _showQr(Map<String, dynamic> r, String lang) {
     final url = MyInvoisService.validationUrl(
         (r['env'] ?? 'sandbox').toString(), r['uuid'] as String, r['longId'] as String);
-    showDialog(context: context, builder: (_) => AlertDialog(
+    showDialog(context: context, builder: (dialogCtx) => AlertDialog(
       backgroundColor: kSurface,
       title: Text(r['title']?.toString() ?? 'QR', style: TextStyle(color: kText, fontSize: 15)),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -132,7 +132,9 @@ class _MyInvoisSubmissionsScreenState extends State<MyInvoisSubmissionsScreen> {
         const SizedBox(height: 10),
         SelectableText(url, style: const TextStyle(fontSize: 10, color: kMuted)),
       ]),
-      actions: [TextButton(onPressed: () => Navigator.pop(context),
+      // Pop the dialog's own context (not the page's), else "Close" pops the
+      // records page and leaves the dialog on screen.
+      actions: [TextButton(onPressed: () => Navigator.pop(dialogCtx),
           child: Text(tr(lang, 'Close', '关闭', 'Tutup')))],
     ));
   }
