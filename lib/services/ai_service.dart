@@ -1,15 +1,39 @@
-﻿import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
-// AI SERVICE — Gemini API for Bookly MY features
-// Pass key at build time: flutter build apk --dart-define=GEMINI_KEY=your_key
+// AI SERVICE — Gemini via a Supabase Edge Function proxy.
+// The Gemini API key lives server-side (Edge Function secret GEMINI_KEY), never
+// compiled into the app, so it can't be extracted from the APK. Requests carry
+// the signed-in user's JWT automatically (functions.invoke), so the proxy only
+// serves authenticated users.
+// Setup: deploy supabase/functions/gemini + set the GEMINI_KEY Supabase secret.
 // ════════════════════════════════════════════════════════════════════════════
 class AiService {
-  static const _apiKey = String.fromEnvironment('GEMINI_KEY');
   static const _model = 'gemini-2.5-flash';
-  static String get _endpoint =>
-      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
+  static final _sb = Supabase.instance.client;
+
+  // Forwards a Gemini generateContent request through the Edge Function and
+  // returns the raw response JSON as a string.
+  static Future<String> _generate({
+    required List<Map<String, dynamic>> parts,
+    Map<String, dynamic>? generationConfig,
+  }) async {
+    final res = await _sb.functions.invoke('gemini', body: {
+      'model': _model,
+      'contents': [{'parts': parts}],
+      if (generationConfig != null) 'generationConfig': generationConfig,
+    });
+    final data = res.data;
+    if (data == null) throw Exception('AI proxy returned no data');
+    return data is String ? data : jsonEncode(data);
+  }
+
+  // Text-only prompt.
+  static Future<String> _call(String prompt) => _generate(
+    parts: [{'text': prompt}],
+    generationConfig: {'temperature': 0.1, 'maxOutputTokens': 1024},
+  );
 
   // ── 1. Auto-categorise ───────────────────────────────────────────────────
   static Future<AutoCatResult> categorise({
@@ -113,22 +137,14 @@ Respond ONLY with a valid JSON array, no markdown:
 
 If not a bank statement, return: []
 ''';
-    if (_apiKey.isEmpty) throw Exception('GEMINI_KEY not set. Build with --dart-define=GEMINI_KEY=your_key');
-    final res = await http.post(
-      Uri.parse(_endpoint),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [{
-          'parts': [
-            { 'inline_data': { 'mime_type': 'application/pdf', 'data': base64Pdf } },
-            { 'text': prompt },
-          ],
-        }],
-        'generationConfig': { 'temperature': 0.1, 'maxOutputTokens': 8192 },
-      }),
+    final body = await _generate(
+      parts: [
+        { 'inline_data': { 'mime_type': 'application/pdf', 'data': base64Pdf } },
+        { 'text': prompt },
+      ],
+      generationConfig: { 'temperature': 0.1, 'maxOutputTokens': 8192 },
     );
-    if (res.statusCode != 200) throw Exception('Gemini error ${res.statusCode}: ${res.body}');
-    final text  = _extractText(res.body);
+    final text  = _extractText(body);
     final clean = text.replaceAll('```json', '').replaceAll('```', '').trim();
     return (jsonDecode(clean) as List).cast<Map<String, dynamic>>();
   }
@@ -157,22 +173,14 @@ Respond ONLY with valid JSON, no markdown, no explanation:
 If the image is not a receipt/invoice, return:
 { "merchant":"", "amount":0, "date":"", "catId":"other", "confidence":0 }
 ''';
-    if (_apiKey.isEmpty) throw Exception('GEMINI_KEY not set. Build with --dart-define=GEMINI_KEY=your_key');
-    final res = await http.post(
-      Uri.parse(_endpoint),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [{
-          'parts': [
-            { 'inline_data': { 'mime_type': mimeType, 'data': base64Image } },
-            { 'text': prompt },
-          ],
-        }],
-        'generationConfig': { 'temperature': 0.1, 'maxOutputTokens': 1024 },
-      }),
+    final body = await _generate(
+      parts: [
+        { 'inline_data': { 'mime_type': mimeType, 'data': base64Image } },
+        { 'text': prompt },
+      ],
+      generationConfig: { 'temperature': 0.1, 'maxOutputTokens': 1024 },
     );
-    if (res.statusCode != 200) throw Exception('Gemini error ${res.statusCode}: ${res.body}');
-    final json = _parseJson(_extractText(res.body));
+    final json = _parseJson(_extractText(body));
     return ReceiptScan(
       merchant:   (json['merchant'] ?? '').toString(),
       amount:     (json['amount'] as num?)?.toDouble() ?? 0,
@@ -182,25 +190,10 @@ If the image is not a receipt/invoice, return:
     );
   }
 
-  // ── Internal: text-only prompt ───────────────────────────────────────────
-  static Future<String> _call(String prompt) async {
-    if (_apiKey.isEmpty) throw Exception('GEMINI_KEY not set. Build with --dart-define=GEMINI_KEY=your_key');
-    final res = await http.post(
-      Uri.parse(_endpoint),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [{ 'parts': [{ 'text': prompt }] }],
-        'generationConfig': { 'temperature': 0.1, 'maxOutputTokens': 1024 },
-      }),
-    );
-    if (res.statusCode != 200) throw Exception('Gemini error ${res.statusCode}: ${res.body}');
-    return _extractText(res.body);
-  }
-
   static String _extractText(String body) {
     final data  = jsonDecode(body) as Map<String, dynamic>;
-    final cands = data['candidates'] as List;
-    if (cands.isEmpty) throw Exception('Gemini returned no candidates');
+    final cands = data['candidates'] as List?;
+    if (cands == null || cands.isEmpty) throw Exception('Gemini returned no candidates');
     final parts = (cands.first['content'] as Map<String, dynamic>)['parts'] as List;
     return parts.where((p) => p['text'] != null).map((p) => p['text'] as String).join('');
   }
