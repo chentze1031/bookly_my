@@ -19,6 +19,7 @@ import 'myinvois_submissions_screen.dart';
 import 'self_billed_einvoice_screen.dart';
 import 'company_info_screen.dart';
 import 'sst_report_screen.dart';
+import 'help_center_screen.dart';
 import 'sub_screen.dart';
 import 'recurring_screen.dart';
 
@@ -254,6 +255,22 @@ class _SettingsState extends State<SettingsScreen> {
               ),
             ),
           ]),
+        ),
+
+        // ── Help Center ──────────────────────────────────────────────────
+        SectionCard(
+          title: '❓ ${tr(t.lang, 'Help', '帮助', 'Bantuan')}',
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            leading: const Text('📖', style: TextStyle(fontSize: 24)),
+            title: Text(tr(t.lang, 'Help Center', '帮助中心', 'Pusat Bantuan'),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText)),
+            subtitle: Text(tr(t.lang, 'Guides & FAQ', '使用指南与常见问题', 'Panduan & Soalan Lazim'),
+              style: const TextStyle(fontSize: 12, color: kMuted)),
+            trailing: const Icon(Icons.chevron_right, color: kMuted),
+            onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const HelpCenterScreen())),
+          ),
         ),
 
         // ── Version ─────────────────────────────────────────────────────
