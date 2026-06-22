@@ -44,18 +44,18 @@ class HelpCenterScreen extends StatelessWidget {
       (
         tr(l, 'Quotation, delivery order, bill, credit note, PO?', '报价单 / 送货单 / 账单 / 信用备注 / 采购单?', 'Sebut harga / nota penghantaran / bil / nota kredit / PO?'),
         tr(l,
-          'All are on the Home grid. Each has its own history list (e.g. "Invoice History") where you can view, share or delete past documents.',
-          '都在首页那一排。每种都有自己的记录列表(如「发票记录」),可查看、分享或删除。',
-          'Semua ada di grid Laman Utama. Setiap satu ada senarai sejarah sendiri (cth. "Sejarah Invois") untuk lihat, kongsi atau padam.'),
+          'Quotation and Bill are quick buttons on Home; Delivery Orders and Credit Notes are in the Home record shortcuts (each with its own history list). Purchase Orders live under the Inventory tab.',
+          '报价单、账单是首页的快捷按钮;送货单、信用备注在首页的记录入口(各有自己的列表)。采购单在「库存」标签里。',
+          'Sebut harga & Bil ialah butang pantas di Laman Utama; Nota Penghantaran & Nota Kredit di pintasan rekod Laman Utama. Pesanan Belian (PO) di bawah tab Inventori.'),
       ),
     ]),
     ('📦', tr(l, 'Inventory', '库存', 'Inventori'), [
       (
         tr(l, 'How do I manage stock?', '如何管理库存?', 'Bagaimana urus stok?'),
         tr(l,
-          'Open the Inventory tab to add items (name, cost, price, quantity, barcode/photo). Stock auto-deducts when you bill items. Adding product photos is a Pro feature.',
-          '打开「库存」标签,添加商品(名称、成本、售价、数量、条码 / 图片)。开单时自动扣库存。加产品图片是 Pro 功能。',
-          'Buka tab Inventori untuk tambah item (nama, kos, harga, kuantiti, kod bar/foto). Stok ditolak automatik bila anda bilkan item. Foto produk ialah ciri Pro.'),
+          'Open the Inventory tab to add items (name, cost, price, quantity, barcode/photo). Stock is deducted automatically when you sell those items on an invoice. Adding product photos is a Pro feature.',
+          '打开「库存」标签,添加商品(名称、成本、售价、数量、条码 / 图片)。开发票售出这些商品时,库存自动扣减。加产品图片是 Pro 功能。',
+          'Buka tab Inventori untuk tambah item (nama, kos, harga, kuantiti, kod bar/foto). Stok ditolak automatik bila anda jual item itu pada invois. Foto produk ialah ciri Pro.'),
       ),
     ]),
     ('💼', tr(l, 'Payroll', '薪资', 'Gaji'), [
