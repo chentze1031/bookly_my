@@ -276,6 +276,25 @@ class SubState extends ChangeNotifier {
   String? get monthlyPriceString => _findPackage(false)?.storeProduct.priceString;
   String? get yearlyPriceString  => _findPackage(true)?.storeProduct.priceString;
 
+  /// Free-trial length (in days) of a plan's Google Play offer, or null if the
+  /// plan has no free-trial phase. Reads the offer configured in Play Console,
+  /// so no code change is needed when you add/remove the trial — the paywall
+  /// surfaces it automatically.
+  int? get monthlyTrialDays => _trialDays(_findPackage(false));
+  int? get yearlyTrialDays  => _trialDays(_findPackage(true));
+
+  int? _trialDays(Package? pkg) {
+    final period = pkg?.storeProduct.defaultOption?.freePhase?.billingPeriod;
+    if (period == null) return null;
+    switch (period.unit) {
+      case PeriodUnit.day:   return period.value;
+      case PeriodUnit.week:  return period.value * 7;
+      case PeriodUnit.month: return period.value * 30;
+      case PeriodUnit.year:  return period.value * 365;
+      case PeriodUnit.unknown: return null;
+    }
+  }
+
   /// Savings badge computed from real store prices (null until prices load).
   String? get yearlySavingsLabel {
     final m = _findPackage(false)?.storeProduct.price;

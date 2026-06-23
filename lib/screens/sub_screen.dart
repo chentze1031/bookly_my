@@ -78,6 +78,19 @@ class _SubScreenState extends State<SubScreen> {
     final sub = context.watch<SubState>();
     final lang = context.watch<AppState>().settings.lang; final zh = lang == 'zh';
 
+    // Free trial of the currently-selected plan (configured in Play Console).
+    final trialDays = _yearly ? sub.yearlyTrialDays : sub.monthlyTrialDays;
+    final selPrice  = _yearly ? sub.yearlyPriceString : sub.monthlyPriceString;
+    final btnLabel = trialDays != null
+        ? tr(lang, 'Start $trialDays-day free trial', '开始 $trialDays 天免费试用', 'Mula percubaan $trialDays hari')
+        : (_yearly
+            ? (zh
+                ? '年付订阅${sub.yearlyPriceString != null ? ' – ${sub.yearlyPriceString}' : ''}'
+                : (sub.yearlyPriceString != null ? 'Subscribe Yearly – ${sub.yearlyPriceString}' : 'Subscribe Yearly'))
+            : (zh
+                ? '月付订阅${sub.monthlyPriceString != null ? ' – ${sub.monthlyPriceString}' : ''}'
+                : (sub.monthlyPriceString != null ? 'Subscribe Monthly – ${sub.monthlyPriceString}' : 'Subscribe Monthly')));
+
     return Container(
       decoration: BoxDecoration(
         color: kSurface,
@@ -199,6 +212,32 @@ class _SubScreenState extends State<SubScreen> {
             ),
             const SizedBox(height: 16),
 
+            // ── Free-trial banner (only when the selected plan has one) ──
+            if (trialDays != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: kGreenBg, border: Border.all(color: kGreenBd),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(children: [
+                  const Text('🎁', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      tr(lang,
+                        '$trialDays-day free trial${selPrice != null ? ', then $selPrice' : ''} · cancel anytime',
+                        '$trialDays 天免费试用${selPrice != null ? '，之后 $selPrice' : ''} · 可随时取消',
+                        'Percubaan percuma $trialDays hari${selPrice != null ? ', kemudian $selPrice' : ''} · batal bila-bila'),
+                      style: TextStyle(fontSize: 12, color: kGreen, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 12),
+            ],
+
             // ── Inline feedback (visible above the bottom sheet) ──────
             if (_msg != null) ...[
               Container(
@@ -231,18 +270,7 @@ class _SubScreenState extends State<SubScreen> {
                         width: 22, height: 22,
                         child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2.5))
-                    : Text(
-                        _yearly
-                            ? (zh
-                                ? '年付订阅${sub.yearlyPriceString != null ? ' – ${sub.yearlyPriceString}' : ''}'
-                                : (sub.yearlyPriceString != null
-                                    ? 'Subscribe Yearly – ${sub.yearlyPriceString}'
-                                    : 'Subscribe Yearly'))
-                            : (zh
-                                ? '月付订阅${sub.monthlyPriceString != null ? ' – ${sub.monthlyPriceString}' : ''}'
-                                : (sub.monthlyPriceString != null
-                                    ? 'Subscribe Monthly – ${sub.monthlyPriceString}'
-                                    : 'Subscribe Monthly')),
+                    : Text(btnLabel,
                         style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w800)),
               ),
