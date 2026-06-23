@@ -1,7 +1,7 @@
 name: bookly_my
 description: Bookly MY - Malaysia Business Accounting App
 publish_to: none
-version: 1.1.0+48
+version: 1.1.0+49
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -24,6 +24,11 @@ dependencies:
   supabase_flutter: ^2.6.0
   app_links: ^6.0.0
   google_sign_in: ^6.2.1
+
+  # Referral attribution: read Google Play install referrer (&referrer=ref%3DCODE)
+  # so a friend who installs via a shared link is auto-credited to the referrer.
+  # (play_install_referrer is the maintained successor to android_play_install_referrer.)
+  play_install_referrer: ^0.5.0
 
   # UI / Charts
   fl_chart: ^0.69.0

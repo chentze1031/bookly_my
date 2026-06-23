@@ -69,16 +69,19 @@ class _ReferralScreenState extends State<ReferralScreen> {
     });
   }
 
-  String _shareText(String l, String code) => tr(l,
-    'I\'m using Bookly MY to run my business accounting — invoices, e-Invoice (MyInvois), payroll & more. '
-    'Download it and enter my invite code $code under Settings → Invite friends:\n'
-    'https://play.google.com/store/apps/details?id=com.bookly.my',
-    '我在用 Bookly MY 管账——发票、电子发票（MyInvois）、薪资等一应俱全。'
-    '下载后在「设置 → 邀请好友」输入我的邀请码 $code：\n'
-    'https://play.google.com/store/apps/details?id=com.bookly.my',
-    'Saya guna Bookly MY untuk perakaunan perniagaan — invois, e-Invois (MyInvois), gaji & lain-lain. '
-    'Muat turun dan masukkan kod jemputan saya $code di Tetapan → Jemput rakan:\n'
-    'https://play.google.com/store/apps/details?id=com.bookly.my');
+  String _shareText(String l, String code) {
+    // The &referrer=ref%3DCODE param lets Google Play hand the code to the app
+    // on install, so the friend is auto-credited (manual code entry is fallback).
+    final link =
+        'https://play.google.com/store/apps/details?id=com.bookly.my&referrer=ref%3D$code';
+    return tr(l,
+      'I\'m using Bookly MY to run my business accounting — invoices, e-Invoice (MyInvois), payroll & more. '
+      'Install via my link (code $code is applied automatically):\n$link',
+      '我在用 Bookly MY 管账——发票、电子发票（MyInvois）、薪资等一应俱全。'
+      '点我的链接安装即可自动套用邀请码 $code：\n$link',
+      'Saya guna Bookly MY untuk perakaunan perniagaan — invois, e-Invois (MyInvois), gaji & lain-lain. '
+      'Pasang melalui pautan saya (kod $code digunakan automatik):\n$link');
+  }
 
   Future<void> _copyCode(String l, String code) async {
     await Clipboard.setData(ClipboardData(text: code));

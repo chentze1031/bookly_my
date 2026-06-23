@@ -25,6 +25,7 @@ import 'screens/sub_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/inventory_screen.dart';
 import 'services/ai_service.dart';
+import 'services/referral_service.dart';
 import 'services/supabase_service.dart';
 import 'services/inventory_service.dart';
 import 'services/overdue_reminder.dart';
@@ -67,6 +68,10 @@ void main() async {
 
   // Task 8: system reminder for overdue receivables (best-effort, once/day).
   OverdueReminder.checkAndNotify(accountingState, appState.settings.lang);
+
+  // Referral: read the Google Play install referrer once on first launch so a
+  // friend who installed via a shared link gets auto-credited after they log in.
+  ReferralService.captureInstallReferrer();
 
   runApp(MultiProvider(
     providers: [

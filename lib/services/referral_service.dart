@@ -1,4 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:play_install_referrer/play_install_referrer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // REFERRAL SERVICE — talks to the `referral` Supabase Edge Function.
@@ -66,6 +68,60 @@ class ReferralService {
     try {
       await _call({'action': 'sync'});
     } catch (_) {}
+  }
+
+  // ── Install-referrer attribution (Google Play) ─────────────────────────────
+  // A shared link of the form
+  //   https://play.google.com/store/apps/details?id=com.bookly.my&referrer=ref%3DCODE
+  // lets Google Play hand the `ref=CODE` string to the app on first launch, so
+  // a friend who installs via the link is auto-credited — no manual code entry.
+  // Only works for Play-installed builds; sideloaded APKs fall back to manual.
+  static const _kPendingCode     = 'referral_pending_code';
+  static const _kReferrerChecked = 'referral_referrer_checked';
+
+  /// Read the Play install referrer ONCE and cache any embedded `ref=CODE`.
+  /// Safe to call every launch — no-ops after the first read and on non-Play
+  /// installs. Call early in main() (fire-and-forget).
+  static Future<void> captureInstallReferrer() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kReferrerChecked) == true) return;
+    try {
+      final details = await PlayInstallReferrer.installReferrer;
+      final code = _extractCode(details.installReferrer);
+      if (code != null && code.isNotEmpty) {
+        await prefs.setString(_kPendingCode, code);
+      }
+    } catch (_) {
+      // iOS / no Play Services / sideloaded — nothing to capture.
+    }
+    await prefs.setBool(_kReferrerChecked, true);
+  }
+
+  static String? _extractCode(String? referrer) {
+    if (referrer == null || referrer.isEmpty) return null;
+    for (final part in referrer.split('&')) {
+      final i = part.indexOf('=');
+      if (i <= 0) continue;
+      if (part.substring(0, i) == 'ref') {
+        return Uri.decodeComponent(part.substring(i + 1)).trim().toUpperCase();
+      }
+    }
+    return null;
+  }
+
+  /// If a code was captured from the install referrer, submit it once the user
+  /// is signed in (and not already referred), then clear it. Kept only on a
+  /// transient network error so it retries next launch. Call after login.
+  static Future<void> applyPendingReferral() async {
+    if (_sb.auth.currentUser == null) return;
+    await captureInstallReferrer(); // ensure the referrer was read at least once
+    final prefs = await SharedPreferences.getInstance();
+    final code = prefs.getString(_kPendingCode);
+    if (code == null || code.isEmpty) return;
+    final result = await submitCode(code);
+    if (result != 'error') {
+      await prefs.remove(_kPendingCode); // ok / already_linked / self_referral / invalid
+    }
   }
 }
 

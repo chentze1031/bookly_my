@@ -45,9 +45,10 @@ class AuthGate extends StatelessWidget {
                     // FIX(游客模式): 登录后把本地库存迁移上云，再刷新列表
                     final inv = context.read<InventoryState>();
                     inv.migrateLocalToCloud().then((_) => inv.load());
-                    // 邀请系统：登录后同步一次，让活跃的被邀请人被标记、
-                    // 邀请人获得 RevenueCat 促销奖励（best-effort）。
-                    ReferralService.sync();
+                    // 邀请系统：先用安装来源自动归因（点分享链接装的→自动填码），
+                    // 再 sync 一次，让活跃的被邀请人被标记、邀请人获 RevenueCat 奖励。
+                    ReferralService.applyPendingReferral()
+                        .then((_) => ReferralService.sync());
                   }
                 }
               });
