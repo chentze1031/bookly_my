@@ -22,6 +22,7 @@ import 'sst_report_screen.dart';
 import 'help_center_screen.dart';
 import 'sub_screen.dart';
 import 'recurring_screen.dart';
+import 'referral_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -255,6 +256,22 @@ class _SettingsState extends State<SettingsScreen> {
               ),
             ),
           ]),
+        ),
+
+        // ── Invite friends (Referral rewards) ────────────────────────────
+        SectionCard(
+          title: '🎁 ${tr(t.lang, 'Invite', '邀请', 'Jemput')}',
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            leading: const Text('🎁', style: TextStyle(fontSize: 24)),
+            title: Text(tr(t.lang, 'Invite friends', '邀请好友', 'Jemput rakan'),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText)),
+            subtitle: Text(tr(t.lang, 'Share your code, earn free Pro', '分享邀请码，免费得 Pro', 'Kongsi kod, dapat Pro percuma'),
+              style: const TextStyle(fontSize: 12, color: kMuted)),
+            trailing: const Icon(Icons.chevron_right, color: kMuted),
+            onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const ReferralScreen())),
+          ),
         ),
 
         // ── Help Center ──────────────────────────────────────────────────

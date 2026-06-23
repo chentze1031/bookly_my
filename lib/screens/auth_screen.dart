@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../state/sub_state.dart';
 import '../state/app_state.dart';
 import '../services/inventory_service.dart';
+import '../services/referral_service.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // AUTH GATE — listens to Supabase auth state, routes to AuthScreen or app
@@ -44,6 +45,9 @@ class AuthGate extends StatelessWidget {
                     // FIX(游客模式): 登录后把本地库存迁移上云，再刷新列表
                     final inv = context.read<InventoryState>();
                     inv.migrateLocalToCloud().then((_) => inv.load());
+                    // 邀请系统：登录后同步一次，让活跃的被邀请人被标记、
+                    // 邀请人获得 RevenueCat 促销奖励（best-effort）。
+                    ReferralService.sync();
                   }
                 }
               });
