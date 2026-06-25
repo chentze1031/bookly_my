@@ -101,9 +101,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
       '✉️',
       tr(l, 'Contact us', '联系我们', 'Hubungi kami'),
       tr(l,
-        'Questions about this policy or your data? Email us at chentze961031@gmail.com and we\'ll respond as soon as we can.',
-        '对本政策或您的数据有疑问？请电邮至 chentze961031@gmail.com，我们会尽快回复。',
-        'Soalan tentang dasar ini atau data anda? Emel kami di chentze961031@gmail.com dan kami akan balas secepat mungkin.'),
+        'Questions about this policy or your data? Email us at bookly.malaysia@gmail.com and we\'ll respond as soon as we can.',
+        '对本政策或您的数据有疑问？请电邮至 bookly.malaysia@gmail.com，我们会尽快回复。',
+        'Soalan tentang dasar ini atau data anda? Emel kami di bookly.malaysia@gmail.com dan kami akan balas secepat mungkin.'),
     ),
   ];
 
