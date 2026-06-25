@@ -20,6 +20,8 @@ import 'self_billed_einvoice_screen.dart';
 import 'company_info_screen.dart';
 import 'sst_report_screen.dart';
 import 'help_center_screen.dart';
+import 'backup_screen.dart';
+import 'privacy_policy_screen.dart';
 import 'sub_screen.dart';
 import 'recurring_screen.dart';
 import 'referral_screen.dart';
@@ -287,6 +289,38 @@ class _SettingsState extends State<SettingsScreen> {
             trailing: const Icon(Icons.chevron_right, color: kMuted),
             onTap: () => Navigator.push(context,
               MaterialPageRoute(builder: (_) => const HelpCenterScreen())),
+          ),
+        ),
+
+        // ── Data backup & restore ────────────────────────────────────────
+        SectionCard(
+          title: '💾 ${tr(t.lang, 'Backup', '备份', 'Sandaran')}',
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            leading: const Text('💾', style: TextStyle(fontSize: 24)),
+            title: Text(tr(t.lang, 'Backup & Restore', '备份与恢复', 'Sandaran & Pulih'),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText)),
+            subtitle: Text(tr(t.lang, 'Export your data or move to a new phone', '导出数据或更换新手机', 'Eksport data atau pindah ke telefon baharu'),
+              style: const TextStyle(fontSize: 12, color: kMuted)),
+            trailing: const Icon(Icons.chevron_right, color: kMuted),
+            onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const BackupScreen())),
+          ),
+        ),
+
+        // ── Privacy / PDPA ───────────────────────────────────────────────
+        SectionCard(
+          title: '🛡️ ${tr(t.lang, 'Privacy', '隐私', 'Privasi')}',
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            leading: const Text('🛡️', style: TextStyle(fontSize: 24)),
+            title: Text(tr(t.lang, 'Privacy Policy', '隐私政策', 'Dasar Privasi'),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText)),
+            subtitle: Text(tr(t.lang, 'How we handle your data (PDPA)', '我们如何处理您的数据（PDPA）', 'Cara kami kendali data anda (PDPA)'),
+              style: const TextStyle(fontSize: 12, color: kMuted)),
+            trailing: const Icon(Icons.chevron_right, color: kMuted),
+            onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen())),
           ),
         ),
 

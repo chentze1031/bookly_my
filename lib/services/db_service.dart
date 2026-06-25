@@ -260,6 +260,15 @@ class DbService {
     await d.delete('customers', where: 'id = ?', whereArgs: [id]);
   }
 
+  /// Restore a customer preserving its original id (backup import). Unlike
+  /// [upsertCustomer], this inserts/replaces by explicit id so a backup row
+  /// lands even on a fresh device where the row doesn't exist yet.
+  static Future<void> restoreCustomer(Customer c) async {
+    final d = await db;
+    await d.insert('customers', c.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
   static Future<List<Employee>> loadEmployees() async {
     final d = await db;
     final rows = await d.query('employees', orderBy: 'name ASC');
@@ -281,6 +290,13 @@ class DbService {
   static Future<void> deleteEmployee(int id) async {
     final d = await db;
     await d.delete('employees', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Restore an employee preserving its original id (backup import).
+  static Future<void> restoreEmployee(Employee e) async {
+    final d = await db;
+    await d.insert('employees', e.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
   // ══════════════════════════════════════════════════════════════════════════
   // LOCAL INVENTORY (guest mode) — Map-based to avoid circular import.

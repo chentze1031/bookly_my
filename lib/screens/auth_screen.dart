@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -6,6 +7,7 @@ import '../state/sub_state.dart';
 import '../state/app_state.dart';
 import '../services/inventory_service.dart';
 import '../services/referral_service.dart';
+import 'privacy_policy_screen.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 // AUTH GATE — listens to Supabase auth state, routes to AuthScreen or app
@@ -241,9 +243,27 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
 
               const SizedBox(height: 14),
-              const Text(
-                'By continuing, you agree to our Terms of Service\nand Privacy Policy.',
-                style: TextStyle(fontSize: 11, color: Color(0xFFAAAAAA)),
+              Text.rich(
+                TextSpan(
+                  style: const TextStyle(fontSize: 11, color: Color(0xFFAAAAAA)),
+                  children: [
+                    const TextSpan(
+                        text: 'By continuing, you agree to our Terms of Service\nand '),
+                    TextSpan(
+                      text: 'Privacy Policy',
+                      style: const TextStyle(
+                          color: Color(0xFF4A90D9),
+                          decoration: TextDecoration.underline),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const PrivacyPolicyScreen()),
+                            ),
+                    ),
+                    const TextSpan(text: '.'),
+                  ],
+                ),
                 textAlign: TextAlign.center,
               ),
 

@@ -23,6 +23,7 @@ import 'screens/invoice_screen.dart';
 import 'screens/payroll_screen.dart';
 import 'screens/sub_screen.dart';
 import 'screens/auth_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/inventory_screen.dart';
 import 'services/ai_service.dart';
 import 'services/referral_service.dart';
@@ -114,7 +115,7 @@ GoRouter _buildRouter() => GoRouter(
     ShellRoute(
       navigatorKey: _shellNavKey,
       builder: (context, state, child) =>
-          AuthGate(child: _AppShell(child: child)),
+          OnboardingGate(child: AuthGate(child: _AppShell(child: child))),
       routes: [
         GoRoute(path: '/home', pageBuilder: (_, __) => const NoTransitionPage(child: _HomeTab())),
         GoRoute(path: '/records', pageBuilder: (_, __) => const NoTransitionPage(child: _RecordsTab())),

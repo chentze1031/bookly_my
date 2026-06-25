@@ -1,5 +1,6 @@
 ﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sqflite/sqflite.dart' hide Transaction;
@@ -304,6 +305,7 @@ class AppState extends ChangeNotifier {
   Future<void> addOrUpdateTx(Transaction tx) async {
     await DbService.upsertTx(tx);
     final idx = txs.indexWhere((t) => t.id == tx.id);
+    final isNew = idx < 0;
     if (idx >= 0) {
       txs = [...txs.sublist(0, idx), tx, ...txs.sublist(idx + 1)];
     } else {
@@ -316,6 +318,99 @@ class AppState extends ChangeNotifier {
       final ok = await _tryPushTxCloud(tx);
       if (!ok) _enqueue(_QueuedOp(table: 'transactions', op: 'upsert', data: tx.toMap()));
     }
+    if (isNew) await _maybeRequestReview();
+  }
+
+  // ── In-app rating prompt ─────────────────────────────────────────────────────
+  // Once the user has recorded ≥20 transactions, ask for a Play Store rating via
+  // the native in-app review flow — shown at most once (gated in prefs).
+  Future<void> _maybeRequestReview() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(StorageKeys.ratingPrompted) ?? false) return;
+      if (txs.length < 20) return;
+      final review = InAppReview.instance;
+      if (await review.isAvailable()) {
+        await review.requestReview();
+        await prefs.setBool(StorageKeys.ratingPrompted, true);
+      }
+    } catch (_) {/* review prompt is best-effort */}
+  }
+
+  /// Manual "Rate us" entry (Settings) — opens the store listing directly so the
+  /// user can always leave a review even after the one-time prompt has fired.
+  Future<void> openStoreListing() async {
+    try {
+      await InAppReview.instance.openStoreListing();
+    } catch (_) {/* best-effort */}
+  }
+
+  // ── Full backup / restore (active company) ───────────────────────────────────
+  /// JSON-serialisable snapshot of the active company's bookkeeping data.
+  Map<String, dynamic> buildBackup() => {
+    'schema': 1,
+    'app': 'bookly_my',
+    'exportedAt': DateTime.now().toIso8601String(),
+    'companyId': activeCompany,
+    'companyName': activeCompanyObj.name,
+    'transactions': txs.map((t) => t.toMap()).toList(),
+    'customers': customers.map((c) => c.toMap()).toList(),
+    'employees': employees.map((e) => e.toMap()).toList(),
+  };
+
+  /// Merge a backup map into the active company's local store and, when logged
+  /// in, push the restored rows to the cloud. Returns per-type restored counts.
+  Future<Map<String, int>> restoreFromBackup(Map<String, dynamic> data) async {
+    final txList  = (data['transactions'] as List?) ?? const [];
+    final cusList = (data['customers'] as List?) ?? const [];
+    final empList = (data['employees'] as List?) ?? const [];
+
+    final restoredTxs = <Transaction>[];
+    for (final m in txList) {
+      final tx = Transaction.fromMap(Map<String, dynamic>.from(m));
+      await DbService.upsertTx(tx);
+      restoredTxs.add(tx);
+    }
+    final restoredCus = <Customer>[];
+    for (final m in cusList) {
+      final c = Customer.fromMap(Map<String, dynamic>.from(m));
+      await DbService.restoreCustomer(c);
+      restoredCus.add(c);
+    }
+    final restoredEmp = <Employee>[];
+    for (final m in empList) {
+      final e = Employee.fromMap(Map<String, dynamic>.from(m));
+      await DbService.restoreEmployee(e);
+      restoredEmp.add(e);
+    }
+
+    // Reload from DB so ordering / de-dup is consistent with normal loads.
+    txs       = await DbService.loadTxs();
+    customers = await DbService.loadCustomers();
+    employees = await DbService.loadEmployees();
+    notifyListeners();
+    await updateHomeWidget();
+
+    if (_cloudOn) {
+      for (final tx in restoredTxs) {
+        final ok = await _tryPushTxCloud(tx);
+        if (!ok) _enqueue(_QueuedOp(table: 'transactions', op: 'upsert', data: tx.toMap()));
+      }
+      for (final c in restoredCus) {
+        final ok = await _tryPushCustomerCloud(c);
+        if (!ok) _enqueue(_QueuedOp(table: 'customers', op: 'upsert', data: c.toMap()));
+      }
+      for (final e in restoredEmp) {
+        final ok = await _tryPushEmployeeCloud(e);
+        if (!ok) _enqueue(_QueuedOp(table: 'employees', op: 'upsert', data: e.toMap()));
+      }
+    }
+
+    return {
+      'transactions': restoredTxs.length,
+      'customers': restoredCus.length,
+      'employees': restoredEmp.length,
+    };
   }
 
   Future<void> deleteTx(int id) async {

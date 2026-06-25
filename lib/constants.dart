@@ -319,6 +319,8 @@ abstract class StorageKeys {
   static const fxTimestamp  = 'bly_fx_ts';
   static const companies    = 'bly_companies';      // [{id,name}] registry
   static const activeCompany = 'bly_active_company'; // current company id
+  static const ratingPrompted = 'bly_rating_prompted'; // in-app review shown once
+  static const onboardingSeen = 'bly_onboarding_seen'; // first-launch intro shown once
 }
 /// Inline trilingual helper for one-off strings outside the [L10n] class.
 /// Usage: tr(lang, 'English', '中文', 'Bahasa Melayu').
