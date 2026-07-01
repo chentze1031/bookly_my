@@ -14,6 +14,7 @@ import 'app_theme.dart';
 import 'models.dart';
 import 'state/app_state.dart';
 import 'state/sub_state.dart';
+import 'services/settings_service.dart';
 import 'utils.dart';
 import 'widgets/common.dart';
 import 'screens/bill_screen.dart';
@@ -340,11 +341,18 @@ class _AddTxSheetState extends State<AddTxSheet> {
   String? _payMode; // expense payment status: unpaid | cash | bank (null = income/edit)
   bool _scanning = false; // receipt OCR in progress (Phase 4 #19)
 
-  // ── Receipt OCR (Phase 4 #19, Pro) ──────────────────────────────────────
+  // ── Receipt OCR (Phase 4 #19, free trial then Pro) ──────────────────────
   // Snap/pick a receipt → Gemini Vision extracts merchant/amount/date/category
   // → prefills an expense and jumps to the confirm step. Pure-Dart (no native).
   Future<void> _scanReceipt() async {
-    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
+    // Non-Pro users get a limited free trial (freeReceiptScanLimit successful
+    // scans); Pro is unlimited. Trial usage is only spent on a SUCCESSFUL scan.
+    final isPro = context.read<SubState>().isPro;
+    if (!isPro) {
+      final used = await SettingsService.receiptScanCount();
+      if (!mounted) return;
+      if (used >= SettingsService.freeReceiptScanLimit) { showSubSheet(context); return; }
+    }
     final lang = context.read<AppState>().settings.lang;
     final src = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -378,6 +386,18 @@ class _AddTxSheetState extends State<AddTxSheet> {
         _payMode = 'cash'; // a receipt is normally already paid
         _step = 3;
       });
+      // Spend one free-trial scan only on success; surface the remaining count.
+      if (!isPro) {
+        await SettingsService.incrementReceiptScanCount();
+        final left = SettingsService.freeReceiptScanLimit - await SettingsService.receiptScanCount();
+        if (mounted && left >= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(tr(lang,
+              'Free receipt scans left: $left',
+              '剩余免费扫描次数：$left',
+              'Baki imbas resit percuma: $left'))));
+        }
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _scanning = false);

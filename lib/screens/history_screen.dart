@@ -97,7 +97,6 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
   // Convert an invoice into a delivery order (Pro). Carries customer + items
   // (quantities only) and references the source invoice number.
   Future<void> _toDeliveryOrder(Map<String, dynamic> inv) async {
-    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
     final customer = Customer.fromMap(Map<String, dynamic>.from(inv['customer'] ?? {}));
     final items = (inv['items'] as List? ?? [])
         .map((e) => Map<String, String>.from(e)).toList();
@@ -113,7 +112,6 @@ class _InvoiceHistoryState extends State<InvoiceHistoryScreen> {
   // Convert an invoice into a credit note (Pro). Carries customer + items and
   // references the source invoice; the credit note reduces AR on save.
   Future<void> _toCreditNote(Map<String, dynamic> inv) async {
-    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
     final customer = Customer.fromMap(Map<String, dynamic>.from(inv['customer'] ?? {}));
     final items = (inv['items'] as List? ?? [])
         .map((e) => Map<String, String>.from(e)).toList();

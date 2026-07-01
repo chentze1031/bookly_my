@@ -164,12 +164,8 @@ class _SettingsState extends State<SettingsScreen> {
               tr(t.lang, 'Auto-create rent, subscriptions monthly/weekly', '租金、订阅等按月/周自动生成', 'Auto-jana sewa, langganan bulanan/mingguan'),
               style: const TextStyle(fontSize: 12, color: kMuted),
             ),
-            trailing: sub.isPro
-              ? const Icon(Icons.chevron_right, color: kMuted)
-              : Icon(Icons.lock_outline, size: 18, color: kPro),
-            onTap: () => sub.isPro
-              ? Navigator.push(context, MaterialPageRoute(builder: (_) => const RecurringScreen()))
-              : showSubSheet(context),
+            trailing: const Icon(Icons.chevron_right, color: kMuted),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecurringScreen())),
           ),
         ),
 

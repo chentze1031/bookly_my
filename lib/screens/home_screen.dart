@@ -178,7 +178,6 @@ class HomeScreen extends StatelessWidget {
                       Expanded(child: _QuickBtn(
                         icon:'📋', label: lang=='zh'?'报价单':'Quotation', color:kMuted, bg:kBg, bd:kBorder,
                         onTap: () {
-                          if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
                           Navigator.push(context, MaterialPageRoute(
                             builder: (_) => const QuotationHistoryScreen()));
                         },
@@ -211,7 +210,6 @@ class HomeScreen extends StatelessWidget {
                           icon: '📋',
                           label: tr(lang, 'Quotation History', '报价单记录', 'Sejarah Sebut Harga'),
                           onTap: () {
-                            if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
                             Navigator.push(context,
                               MaterialPageRoute(builder: (_) => const QuotationHistoryScreen()));
                           },
@@ -234,7 +232,6 @@ class HomeScreen extends StatelessWidget {
                           icon: '🚚',
                           label: tr(lang, 'Delivery Orders', '送货单记录', 'Nota Penghantaran'),
                           onTap: () {
-                            if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
                             Navigator.push(context,
                               MaterialPageRoute(builder: (_) => const DeliveryOrderHistoryScreen()));
                           },
@@ -248,7 +245,6 @@ class HomeScreen extends StatelessWidget {
                           icon: '🧾',
                           label: tr(lang, 'Credit Notes', '信用备注记录', 'Nota Kredit'),
                           onTap: () {
-                            if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
                             Navigator.push(context,
                               MaterialPageRoute(builder: (_) => const CreditNoteHistoryScreen()));
                           },

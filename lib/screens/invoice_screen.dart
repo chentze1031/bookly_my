@@ -685,7 +685,6 @@ class _FullInvoiceSheetState extends State<FullInvoiceSheet> {
   // ── Generate a delivery order from the current invoice (Pro) ───────────────
   // Carries customer + line items (quantities only) and references this invoice.
   Future<void> _toDeliveryOrder() async {
-    if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
     if (_customer.name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Select a customer first'), backgroundColor: kRed));

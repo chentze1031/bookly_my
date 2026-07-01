@@ -257,7 +257,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
             // Purchase Order entry (Task 18, Pro)
             GestureDetector(
               onTap: () {
-                if (!context.read<SubState>().isPro) { showSubSheet(context); return; }
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const PurchaseOrderHistoryScreen()));
               },
               child: Container(
