@@ -1,5 +1,4 @@
-﻿import 'dart:typed_data';
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'payroll_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,8 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 
 import '../constants.dart';
@@ -798,153 +795,35 @@ class _PayrollDetailState extends State<_PayrollDetailScreen> {
     try {
       final app  = context.read<AppState>();
       final p    = widget.p;
-      final c    = widget.calc;
       final name = p['empName'] as String? ?? '';
       final month= (p['month'] as int? ?? 1).clamp(1, 12);
       final year = p['year']  as int? ?? 0;
-      final coName = app.settings.companyName.isNotEmpty ? app.settings.companyName : 'Company';
-      final coAddr = app.settings.coAddr;
       final earn = (p['earnings']   as List? ?? []);
       final ded  = (p['deductions'] as List? ?? []);
+      final pcb  = (p['pcb'] as num?)?.toDouble() ?? 0;
 
-      // Load CJK font
-      pw.Font? cjkFont;
-      try {
-        final fd = await rootBundle.load('assets/fonts/NotoSansSC-Regular.ttf');
-        cjkFont = pw.Font.ttf(fd);
-      } catch (_) {}
-
-      final pdf = pw.Document(
-        theme: cjkFont != null ? pw.ThemeData.withFont(base: cjkFont, bold: cjkFont) : pw.ThemeData(),
+      // Resolve the full employee record so the payslip can show IC / EPF /
+      // SOCSO / bank details; fall back to a name-only stub if not found.
+      final empId = p['empId'];
+      final emp = app.employees.firstWhere(
+        (e) => e.id == empId,
+        orElse: () => Employee(id: empId is int ? empId : -1, name: name),
       );
 
-      const darkC   = PdfColor.fromInt(0xFF1A1A1A);
-      const greenC  = PdfColor.fromInt(0xFF16A34A);
-      const redC    = PdfColor.fromInt(0xFFDC2626);
-      const mutedC  = PdfColor.fromInt(0xFF6B7280);
-      const borderC = PdfColor.fromInt(0xFFE5E5E0);
-
-      pdf.addPage(pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(36),
-        build: (ctx) {
-          final earnRows = earn.where((e) => (double.tryParse(e['amount']??'0')??0) > 0).toList();
-          final dedRows  = ded.where((d)  => (double.tryParse(d['amount']??'0')??0) > 0).toList();
-
-          pw.Widget row(String label, String value, {bool bold=false, PdfColor? vc}) =>
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(vertical: 5),
-              decoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: borderC, width: 0.5))),
-              child: pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-                pw.Text(label, style: pw.TextStyle(fontSize: 10, color: bold ? darkC : mutedC,
-                    fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
-                pw.Text(value, style: pw.TextStyle(fontSize: 10, color: vc ?? darkC,
-                    fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
-              ]),
-            );
-
-          return pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-            // Header
-            pw.Container(
-              padding: const pw.EdgeInsets.all(20),
-              decoration: pw.BoxDecoration(color: darkC, borderRadius: pw.BorderRadius.circular(12)),
-              child: pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-                pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                  pw.Text('PAYSLIP', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.white, letterSpacing: 2)),
-                  pw.SizedBox(height: 4),
-                  pw.Text('${widget.months[month-1]} $year',
-                      style: pw.TextStyle(fontSize: 12, color: PdfColor.fromInt(0xFF9CA3AF))),
-                ]),
-                pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-                  pw.Text(coName, style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
-                  if (coAddr.isNotEmpty)
-                    pw.Text(coAddr, style: pw.TextStyle(fontSize: 9, color: PdfColor.fromInt(0xFF9CA3AF))),
-                ]),
-              ]),
-            ),
-            pw.SizedBox(height: 16),
-
-            // Employee
-            pw.Container(
-              padding: const pw.EdgeInsets.all(14),
-              decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8F8F6),
-                  border: pw.Border.all(color: borderC), borderRadius: pw.BorderRadius.circular(8)),
-              child: pw.Row(children: [
-                pw.Container(width: 40, height: 40,
-                  decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFF2563EB), shape: pw.BoxShape.circle),
-                  alignment: pw.Alignment.center,
-                  child: pw.Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
-                      style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
-                ),
-                pw.SizedBox(width: 12),
-                pw.Text(name, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: darkC)),
-              ]),
-            ),
-            pw.SizedBox(height: 14),
-
-            // Earnings & Deductions side by side
-            pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-              pw.Expanded(child: pw.Container(
-                padding: const pw.EdgeInsets.all(12),
-                decoration: pw.BoxDecoration(
-                  color: PdfColor.fromInt(0xFFF0FDF4), borderRadius: pw.BorderRadius.circular(8),
-                  border: pw.Border.all(color: PdfColor.fromInt(0xFFBBF7D0))),
-                child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                  pw.Text('EARNINGS', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold,
-                      color: greenC, letterSpacing: 1)),
-                  pw.SizedBox(height: 8),
-                  ...earnRows.map((e) => row(e['desc']??'', fmtMYR(double.tryParse(e['amount']??'0')??0))),
-                  pw.SizedBox(height: 4),
-                  row('GROSS PAY', fmtMYR(c.gross), bold: true, vc: greenC),
-                ]),
-              )),
-              pw.SizedBox(width: 10),
-              pw.Expanded(child: pw.Container(
-                padding: const pw.EdgeInsets.all(12),
-                decoration: pw.BoxDecoration(
-                  color: PdfColor.fromInt(0xFFFFF5F5), borderRadius: pw.BorderRadius.circular(8),
-                  border: pw.Border.all(color: PdfColor.fromInt(0xFFFECACA))),
-                child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                  pw.Text('DEDUCTIONS', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold,
-                      color: redC, letterSpacing: 1)),
-                  pw.SizedBox(height: 8),
-                  if (p['useEPF']   == true) row('EPF',   fmtMYR(c.eeEPF)),
-                  if (p['useSOCSO'] == true) row('SOCSO', fmtMYR(c.eeSSO)),
-                  if (p['useEIS']   == true) row('EIS',   fmtMYR(c.eeEIS)),
-                  ...dedRows.map((d) => row(d['desc']??'', fmtMYR(double.tryParse(d['amount']??'0')??0))),
-                  pw.SizedBox(height: 4),
-                  row('TOTAL DED.', '(${fmtMYR(c.totDed)})', bold: true, vc: redC),
-                ]),
-              )),
-            ]),
-            pw.SizedBox(height: 14),
-
-            // Net Pay
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              decoration: pw.BoxDecoration(color: darkC, borderRadius: pw.BorderRadius.circular(10)),
-              child: pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-                pw.Text('NET PAY', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.white, letterSpacing: 1)),
-                pw.Text(fmtMYR(c.netPay), style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold,
-                    color: PdfColor.fromInt(0xFF4ADE80))),
-              ]),
-            ),
-            pw.SizedBox(height: 6),
-            pw.Row(mainAxisAlignment: pw.MainAxisAlignment.end, children: [
-              pw.Text('Total employer cost: ${fmtMYR(c.erCost)}',
-                  style: pw.TextStyle(fontSize: 9, color: mutedC)),
-            ]),
-            pw.Spacer(),
-            pw.Divider(color: borderC),
-            pw.Text('Computer-generated payslip · ${DateTime.now().toIso8601String().substring(0,10)}',
-                style: pw.TextStyle(fontSize: 8, color: mutedC)),
-          ]);
-        },
-      ));
-
-      final bytes = await pdf.save();
+      // Delegate to the shared builder so the exported PDF is identical to the
+      // one generated directly from the Salary sheet.
+      final bytes = await buildPayslipPdfBytes(
+        app: app,
+        emp: emp,
+        month: month,
+        year: year,
+        earn: earn,
+        ded: ded,
+        useEPF: p['useEPF'] == true,
+        useSOCSO: p['useSOCSO'] == true,
+        useEIS: p['useEIS'] == true,
+        pcb: pcb,
+      );
       final dir   = await getTemporaryDirectory();
       final safe  = name.replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '_');
       final file  = File('${dir.path}/Payslip_${safe}_${widget.months[month-1]}_$year.pdf');

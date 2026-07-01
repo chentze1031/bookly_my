@@ -219,6 +219,553 @@ class _Subhead extends StatelessWidget {
   );
 }
 
+// ─── Shared payslip PDF builder ────────────────────────────────────────────────
+// Single source of truth for the payslip layout. Both the Salary sheet and the
+// Payroll-History detail view call this so the exported PDF is byte-for-byte the
+// same design. Net pay = gross - totDed - pcb (PCB affects net but is not itemised).
+Future<Uint8List> buildPayslipPdfBytes({
+  required AppState app,
+  required Employee emp,
+  required int month,
+  required int year,
+  required List earn,
+  required List ded,
+  required bool useEPF,
+  required bool useSOCSO,
+  required bool useEIS,
+  required double pcb,
+}) async {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  // ── CJK font ─────────────────────────────────────────────────────────────
+  pw.Font? cjkFont;
+  try {
+    final fd = await rootBundle.load('assets/fonts/NotoSansSC-Regular.ttf');
+    cjkFont  = pw.Font.ttf(fd);
+  } catch (_) {}
+  final pdf = pw.Document(
+    theme: cjkFont != null
+        ? pw.ThemeData.withFont(base: cjkFont, bold: cjkFont)
+        : pw.ThemeData(),
+  );
+
+  // ── Data ──────────────────────────────────────────────────────────────────
+  final periodStr  = '${months[month - 1]} $year';
+  final genDate    = DateTime.now().toIso8601String().substring(0, 10);
+  final coName     = app.settings.companyName.isNotEmpty
+      ? app.settings.companyName : 'Company';
+
+  // ── Calculations ────────────────────────────────────────────────────────────
+  final gross  = earn.fold<double>(0, (s, e) => s + (double.tryParse('${e['amount'] ?? '0'}') ?? 0));
+  final otDed  = ded.fold<double>(0, (s, d) => s + (double.tryParse('${d['amount'] ?? '0'}') ?? 0));
+  final eeEPF  = useEPF   ? epfEe(gross)   : 0.0;
+  final erEPF  = useEPF   ? epfEr(gross)   : 0.0;
+  final eeSSO  = useSOCSO ? socsoEe(gross) : 0.0;
+  final erSSO  = useSOCSO ? socsoEr(gross) : 0.0;
+  final eeEIS  = useEIS   ? eisEe(gross)   : 0.0;
+  final erEIS  = useEIS   ? eisEr(gross)   : 0.0;
+  final totDed = otDed + eeEPF + eeSSO + eeEIS;
+  final netPay = gross - totDed - pcb;
+  final erCost = gross + erEPF + erSSO + erEIS;
+
+  final earnRows = earn
+      .where((e) => (double.tryParse('${e['amount'] ?? '0'}') ?? 0) > 0
+          && ('${e['desc'] ?? ''}').isNotEmpty)
+      .toList();
+  final dedRows = ded
+      .where((d) => (double.tryParse('${d['amount'] ?? '0'}') ?? 0) > 0
+          && ('${d['desc'] ?? ''}').isNotEmpty)
+      .toList();
+
+  // ── Palette ───────────────────────────────────────────────────────────────
+  const cDark   = PdfColor.fromInt(0xFF0F172A); // slate-900
+  const cMuted  = PdfColor.fromInt(0xFF64748B); // slate-500
+  const cRule   = PdfColor.fromInt(0xFFE2E8F0); // slate-200
+  const cBg     = PdfColor.fromInt(0xFFF8FAFC); // slate-50
+  const cWhite  = PdfColors.white;
+
+  // ── Type helpers ──────────────────────────────────────────────────────────
+  pw.TextStyle h1() => pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold,
+      color: cWhite, letterSpacing: 1.0);
+  pw.TextStyle h2() => pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold,
+      color: cDark);
+  pw.TextStyle body() => pw.TextStyle(fontSize: 9, color: cDark);
+  pw.TextStyle bodyMuted() => pw.TextStyle(fontSize: 8.5, color: cMuted);
+  pw.TextStyle mono() => pw.TextStyle(fontSize: 9, color: cDark);
+  pw.TextStyle tag() => pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold,
+      color: cMuted, letterSpacing: 0.6);
+
+  // ── Widget helpers ────────────────────────────────────────────────────────
+  pw.Widget hRule({double thick = 0.5, PdfColor? color}) =>
+      pw.Divider(thickness: thick, color: color ?? cRule, height: 0);
+
+  pw.Widget gap(double h) => pw.SizedBox(height: h);
+
+  // Section header pill
+  pw.Widget sHead(String text) => pw.Container(
+    margin: const pw.EdgeInsets.only(bottom: 6),
+    child: pw.Row(children: [
+      pw.Container(width: 3, height: 12,
+          decoration: pw.BoxDecoration(color: cDark,
+              borderRadius: pw.BorderRadius.circular(2))),
+      pw.SizedBox(width: 6),
+      pw.Text(text, style: pw.TextStyle(fontSize: 8,
+          fontWeight: pw.FontWeight.bold, color: cDark, letterSpacing: 0.6)),
+    ]),
+  );
+
+  // A key-value info line
+  pw.Widget infoLine(String k, String v) => pw.Padding(
+    padding: const pw.EdgeInsets.symmetric(vertical: 1.5),
+    child: pw.Row(children: [
+      pw.SizedBox(width: 110,
+          child: pw.Text(k, style: bodyMuted())),
+      pw.Expanded(child: pw.Text(v, style: body())),
+    ]),
+  );
+
+  // Earnings / deduction row
+  pw.Widget earningRow(String desc, String amount,
+      {bool bold = false, bool isTotal = false}) {
+    return pw.Container(
+      decoration: isTotal
+          ? null
+          : pw.BoxDecoration(border: pw.Border(
+              bottom: pw.BorderSide(color: cRule, width: 0.4))),
+      padding: pw.EdgeInsets.symmetric(
+          vertical: isTotal ? 6 : 4.5),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(desc,
+              style: bold
+                  ? pw.TextStyle(fontSize: 9,
+                      fontWeight: pw.FontWeight.bold, color: cDark)
+                  : body()),
+          pw.Text(amount,
+              style: bold
+                  ? pw.TextStyle(fontSize: 9,
+                      fontWeight: pw.FontWeight.bold, color: cDark)
+                  : mono()),
+        ],
+      ),
+    );
+  }
+
+  // Stat box (for the summary row)
+  pw.Widget statBox(String label_, String amount,
+      {bool highlight = false}) =>
+      pw.Expanded(
+        child: pw.Container(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: pw.BoxDecoration(
+            color: highlight ? cDark : cBg,
+            borderRadius: pw.BorderRadius.circular(6),
+            border: highlight
+                ? null
+                : pw.Border.all(color: cRule, width: 0.5),
+          ),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(label_,
+                  style: pw.TextStyle(
+                      fontSize: 6.5,
+                      fontWeight: pw.FontWeight.bold,
+                      color: highlight ? PdfColor.fromInt(0xFF94A3B8) : cMuted,
+                      letterSpacing: 0.6)),
+              gap(4),
+              pw.Text(amount,
+                  style: pw.TextStyle(
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                      color: highlight ? cWhite : cDark)),
+            ],
+          ),
+        ),
+      );
+
+  // ── Build page ────────────────────────────────────────────────────────────
+  pdf.addPage(pw.Page(
+    pageFormat: PdfPageFormat.a4,
+    margin: pw.EdgeInsets.zero,
+    build: (ctx) => pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+
+        // ── HEADER BAND ──────────────────────────────────────────────────────
+        pw.Container(
+          color: cDark,
+          padding: const pw.EdgeInsets.fromLTRB(44, 30, 44, 26),
+          child: pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.end,
+            children: [
+              // Left: title
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('PAYSLIP', style: h1()),
+                    gap(4),
+                    pw.Text('Pay Period: $periodStr',
+                        style: pw.TextStyle(fontSize: 10,
+                            color: PdfColor.fromInt(0xFF94A3B8))),
+                  ],
+                ),
+              ),
+              // Right: company
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(coName,
+                      style: pw.TextStyle(fontSize: 12,
+                          fontWeight: pw.FontWeight.bold, color: cWhite)),
+                  if (app.settings.coReg.isNotEmpty)
+                    pw.Text('Reg: ${app.settings.coReg}',
+                        style: pw.TextStyle(fontSize: 8,
+                            color: PdfColor.fromInt(0xFF94A3B8))),
+                  if (app.settings.sstRegNo.isNotEmpty)
+                    pw.Text('SST: ${app.settings.sstRegNo}',
+                        style: pw.TextStyle(fontSize: 8,
+                            color: PdfColor.fromInt(0xFF94A3B8))),
+                  if (app.settings.coAddr.isNotEmpty)
+                    pw.Text(app.settings.coAddr,
+                        style: pw.TextStyle(fontSize: 8,
+                            color: PdfColor.fromInt(0xFF94A3B8)),
+                        textAlign: pw.TextAlign.right),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // ── thin accent stripe
+        pw.Container(height: 4, color: PdfColor.fromInt(0xFF334155)),
+
+        // ── BODY ─────────────────────────────────────────────────────────────
+        pw.Expanded(
+          child: pw.Padding(
+            padding: const pw.EdgeInsets.fromLTRB(44, 26, 44, 0),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+
+                // ── Employee + Company info (2-col) ─────────────────────────
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Employee
+                    pw.Expanded(
+                      child: pw.Container(
+                        padding: const pw.EdgeInsets.all(14),
+                        decoration: pw.BoxDecoration(
+                          color: cBg,
+                          borderRadius: pw.BorderRadius.circular(8),
+                          border: pw.Border.all(color: cRule),
+                        ),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text('EMPLOYEE', style: tag()),
+                            gap(6),
+                            pw.Text(emp.name, style: h2()),
+                            if (emp.position.isNotEmpty) ...[
+                              gap(2),
+                              pw.Text(
+                                emp.department.isNotEmpty
+                                    ? '${emp.position}  ·  ${emp.department}'
+                                    : emp.position,
+                                style: bodyMuted()),
+                            ],
+                            gap(8),
+                            if (emp.icNo.isNotEmpty)
+                              infoLine('IC No.', emp.icNo),
+                            if (emp.epfNo.isNotEmpty)
+                              infoLine('EPF No.', emp.epfNo),
+                            if (emp.socsoNo.isNotEmpty)
+                              infoLine('SOCSO No.', emp.socsoNo),
+                          ],
+                        ),
+                      ),
+                    ),
+                    pw.SizedBox(width: 12),
+                    // Payment info
+                    pw.Expanded(
+                      child: pw.Container(
+                        padding: const pw.EdgeInsets.all(14),
+                        decoration: pw.BoxDecoration(
+                          color: cBg,
+                          borderRadius: pw.BorderRadius.circular(8),
+                          border: pw.Border.all(color: cRule),
+                        ),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text('PAYMENT INFO', style: tag()),
+                            gap(6),
+                            infoLine('Pay Date',   genDate),
+                            infoLine('Pay Period', periodStr),
+                            if (emp.bankName.isNotEmpty)
+                              infoLine('Bank', emp.bankName),
+                            if (emp.bankAcct.isNotEmpty)
+                              infoLine('Account No.', emp.bankAcct),
+                            if (app.settings.coPhone.isNotEmpty)
+                              infoLine('Company Tel', app.settings.coPhone),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                gap(20),
+
+                // ── Summary stats row ───────────────────────────────────────
+                pw.Row(children: [
+                  statBox('GROSS EARNINGS', fmtMYR(gross)),
+                  pw.SizedBox(width: 8),
+                  statBox('TOTAL DEDUCTIONS', '(${fmtMYR(totDed)})'),
+                  pw.SizedBox(width: 8),
+                  statBox('NET PAY', fmtMYR(netPay), highlight: true),
+                ]),
+
+                gap(20),
+
+                // ── Earnings & Deductions (2-col) ───────────────────────────
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    // Earnings column
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          sHead('EARNINGS'),
+                          ...earnRows.map((e) {
+                            final a = double.tryParse('${e['amount'] ?? '0'}') ?? 0;
+                            return earningRow('${e['desc'] ?? ''}', fmtMYR(a));
+                          }),
+                          pw.Container(
+                            margin: const pw.EdgeInsets.only(top: 4),
+                            padding:
+                                const pw.EdgeInsets.fromLTRB(0, 6, 0, 0),
+                            decoration: pw.BoxDecoration(
+                                border: pw.Border(
+                                    top: pw.BorderSide(
+                                        color: cDark, width: 1.0))),
+                            child: pw.Row(
+                              mainAxisAlignment:
+                                  pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text('Gross Pay',
+                                    style: pw.TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: cDark)),
+                                pw.Text(fmtMYR(gross),
+                                    style: pw.TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: cDark)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    pw.SizedBox(width: 24),
+                    // Deductions column
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          sHead('DEDUCTIONS'),
+                          if (useEPF)
+                            earningRow('EPF (Employee 11%)', fmtMYR(eeEPF)),
+                          if (useSOCSO)
+                            earningRow('SOCSO (Employee)', fmtMYR(eeSSO)),
+                          if (useEIS)
+                            earningRow('EIS (Employee)', fmtMYR(eeEIS)),
+                          ...dedRows.map((d) {
+                            final a = double.tryParse('${d['amount'] ?? '0'}') ?? 0;
+                            return earningRow('${d['desc'] ?? ''}', fmtMYR(a));
+                          }),
+                          pw.Container(
+                            margin: const pw.EdgeInsets.only(top: 4),
+                            padding:
+                                const pw.EdgeInsets.fromLTRB(0, 6, 0, 0),
+                            decoration: pw.BoxDecoration(
+                                border: pw.Border(
+                                    top: pw.BorderSide(
+                                        color: cDark, width: 1.0))),
+                            child: pw.Row(
+                              mainAxisAlignment:
+                                  pw.MainAxisAlignment.spaceBetween,
+                              children: [
+                                pw.Text('Total Deductions',
+                                    style: pw.TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: cDark)),
+                                pw.Text('(${fmtMYR(totDed)})',
+                                    style: pw.TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: pw.FontWeight.bold,
+                                        color: cDark)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                gap(20),
+
+                // ── Statutory breakdown table ────────────────────────────────
+                if (useEPF || useSOCSO || useEIS) ...[
+                  sHead('STATUTORY CONTRIBUTIONS (PERKESO / KWSP / SIP)'),
+                  pw.Container(
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: cRule),
+                      borderRadius: pw.BorderRadius.circular(6),
+                    ),
+                    child: pw.Column(children: [
+                      // Header
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColor.fromInt(0xFFF1F5F9),
+                          borderRadius: const pw.BorderRadius.only(
+                            topLeft: pw.Radius.circular(5),
+                            topRight: pw.Radius.circular(5),
+                          ),
+                        ),
+                        child: pw.Row(children: [
+                          pw.Expanded(child: pw.Text('Contribution',
+                              style: pw.TextStyle(fontSize: 7.5,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: cMuted))),
+                          pw.SizedBox(width: 80,
+                              child: pw.Text('Employee',
+                                  style: pw.TextStyle(fontSize: 7.5,
+                                      fontWeight: pw.FontWeight.bold,
+                                      color: cMuted),
+                                  textAlign: pw.TextAlign.right)),
+                          pw.SizedBox(width: 80,
+                              child: pw.Text('Employer',
+                                  style: pw.TextStyle(fontSize: 7.5,
+                                      fontWeight: pw.FontWeight.bold,
+                                      color: cMuted),
+                                  textAlign: pw.TextAlign.right)),
+                        ]),
+                      ),
+                      hRule(),
+                      // Rows
+                      if (useEPF)
+                        _statRow('KWSP / EPF', fmtMYR(eeEPF),
+                            fmtMYR(erEPF), cDark, cRule, body, mono),
+                      if (useSOCSO)
+                        _statRow('PERKESO / SOCSO', fmtMYR(eeSSO),
+                            fmtMYR(erSSO), cDark, cRule, body, mono),
+                      if (useEIS)
+                        _statRow('SIP / EIS', fmtMYR(eeEIS),
+                            fmtMYR(erEIS), cDark, cRule, body, mono),
+                      // Employer total cost note
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 5),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColor.fromInt(0xFFF8FAFC),
+                          borderRadius: const pw.BorderRadius.only(
+                            bottomLeft: pw.Radius.circular(5),
+                            bottomRight: pw.Radius.circular(5),
+                          ),
+                          border: pw.Border(
+                              top: pw.BorderSide(color: cRule)),
+                        ),
+                        child: pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.end,
+                          children: [
+                            pw.Text(
+                                'Total employer cost: ${fmtMYR(erCost)}',
+                                style: pw.TextStyle(
+                                    fontSize: 7.5,
+                                    color: cMuted,
+                                    fontWeight: pw.FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ]),
+                  ),
+                  gap(16),
+                ],
+
+                pw.Spacer(),
+
+                // ── Footer ──────────────────────────────────────────────────
+                pw.Container(
+                  padding: const pw.EdgeInsets.fromLTRB(0, 12, 0, 20),
+                  decoration: pw.BoxDecoration(
+                      border: pw.Border(
+                          top: pw.BorderSide(color: cRule, width: 0.8))),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      // Left: legal note
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(
+                            'This payslip is issued in accordance with the Employment Act 1955 (Malaysia).',
+                            style: pw.TextStyle(
+                                fontSize: 7, color: cMuted)),
+                          pw.Text(
+                            'Computer-generated — no signature required.  '
+                            'Generated: $genDate',
+                            style: pw.TextStyle(
+                                fontSize: 7, color: cMuted)),
+                        ],
+                      ),
+                      // Right: net pay callout
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: pw.BoxDecoration(
+                          color: cDark,
+                          borderRadius: pw.BorderRadius.circular(6),
+                        ),
+                        child: pw.Row(children: [
+                          pw.Text('NET PAY  ',
+                              style: pw.TextStyle(
+                                  fontSize: 9,
+                                  color: PdfColor.fromInt(0xFF94A3B8),
+                                  fontWeight: pw.FontWeight.bold,
+                                  letterSpacing: 0.5)),
+                          pw.Text(fmtMYR(netPay),
+                              style: pw.TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: cWhite)),
+                        ]),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  ));
+
+  return pdf.save();
+}
+
 // ─── Payroll Sheet ────────────────────────────────────────────────────────────
 class FullPayrollSheet extends StatefulWidget {
   final Map<String, dynamic>? prefill;
@@ -315,534 +862,19 @@ class _PayrollSheetState extends State<FullPayrollSheet> {
     }
   }
 
-  // ── Generate PDF payslip bytes ────────────────────────────────────────────
-  Future<Uint8List> _buildPayslipPdf(AppState app) async {
-    // ── CJK font ─────────────────────────────────────────────────────────────
-    pw.Font? cjkFont;
-    try {
-      final fd = await rootBundle.load('assets/fonts/NotoSansSC-Regular.ttf');
-      cjkFont  = pw.Font.ttf(fd);
-    } catch (_) {}
-    final pdf = pw.Document(
-      theme: cjkFont != null
-          ? pw.ThemeData.withFont(base: cjkFont, bold: cjkFont)
-          : pw.ThemeData(),
-    );
-
-    // ── Data ──────────────────────────────────────────────────────────────────
-    final emp        = _emp!;
-    final periodStr  = '${_months[_month - 1]} $_year';
-    final genDate    = DateTime.now().toIso8601String().substring(0, 10);
-    final coName     = app.settings.companyName.isNotEmpty
-        ? app.settings.companyName : 'Company';
-
-    final earnRows = _earn
-        .where((e) => (double.tryParse(e['amount'] ?? '0') ?? 0) > 0
-            && (e['desc'] ?? '').isNotEmpty)
-        .toList();
-    final dedRows = _ded
-        .where((d) => (double.tryParse(d['amount'] ?? '0') ?? 0) > 0
-            && (d['desc'] ?? '').isNotEmpty)
-        .toList();
-
-    // ── Palette ───────────────────────────────────────────────────────────────
-    const cDark   = PdfColor.fromInt(0xFF0F172A); // slate-900
-    const cSlate  = PdfColor.fromInt(0xFF334155); // slate-700
-    const cMuted  = PdfColor.fromInt(0xFF64748B); // slate-500
-    const cRule   = PdfColor.fromInt(0xFFE2E8F0); // slate-200
-    const cBg     = PdfColor.fromInt(0xFFF8FAFC); // slate-50
-    const cAccent = PdfColor.fromInt(0xFF0F172A); // same as dark — mono accent
-    const cWhite  = PdfColors.white;
-
-    // ── Type helpers ──────────────────────────────────────────────────────────
-    pw.TextStyle h1() => pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold,
-        color: cWhite, letterSpacing: 1.0);
-    pw.TextStyle h2() => pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold,
-        color: cDark);
-    pw.TextStyle label() => pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold,
-        color: cMuted, letterSpacing: 0.8);
-    pw.TextStyle body() => pw.TextStyle(fontSize: 9, color: cDark);
-    pw.TextStyle bodyMuted() => pw.TextStyle(fontSize: 8.5, color: cMuted);
-    pw.TextStyle mono() => pw.TextStyle(fontSize: 9, color: cDark);
-    pw.TextStyle monoBold() => pw.TextStyle(fontSize: 9,
-        fontWeight: pw.FontWeight.bold, color: cDark);
-    pw.TextStyle tag() => pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold,
-        color: cMuted, letterSpacing: 0.6);
-
-    // ── Widget helpers ────────────────────────────────────────────────────────
-    pw.Widget hRule({double thick = 0.5, PdfColor? color}) =>
-        pw.Divider(thickness: thick, color: color ?? cRule, height: 0);
-
-    pw.Widget gap(double h) => pw.SizedBox(height: h);
-
-    // Section header pill
-    pw.Widget sHead(String text) => pw.Container(
-      margin: const pw.EdgeInsets.only(bottom: 6),
-      child: pw.Row(children: [
-        pw.Container(width: 3, height: 12,
-            decoration: pw.BoxDecoration(color: cDark,
-                borderRadius: pw.BorderRadius.circular(2))),
-        pw.SizedBox(width: 6),
-        pw.Text(text, style: pw.TextStyle(fontSize: 8,
-            fontWeight: pw.FontWeight.bold, color: cDark, letterSpacing: 0.6)),
-      ]),
-    );
-
-    // A key-value info line
-    pw.Widget infoLine(String k, String v) => pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 1.5),
-      child: pw.Row(children: [
-        pw.SizedBox(width: 110,
-            child: pw.Text(k, style: bodyMuted())),
-        pw.Expanded(child: pw.Text(v, style: body())),
-      ]),
-    );
-
-    // Earnings / deduction row
-    pw.Widget earningRow(String desc, String amount,
-        {bool bold = false, bool isTotal = false}) {
-      return pw.Container(
-        decoration: isTotal
-            ? null
-            : pw.BoxDecoration(border: pw.Border(
-                bottom: pw.BorderSide(color: cRule, width: 0.4))),
-        padding: pw.EdgeInsets.symmetric(
-            vertical: isTotal ? 6 : 4.5),
-        child: pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
-            pw.Text(desc,
-                style: bold
-                    ? pw.TextStyle(fontSize: 9,
-                        fontWeight: pw.FontWeight.bold, color: cDark)
-                    : body()),
-            pw.Text(amount,
-                style: bold
-                    ? pw.TextStyle(fontSize: 9,
-                        fontWeight: pw.FontWeight.bold, color: cDark)
-                    : mono()),
-          ],
-        ),
+  // ── Generate PDF payslip bytes (delegates to shared builder) ───────────────
+  Future<Uint8List> _buildPayslipPdf(AppState app) => buildPayslipPdfBytes(
+        app: app,
+        emp: _emp!,
+        month: _month,
+        year: _year,
+        earn: _earn,
+        ded: _ded,
+        useEPF: _useEPF,
+        useSOCSO: _useSOCSO,
+        useEIS: _useEIS,
+        pcb: _pcb,
       );
-    }
-
-    // Stat box (for the summary row)
-    pw.Widget statBox(String label_, String amount,
-        {bool highlight = false}) =>
-        pw.Expanded(
-          child: pw.Container(
-            padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: pw.BoxDecoration(
-              color: highlight ? cDark : cBg,
-              borderRadius: pw.BorderRadius.circular(6),
-              border: highlight
-                  ? null
-                  : pw.Border.all(color: cRule, width: 0.5),
-            ),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(label_,
-                    style: pw.TextStyle(
-                        fontSize: 6.5,
-                        fontWeight: pw.FontWeight.bold,
-                        color: highlight ? PdfColor.fromInt(0xFF94A3B8) : cMuted,
-                        letterSpacing: 0.6)),
-                gap(4),
-                pw.Text(amount,
-                    style: pw.TextStyle(
-                        fontSize: 12,
-                        fontWeight: pw.FontWeight.bold,
-                        color: highlight ? cWhite : cDark)),
-              ],
-            ),
-          ),
-        );
-
-    // ── Build page ────────────────────────────────────────────────────────────
-    pdf.addPage(pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      margin: pw.EdgeInsets.zero,
-      build: (ctx) => pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-
-          // ╔══════════════════════════════════════════════════════════════════╗
-          // ║  HEADER BAND                                                     ║
-          // ╚══════════════════════════════════════════════════════════════════╝
-          pw.Container(
-            color: cDark,
-            padding: const pw.EdgeInsets.fromLTRB(44, 30, 44, 26),
-            child: pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              children: [
-                // Left: title
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('PAYSLIP', style: h1()),
-                      gap(4),
-                      pw.Text('Pay Period: $periodStr',
-                          style: pw.TextStyle(fontSize: 10,
-                              color: PdfColor.fromInt(0xFF94A3B8))),
-                    ],
-                  ),
-                ),
-                // Right: company
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text(coName,
-                        style: pw.TextStyle(fontSize: 12,
-                            fontWeight: pw.FontWeight.bold, color: cWhite)),
-                    if (app.settings.coReg.isNotEmpty)
-                      pw.Text('Reg: ${app.settings.coReg}',
-                          style: pw.TextStyle(fontSize: 8,
-                              color: PdfColor.fromInt(0xFF94A3B8))),
-                    if (app.settings.sstRegNo.isNotEmpty)
-                      pw.Text('SST: ${app.settings.sstRegNo}',
-                          style: pw.TextStyle(fontSize: 8,
-                              color: PdfColor.fromInt(0xFF94A3B8))),
-                    if (app.settings.coAddr.isNotEmpty)
-                      pw.Text(app.settings.coAddr,
-                          style: pw.TextStyle(fontSize: 8,
-                              color: PdfColor.fromInt(0xFF94A3B8)),
-                          textAlign: pw.TextAlign.right),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // ── thin accent stripe
-          pw.Container(height: 4, color: PdfColor.fromInt(0xFF334155)),
-
-          // ╔══════════════════════════════════════════════════════════════════╗
-          // ║  BODY                                                            ║
-          // ╚══════════════════════════════════════════════════════════════════╝
-          pw.Expanded(
-            child: pw.Padding(
-              padding: const pw.EdgeInsets.fromLTRB(44, 26, 44, 0),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-
-                  // ── Employee + Company info (2-col) ─────────────────────────
-                  pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      // Employee
-                      pw.Expanded(
-                        child: pw.Container(
-                          padding: const pw.EdgeInsets.all(14),
-                          decoration: pw.BoxDecoration(
-                            color: cBg,
-                            borderRadius: pw.BorderRadius.circular(8),
-                            border: pw.Border.all(color: cRule),
-                          ),
-                          child: pw.Column(
-                            crossAxisAlignment: pw.CrossAxisAlignment.start,
-                            children: [
-                              pw.Text('EMPLOYEE', style: tag()),
-                              gap(6),
-                              pw.Text(emp.name, style: h2()),
-                              if (emp.position.isNotEmpty) ...[
-                                gap(2),
-                                pw.Text(
-                                  emp.department.isNotEmpty
-                                      ? '${emp.position}  ·  ${emp.department}'
-                                      : emp.position,
-                                  style: bodyMuted()),
-                              ],
-                              gap(8),
-                              if (emp.icNo.isNotEmpty)
-                                infoLine('IC No.', emp.icNo),
-                              if (emp.epfNo.isNotEmpty)
-                                infoLine('EPF No.', emp.epfNo),
-                              if (emp.socsoNo.isNotEmpty)
-                                infoLine('SOCSO No.', emp.socsoNo),
-                            ],
-                          ),
-                        ),
-                      ),
-                      pw.SizedBox(width: 12),
-                      // Payment info
-                      pw.Expanded(
-                        child: pw.Container(
-                          padding: const pw.EdgeInsets.all(14),
-                          decoration: pw.BoxDecoration(
-                            color: cBg,
-                            borderRadius: pw.BorderRadius.circular(8),
-                            border: pw.Border.all(color: cRule),
-                          ),
-                          child: pw.Column(
-                            crossAxisAlignment: pw.CrossAxisAlignment.start,
-                            children: [
-                              pw.Text('PAYMENT INFO', style: tag()),
-                              gap(6),
-                              infoLine('Pay Date',   genDate),
-                              infoLine('Pay Period', periodStr),
-                              if (emp.bankName.isNotEmpty)
-                                infoLine('Bank', emp.bankName),
-                              if (emp.bankAcct.isNotEmpty)
-                                infoLine('Account No.', emp.bankAcct),
-                              if (app.settings.coPhone.isNotEmpty)
-                                infoLine('Company Tel', app.settings.coPhone),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  gap(20),
-
-                  // ── Summary stats row ───────────────────────────────────────
-                  pw.Row(children: [
-                    statBox('GROSS EARNINGS', fmtMYR(_gross)),
-                    pw.SizedBox(width: 8),
-                    statBox('TOTAL DEDUCTIONS', '(${fmtMYR(_totDed)})'),
-                    pw.SizedBox(width: 8),
-                    statBox('NET PAY', fmtMYR(_netPay), highlight: true),
-                  ]),
-
-                  gap(20),
-
-                  // ── Earnings & Deductions (2-col) ───────────────────────────
-                  pw.Row(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      // Earnings column
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            sHead('EARNINGS'),
-                            ...earnRows.map((e) {
-                              final a = double.tryParse(e['amount'] ?? '0') ?? 0;
-                              return earningRow(e['desc'] ?? '', fmtMYR(a));
-                            }),
-                            pw.Container(
-                              margin: const pw.EdgeInsets.only(top: 4),
-                              padding:
-                                  const pw.EdgeInsets.fromLTRB(0, 6, 0, 0),
-                              decoration: pw.BoxDecoration(
-                                  border: pw.Border(
-                                      top: pw.BorderSide(
-                                          color: cDark, width: 1.0))),
-                              child: pw.Row(
-                                mainAxisAlignment:
-                                    pw.MainAxisAlignment.spaceBetween,
-                                children: [
-                                  pw.Text('Gross Pay',
-                                      style: pw.TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: pw.FontWeight.bold,
-                                          color: cDark)),
-                                  pw.Text(fmtMYR(_gross),
-                                      style: pw.TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: pw.FontWeight.bold,
-                                          color: cDark)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      pw.SizedBox(width: 24),
-                      // Deductions column
-                      pw.Expanded(
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            sHead('DEDUCTIONS'),
-                            if (_useEPF)
-                              earningRow('EPF (Employee 11%)', fmtMYR(_eeEPF)),
-                            if (_useSOCSO)
-                              earningRow('SOCSO (Employee)', fmtMYR(_eeSSO)),
-                            if (_useEIS)
-                              earningRow('EIS (Employee)', fmtMYR(_eeEIS)),
-                            ...dedRows.map((d) {
-                              final a = double.tryParse(d['amount'] ?? '0') ?? 0;
-                              return earningRow(d['desc'] ?? '', fmtMYR(a));
-                            }),
-                            pw.Container(
-                              margin: const pw.EdgeInsets.only(top: 4),
-                              padding:
-                                  const pw.EdgeInsets.fromLTRB(0, 6, 0, 0),
-                              decoration: pw.BoxDecoration(
-                                  border: pw.Border(
-                                      top: pw.BorderSide(
-                                          color: cDark, width: 1.0))),
-                              child: pw.Row(
-                                mainAxisAlignment:
-                                    pw.MainAxisAlignment.spaceBetween,
-                                children: [
-                                  pw.Text('Total Deductions',
-                                      style: pw.TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: pw.FontWeight.bold,
-                                          color: cDark)),
-                                  pw.Text('(${fmtMYR(_totDed)})',
-                                      style: pw.TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: pw.FontWeight.bold,
-                                          color: cDark)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  gap(20),
-
-                  // ── Statutory breakdown table ────────────────────────────────
-                  if (_useEPF || _useSOCSO || _useEIS) ...[
-                    sHead('STATUTORY CONTRIBUTIONS (PERKESO / KWSP / SIP)'),
-                    pw.Container(
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(color: cRule),
-                        borderRadius: pw.BorderRadius.circular(6),
-                      ),
-                      child: pw.Column(children: [
-                        // Header
-                        pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: pw.BoxDecoration(
-                            color: PdfColor.fromInt(0xFFF1F5F9),
-                            borderRadius: const pw.BorderRadius.only(
-                              topLeft: pw.Radius.circular(5),
-                              topRight: pw.Radius.circular(5),
-                            ),
-                          ),
-                          child: pw.Row(children: [
-                            pw.Expanded(child: pw.Text('Contribution',
-                                style: pw.TextStyle(fontSize: 7.5,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: cMuted))),
-                            pw.SizedBox(width: 80,
-                                child: pw.Text('Employee',
-                                    style: pw.TextStyle(fontSize: 7.5,
-                                        fontWeight: pw.FontWeight.bold,
-                                        color: cMuted),
-                                    textAlign: pw.TextAlign.right)),
-                            pw.SizedBox(width: 80,
-                                child: pw.Text('Employer',
-                                    style: pw.TextStyle(fontSize: 7.5,
-                                        fontWeight: pw.FontWeight.bold,
-                                        color: cMuted),
-                                    textAlign: pw.TextAlign.right)),
-                          ]),
-                        ),
-                        hRule(),
-                        // Rows
-                        if (_useEPF)
-                          _statRow('KWSP / EPF', fmtMYR(_eeEPF),
-                              fmtMYR(_erEPF), cDark, cRule, body, mono),
-                        if (_useSOCSO)
-                          _statRow('PERKESO / SOCSO', fmtMYR(_eeSSO),
-                              fmtMYR(_erSSO), cDark, cRule, body, mono),
-                        if (_useEIS)
-                          _statRow('SIP / EIS', fmtMYR(_eeEIS),
-                              fmtMYR(_erEIS), cDark, cRule, body, mono),
-                        // Employer total cost note
-                        pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 5),
-                          decoration: pw.BoxDecoration(
-                            color: PdfColor.fromInt(0xFFF8FAFC),
-                            borderRadius: const pw.BorderRadius.only(
-                              bottomLeft: pw.Radius.circular(5),
-                              bottomRight: pw.Radius.circular(5),
-                            ),
-                            border: pw.Border(
-                                top: pw.BorderSide(color: cRule)),
-                          ),
-                          child: pw.Row(
-                            mainAxisAlignment: pw.MainAxisAlignment.end,
-                            children: [
-                              pw.Text(
-                                  'Total employer cost: ${fmtMYR(_erCost)}',
-                                  style: pw.TextStyle(
-                                      fontSize: 7.5,
-                                      color: cMuted,
-                                      fontWeight: pw.FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                      ]),
-                    ),
-                    gap(16),
-                  ],
-
-                  pw.Spacer(),
-
-                  // ── Footer ──────────────────────────────────────────────────
-                  pw.Container(
-                    padding: const pw.EdgeInsets.fromLTRB(0, 12, 0, 20),
-                    decoration: pw.BoxDecoration(
-                        border: pw.Border(
-                            top: pw.BorderSide(color: cRule, width: 0.8))),
-                    child: pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: pw.CrossAxisAlignment.end,
-                      children: [
-                        // Left: legal note
-                        pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text(
-                              'This payslip is issued in accordance with the Employment Act 1955 (Malaysia).',
-                              style: pw.TextStyle(
-                                  fontSize: 7, color: cMuted)),
-                            pw.Text(
-                              'Computer-generated — no signature required.  '
-                              'Generated: $genDate',
-                              style: pw.TextStyle(
-                                  fontSize: 7, color: cMuted)),
-                          ],
-                        ),
-                        // Right: net pay callout
-                        pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 8),
-                          decoration: pw.BoxDecoration(
-                            color: cDark,
-                            borderRadius: pw.BorderRadius.circular(6),
-                          ),
-                          child: pw.Row(children: [
-                            pw.Text('NET PAY  ',
-                                style: pw.TextStyle(
-                                    fontSize: 9,
-                                    color: PdfColor.fromInt(0xFF94A3B8),
-                                    fontWeight: pw.FontWeight.bold,
-                                    letterSpacing: 0.5)),
-                            pw.Text(fmtMYR(_netPay),
-                                style: pw.TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: cWhite)),
-                          ]),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    ));
-
-    return pdf.save();
-  }
 
   // ── Export as PDF and share ────────────────────────────────────────────────
   Future<void> _share() async {
