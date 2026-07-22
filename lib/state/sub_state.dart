@@ -233,8 +233,8 @@ class SubState extends ChangeNotifier {
         return false;
       }
       debugPrint('Purchasing RevenueCat package: ${pkg.identifier} / ${pkg.storeProduct.identifier}');
-      final customerInfo = await Purchases.purchasePackage(pkg);
-      _applyInfo(customerInfo);
+      final result = await Purchases.purchasePackage(pkg);
+      _applyInfo(result.customerInfo);
       notifyListeners();
       return isPro;
     } catch (e) {

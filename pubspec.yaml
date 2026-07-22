@@ -1,7 +1,7 @@
 name: bookly_my
 description: Bookly MY - Malaysia Business Accounting App
 publish_to: none
-version: 1.1.0+52
+version: 1.1.0+55
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -48,7 +48,7 @@ dependencies:
   share_plus: ^10.0.2
 
   # Monetization
-  purchases_flutter: ^8.0.0
+  purchases_flutter: ^9.0.0
   google_mobile_ads: ^5.1.0
 
   # In-app rating prompt (native Play Store review flow)
