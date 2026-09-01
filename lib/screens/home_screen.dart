@@ -13,6 +13,7 @@ import 'quotation_screen.dart';
 import 'delivery_order_screen.dart';
 import 'credit_note_screen.dart';
 import 'myinvois_submissions_screen.dart';
+import 'referral_screen.dart';
 import 'sub_screen.dart' show showSubSheet;
 
 // ── 横幅广告ID ────────────────────────────────────────────────────────────────
@@ -143,6 +144,16 @@ class HomeScreen extends StatelessWidget {
                         Expanded(child: _HeroCard(label: t.expenses, value: totalOut, sign: '-', color: const Color(0xFFF87171), bg: Color(0x1AF87171))),
                       ]),
                     ],
+                  ),
+                ),
+
+                // ── Invite friends (Referral) prominent banner ─────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  child: _InviteBanner(
+                    lang: lang,
+                    onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const ReferralScreen())),
                   ),
                 ),
 
@@ -557,6 +568,64 @@ class _OverdueBanner extends StatelessWidget {
             ),
             child: Row(children: [
               Text(tr(lang, 'View', '查看', 'Lihat'),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
+              const Icon(Icons.chevron_right, size: 16, color: Colors.white),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+// ── Invite friends (Referral) prominent banner — Pro/purple accent ───────────
+class _InviteBanner extends StatelessWidget {
+  final String lang;
+  final VoidCallback onTap;
+  const _InviteBanner({required this.lang, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = tr(lang, 'Invite friends', '邀请好友', 'Jemput rakan');
+    final sub   = tr(lang, 'Share your code, earn free Pro',
+        '分享邀请码，免费得 Pro', 'Kongsi kod, dapat Pro percuma');
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: kProBg,
+          border: Border.all(color: kProBd, width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(children: [
+          Container(
+            width: 38, height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: kSurface,
+              border: Border.all(color: kProBd),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Text('🎁', style: TextStyle(fontSize: 20)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: kPro)),
+              const SizedBox(height: 1),
+              Text(sub, style: const TextStyle(fontSize: 12, color: kMuted)),
+            ]),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: kPro,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Row(children: [
+              Text(tr(lang, 'Invite', '邀请', 'Jemput'),
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
               const Icon(Icons.chevron_right, size: 16, color: Colors.white),
             ]),
