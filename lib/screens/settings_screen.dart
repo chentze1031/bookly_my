@@ -111,6 +111,38 @@ class _SettingsState extends State<SettingsScreen> {
             ),
           ),
 
+        // ── Invite friends (Referral rewards) — prominent, top position ──
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          child: GestureDetector(
+            onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const ReferralScreen())),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                    colors: [Color(0xFF4C1D95), Color(0xFF7C3AED)]),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(children: [
+                const Text('🎁', style: TextStyle(fontSize: 28)),
+                const SizedBox(width: 12),
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tr(t.lang, 'Invite friends', '邀请好友', 'Jemput rakan'),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.white)),
+                    const SizedBox(height: 2),
+                    Text(tr(t.lang, 'Share your code, earn free Pro', '分享邀请码，免费得 Pro', 'Kongsi kod, dapat Pro percuma'),
+                      style: const TextStyle(fontSize: 12, color: Color(0xCCFFFFFF))),
+                  ],
+                )),
+                const Text('→', style: TextStyle(color: Colors.white, fontSize: 18)),
+              ]),
+            ),
+          ),
+        ),
+
         // ── Account block ────────────────────────────────────────────────
         SectionCard(
           title: '👤 Account',
@@ -254,22 +286,6 @@ class _SettingsState extends State<SettingsScreen> {
               ),
             ),
           ]),
-        ),
-
-        // ── Invite friends (Referral rewards) ────────────────────────────
-        SectionCard(
-          title: '🎁 ${tr(t.lang, 'Invite', '邀请', 'Jemput')}',
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            leading: const Text('🎁', style: TextStyle(fontSize: 24)),
-            title: Text(tr(t.lang, 'Invite friends', '邀请好友', 'Jemput rakan'),
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: kText)),
-            subtitle: Text(tr(t.lang, 'Share your code, earn free Pro', '分享邀请码，免费得 Pro', 'Kongsi kod, dapat Pro percuma'),
-              style: const TextStyle(fontSize: 12, color: kMuted)),
-            trailing: const Icon(Icons.chevron_right, color: kMuted),
-            onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const ReferralScreen())),
-          ),
         ),
 
         // ── Help Center ──────────────────────────────────────────────────

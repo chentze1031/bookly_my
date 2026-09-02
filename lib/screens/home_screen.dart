@@ -148,14 +148,16 @@ class HomeScreen extends StatelessWidget {
                 ),
 
                 // ── Invite friends (Referral) prominent banner ─────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                  child: _InviteBanner(
-                    lang: lang,
-                    onTap: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const ReferralScreen())),
+                // Pro 用户自动隐藏（他们已订阅，无需靠邀请换 Pro）
+                if (!sub.isPro)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                    child: _InviteBanner(
+                      lang: lang,
+                      onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const ReferralScreen())),
+                    ),
                   ),
-                ),
 
                 // ── Overdue receivables reminder (Task 8) ──────────────────
                 if (overdueCount > 0)
