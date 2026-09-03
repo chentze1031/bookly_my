@@ -375,7 +375,8 @@ class HomeScreen extends StatelessWidget {
         ),
 
         // ── 横幅广告（非Pro用户显示）─────────────────────────────────────────
-        if (!sub.isPro) const _BannerAdWidget(),
+        // Paid Pro removes the banner; referral Pro keeps it (lesser tier).
+        if (!sub.isPro || sub.isReferralPro) const _BannerAdWidget(),
       ],
     );
   }

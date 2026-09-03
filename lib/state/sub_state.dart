@@ -41,6 +41,10 @@ class SubState extends ChangeNotifier {
   // FIX #7: 添加初始化状态，防止 PRO 用户在启动时短暂看到免费版界面
   bool       _initialized = false;
   bool       isPro        = _proBypass;
+  // Pro obtained via the referral promo (RevenueCat Store.promotional) is a
+  // *lesser* Pro: all features unlocked and save/share interstitials suppressed
+  // (same as paid), BUT the home banner ad stays. Paid Pro removes all ads.
+  bool       isReferralPro = false;
   String?    proExpires;
   // FIX #6: 记录 RevenueCat 初始化错误，供 UI 展示
   String?    initError;
@@ -108,6 +112,9 @@ class SubState extends ChangeNotifier {
     if (_proBypass) return;
     final ent  = info.entitlements.active[_rcEntitlement];
     isPro      = ent != null;
+    // 邀请奖励发放的 Pro 走 RevenueCat promotional，store 报 Store.promotional。
+    // 付费订阅走 Play Store（Store.playStore 等），据此区分「次级 Pro」（保留横幅广告）。
+    isReferralPro = ent?.store == Store.promotional;
     proExpires = ent?.expirationDate;
     // FIX #12: 状态变更时同步广告加载/卸载逻辑，防止遗漏
     _syncAdsAfterAccessChange();
@@ -137,6 +144,7 @@ class SubState extends ChangeNotifier {
       _appUserId = null;
       // FIX: logout 失败时确保恢复到免费状态
       isPro = false;
+      isReferralPro = false;
       proExpires = null;
       _syncAdsAfterAccessChange();
     }

@@ -72,16 +72,32 @@ Deno.serve(async (req) => {
       return count ?? 0;
     }
 
-    async function grantPromo(appUserId: string, duration: string) {
-      if (!RC_KEY) return;
-      await fetch(
-        `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}/entitlements/${RC_ENTITLEMENT}/promotional`,
-        {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${RC_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ duration }),
-        },
-      );
+    // Grant a RevenueCat promotional `pro` entitlement. Returns true ONLY when
+    // RevenueCat confirms the grant — so the caller never records a reward the
+    // user didn't actually receive. A missing key or any error → false.
+    async function grantPromo(appUserId: string, duration: string): Promise<boolean> {
+      if (!RC_KEY) {
+        console.error("grantPromo: REVENUECAT_SECRET_KEY not set");
+        return false;
+      }
+      try {
+        const res = await fetch(
+          `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}/entitlements/${RC_ENTITLEMENT}/promotional`,
+          {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${RC_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ duration }),
+          },
+        );
+        if (!res.ok) {
+          console.error(`grantPromo failed (${res.status}) for ${appUserId}: ${await res.text()}`);
+          return false;
+        }
+        return true;
+      } catch (e) {
+        console.error(`grantPromo threw for ${appUserId}:`, e);
+        return false;
+      }
     }
 
     async function evaluate(refId: string | null) {
@@ -89,8 +105,13 @@ Deno.serve(async (req) => {
       const prof = await ensureProfile(refId);
       const tier = highestTier(await countActive(refId));
       if (tier > (prof.granted_tier ?? 0)) {
-        await grantPromo(refId, TIER_DURATION[tier]);
-        await svc.from("referral_profiles").update({ granted_tier: tier }).eq("user_id", refId);
+        // Only record the new tier when the promo was actually granted, so the
+        // DB/UI can never claim a reward RevenueCat never issued. On failure we
+        // leave granted_tier untouched — the next sync retries.
+        const granted = await grantPromo(refId, TIER_DURATION[tier]);
+        if (granted) {
+          await svc.from("referral_profiles").update({ granted_tier: tier }).eq("user_id", refId);
+        }
       }
     }
 

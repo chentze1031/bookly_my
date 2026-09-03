@@ -245,9 +245,16 @@ class _ReferralScreenState extends State<ReferralScreen> {
               ),
             ]),
             const SizedBox(height: 6),
-            if (reached > 0)
-              Text('🎁 ${tr(l, 'Current reward', '当前奖励', 'Ganjaran semasa')}: ${_rewardLabel(l, reached)}',
+            if (reached > 0) ...[
+              Text('🏆 ${tr(l, 'Highest tier reached', '已达最高档位', 'Tahap tertinggi dicapai')}: ${_rewardLabel(l, reached)}',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: kGreen)),
+              const SizedBox(height: 4),
+              Text(tr(l,
+                'Each reward is a one-time Pro pass that starts the moment it\'s granted and runs for the length shown, then expires.',
+                '每项奖励是一次性 Pro 通行证，发放后立即开始计时，到期即结束。',
+                'Setiap ganjaran ialah pas Pro sekali sahaja yang bermula sebaik diberi dan tamat selepas tempoh yang tertera.'),
+                style: const TextStyle(fontSize: 11.5, height: 1.35, color: kMuted)),
+            ],
             if (next != null) ...[
               const SizedBox(height: 8),
               Text(tr(l,
